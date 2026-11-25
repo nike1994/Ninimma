@@ -339,4 +339,6 @@ return [
     'versions_changes' => 'Wersje i zmiany',
     'view_only_mobile' => 'Podgląd — edycja na komputerze',
     'waiting_for_handover' => 'Czeka na odbiór',
+    'today_reminders' => 'Przypomnienia i licencje',
+    'license_ends' => 'Kończy się licencja: :what',
 ];

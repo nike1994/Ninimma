@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
             'content' => \App\Models\Content::class,
             'board' => \App\Models\Board::class,
             'cost_document' => \App\Models\CostDocument::class,
+            'influencer' => \App\Models\Influencer::class,
+            'collaboration' => \App\Models\Collaboration::class,
+            'material' => \App\Models\Material::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.

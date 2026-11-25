@@ -339,4 +339,6 @@ return [
     'versions_changes' => 'Versions & changes',
     'view_only_mobile' => 'Preview — edit on desktop',
     'waiting_for_handover' => 'Awaiting sign-off',
+    'today_reminders' => 'Reminders & licenses',
+    'license_ends' => 'License ending: :what',
 ];

@@ -102,6 +102,7 @@ class DemoSeeder extends Seeder
         }
         Carbon::setTestNow();
         $this->call(SocialDemoSeeder::class);
+        $this->call(InfluencerDemoSeeder::class);
 
         $this->command?->info("Admin: admin@example.com / demo-haslo-123, sekret 2FA: {$secret}");
         $this->command?->info('Klientka: anna@example.com / demo-haslo-123');

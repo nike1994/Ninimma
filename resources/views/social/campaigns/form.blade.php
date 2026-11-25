@@ -41,6 +41,15 @@
                 <dt>{{ $metric['label'] }}</dt><dd>{{ $metric['value'] }}</dd>
             </dl>
         </section>
+        <a href="{{ route('reports.campaign', $campaign) }}" class="btn btn-send btn-block" style="margin-bottom: 18px"><x-icon name="bar-chart" :size="18" />{{ __('inf.report') }}</a>
+        <section class="card">
+            <div class="card-head"><h2>{{ __('inf.collaborations') }}</h2><a href="{{ route('influencers.index') }}" class="btn btn-small"><x-icon name="plus" :size="14" /></a></div>
+            @forelse($campaign->collaborations()->with(['influencer.photo', 'shipments'])->get() as $c)
+                <a href="{{ route('collaborations.show', $c) }}" class="side-file">@include('influencers._photo', ['inf' => $c->influencer, 'size' => 28])<span>{{ $c->influencer->name }}</span><small class="muted">{{ __('inf.stage_'.$c->stage()) }}</small></a>
+            @empty
+                <p class="muted small">{{ __('inf.no_collabs') }}</p>
+            @endforelse
+        </section>
         <section class="card">
             <div class="card-head"><h2>{{ __('social.contents') }}</h2>
                 <a href="{{ route('social.contents.create', ['client' => $campaign->client_id, 'campaign' => $campaign->id, 'stage' => 'preparing']) }}" class="btn btn-small"><x-icon name="plus" :size="14" /></a></div>
@@ -50,7 +59,6 @@
             @empty
                 <p class="muted small">{{ __('social.no_campaign_contents') }}</p>
             @endforelse
-            <p class="muted small">{{ __('social.influencers_later') }}</p>
         </section>
     </aside>
     @endif

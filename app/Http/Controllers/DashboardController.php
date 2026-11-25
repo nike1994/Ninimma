@@ -39,6 +39,10 @@ class DashboardController extends Controller
                 'upcoming' => $upcoming,
                 'dueToday' => $tickets->first(fn (Ticket $t) => $t->due_on?->isToday()),
                 'stalled' => $tickets->filter->isStalled(),
+                'reminders' => \App\Models\Reminder::with('remindable')->where('is_done', false)->whereDate('due_on', '<=', today())->orderBy('due_on')->limit(6)->get(),
+                'licenses' => \App\Models\Material::with('collaboration.influencer')->whereNotNull('license_until')
+                    ->whereDate('license_until', '<=', today()->addDays(14))->whereDate('license_until', '>=', today()->subDays(7))->orderBy('license_until')->limit(5)->get(),
+                'statsQueueCount' => \App\Services\SocialStats::statsQueue()->count(),
                 'team' => User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get(),
                 'lastCron' => Cache::get('agency:last_cron'),
                 'recentErrors' => SystemLog::where('level', 'error')->where('created_at', '>', now()->subDays(7))->count(),

@@ -61,6 +61,28 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::get('/terms', [\App\Http\Controllers\TermsController::class, 'show'])->name('terms.show');
     Route::post('/terms', [\App\Http\Controllers\TermsController::class, 'accept'])->name('terms.accept');
 
+    // Materiały i raporty kampanii (klient: tylko swoje, bez stawek i danych osobowych).
+    Route::get('/materials', [\App\Http\Controllers\Influencers\MaterialController::class, 'index'])->name('materials.index');
+    Route::get('/reports', [\App\Http\Controllers\Influencers\MaterialController::class, 'clientReports'])->name('reports.index');
+    Route::get('/reports/campaigns/{campaign}', [\App\Http\Controllers\Influencers\MaterialController::class, 'report'])->name('reports.campaign');
+
+    // Influencerzy (administrator).
+    Route::middleware('admin')->group(function () {
+        Route::resource('influencers', \App\Http\Controllers\Influencers\InfluencerController::class)->except('destroy');
+        $c = \App\Http\Controllers\Influencers\CollaborationController::class;
+        Route::post('/collaborations', [$c, 'store'])->name('collaborations.store');
+        Route::get('/collaborations/{collaboration}', [$c, 'show'])->name('collaborations.show');
+        Route::put('/collaborations/{collaboration}', [$c, 'update'])->name('collaborations.update');
+        Route::post('/collaborations/{collaboration}/step', [$c, 'step'])->name('collaborations.step');
+        Route::post('/collaborations/{collaboration}/cancel', [$c, 'cancel'])->name('collaborations.cancel');
+        Route::post('/collaborations/{collaboration}/shipments', [$c, 'storeShipment'])->name('collaborations.shipments.store');
+        Route::patch('/shipments/{shipment}', [$c, 'updateShipment'])->name('shipments.update');
+        Route::post('/collaborations/{collaboration}/materials', [$c, 'storeMaterial'])->name('collaborations.materials.store');
+        Route::put('/materials/{material}', [$c, 'updateMaterial'])->name('materials.update');
+        Route::post('/reminders', [$c, 'storeReminder'])->name('reminders.store');
+        Route::patch('/reminders/{reminder}', [$c, 'toggleReminder'])->name('reminders.toggle');
+    });
+
     // Tablice (Excalidraw).
     Route::post('/tickets/{ticket}/boards', [\App\Http\Controllers\BoardController::class, 'store'])->name('boards.store');
     Route::get('/boards/{board}', [\App\Http\Controllers\BoardController::class, 'show'])->name('boards.show');

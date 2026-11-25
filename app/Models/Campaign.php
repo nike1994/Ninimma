@@ -24,6 +24,11 @@ class Campaign extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function collaborations(): HasMany
+    {
+        return $this->hasMany(Collaboration::class);
+    }
+
     public function contents(): HasMany
     {
         return $this->hasMany(Content::class);

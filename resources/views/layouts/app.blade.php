@@ -32,18 +32,20 @@
                         <a href="{{ route('social.accounts') }}" @class(['active' => request()->routeIs('social.accounts')])>{{ __('social.profiles') }}</a>
                     </div>
                 </div>
-                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 4]) }}"><x-icon name="users" />{{ __('ui.influencers') }}</span>
+                <a href="{{ route('influencers.index') }}" @class(['active' => request()->routeIs('influencers.*', 'collaborations.*', 'materials.*')])><x-icon name="users" />{{ __('ui.influencers') }}</a>
                 <span class="nav-soon" title="{{ __('ui.stage', ['n' => 5]) }}"><x-icon name="layers" />{{ __('ui.sites_seo') }}</span>
                 <a href="{{ route('admin.clients.index') }}" @class(['active' => request()->routeIs('admin.clients.*')])><x-icon name="building" />{{ __('ui.clients') }}</a>
             @else
                 <a href="{{ route('files.index') }}" @class(['active' => request()->routeIs('files.index')])><x-icon name="file" />{{ __('ui.files') }}</a>
                 <a href="{{ route('publications.index') }}" @class(['active' => request()->routeIs('publications.*')])><x-icon name="megaphone" />{{ __('ui.publications') }}</a>
+                <a href="{{ route('materials.index') }}" @class(['active' => request()->routeIs('materials.*')])><x-icon name="image" />{{ __('inf.ready_materials') }}</a>
+                <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.*')])><x-icon name="bar-chart" />{{ __('inf.reports') }}</a>
                 <a href="{{ route('billing.index') }}" @class(['active' => request()->routeIs('billing.*')])><x-icon name="grid" />{{ __('ui.billing') }}</a>
                 <a href="{{ route('settings') }}" @class(['active' => request()->routeIs('settings')])><x-icon name="lock" />{{ __('ui.company_access') }}</a>
             @endif
         </nav>
 
-        @if($me->isAdmin() && ! request()->routeIs('social.*'))
+        @if($me->isAdmin() && ! request()->routeIs('social.*', 'influencers.*', 'collaborations.*'))
             <div class="sidebar-divider"></div>
             <div class="sidebar-label">{{ __('ui.ticket_list') }}</div>
             <div class="mini-list">

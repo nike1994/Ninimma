@@ -97,6 +97,23 @@
             @endforelse
         </section>
 
+        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount)
+        <section class="card">
+            <h2><x-icon name="bell" /> {{ __('ui.today_reminders') }}</h2>
+            @foreach($reminders as $r)
+                <a href="{{ $r->url() ?? '#' }}" class="prio-item"><span class="prio-circle prio-high"></span>
+                    <span><strong>{{ $r->body }}</strong><small class="muted">{{ $r->due_on->isToday() ? __('ui.today') : $r->due_on->format('d.m') }}@if($r->remindable instanceof \App\Models\Influencer) · {{ $r->remindable->name }}@elseif($r->remindable instanceof \App\Models\Collaboration) · {{ $r->remindable->influencer->name }}@endif</small></span></a>
+            @endforeach
+            @foreach($licenses as $m)
+                <a href="{{ route('collaborations.show', $m->collaboration) }}" class="prio-item"><span class="prio-circle prio-urgent"></span>
+                    <span><strong>{{ __('ui.license_ends', ['what' => $m->description]) }}</strong><small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->license_until->format('d.m') }}</small></span></a>
+            @endforeach
+            @if($statsQueueCount)
+                <a href="{{ route('social.stats') }}" class="prio-item"><span class="prio-circle"></span><span><strong>{{ trans_choice('social.stats_due', $statsQueueCount, ['n' => $statsQueueCount]) }}</strong></span></a>
+            @endif
+        </section>
+        @endif
+
         <section class="card">
             <h2><x-icon name="calendar" /> {{ __('ui.upcoming_deadlines') }}</h2>
             @forelse($upcoming as $t)
