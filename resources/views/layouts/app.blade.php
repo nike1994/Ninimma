@@ -40,7 +40,7 @@
                 @forelse($sidebarTickets as $st)
                     <a href="{{ route('tickets.show', $st) }}" @class(['mini', 'current' => request()->route('ticket')?->id === $st->id])>
                         <span class="mini-title">{{ $st->client->name }}<x-icon name="chevron-right" :size="16" /></span>
-                        <span class="mini-sub">@if($st->hasUnreadFor($me))<span class="dot"></span>@endif{{ \Illuminate\Support\Str::limit($st->title, 48) }}</span>
+                        <span class="mini-sub">@if($st->hasUnreadFor($me))<span class="dot"></span>@endif{{ $st->title }}</span>
                         @if($st->isStalled())
                             <span class="pill pill-pink">{{ __('ui.stalled_for', ['n' => (int) $st->waiting_since?->diffInDays(now())]) }}</span>
                         @else
@@ -51,11 +51,6 @@
                     <p class="mini-empty">{{ __('ui.nothing_here') }}</p>
                 @endforelse
             </div>
-            <nav class="nav nav-small">
-                <a href="{{ route('admin.templates.index') }}" @class(['active' => request()->routeIs('admin.templates.*')])><x-icon name="repeat" :size="17" />{{ __('ui.templates') }}</a>
-                <a href="{{ route('admin.team') }}" @class(['active' => request()->routeIs('admin.team')])><x-icon name="shield" :size="17" />{{ __('ui.team') }}</a>
-                <a href="{{ route('admin.system') }}" @class(['active' => request()->routeIs('admin.system')])><x-icon name="activity" :size="17" />{{ __('ui.system_log') }}</a>
-            </nav>
         @else
             <div class="help-box">
                 <span class="help-icon"><x-icon name="help" :size="22" /></span>
@@ -89,6 +84,11 @@
                     <summary><x-avatar :name="$me->name" :size="36" /><span class="hide-sm"><small>{{ $me->isAdmin() ? __('ui.account_manager') : __('ui.account') }}</small><strong>{{ \Illuminate\Support\Str::before($me->name, ' ') ?: $me->name }}</strong></span><x-icon name="chevron-down" :size="16" /></summary>
                     <div class="user-menu">
                         <a href="{{ route('settings') }}"><x-icon name="sliders" :size="16" />{{ __('ui.settings') }}</a>
+                        @if($me->isAdmin())
+                            <a href="{{ route('admin.templates.index') }}"><x-icon name="repeat" :size="16" />{{ __('ui.templates') }}</a>
+                            <a href="{{ route('admin.team') }}"><x-icon name="shield" :size="16" />{{ __('ui.team') }}</a>
+                            <a href="{{ route('admin.system') }}"><x-icon name="activity" :size="16" />{{ __('ui.system_log') }}</a>
+                        @endif
                         <form method="post" action="{{ route('logout') }}">@csrf<button><x-icon name="logout" :size="16" />{{ __('ui.logout') }}</button></form>
                     </div>
                 </details>

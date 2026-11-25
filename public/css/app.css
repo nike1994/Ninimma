@@ -401,3 +401,16 @@ body.guest .waves-sidebar { position: fixed; left: 0; bottom: 0; width: 100vw; h
     .chat { padding: .8rem; }
     .msg-client .bubble, .msg-client .attachments { margin-left: 0; }
 }
+
+/* Kompaktowa lista zleceń w menu */
+.mini { padding: .65rem .85rem; gap: .15rem; }
+.mini-sub { display: block; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: .35rem; }
+.mini .pill { font-size: .75rem; padding: .15rem .6rem; }
+.mini-list { flex-shrink: 0; overflow: visible; }
+.sidebar { overflow-y: auto; scrollbar-width: none; }
+/* Tytuł zlecenia w wierszu nie może się zgniatać */
+.trow { grid-template-columns: auto minmax(0, 1fr) auto auto auto; }
+.trow-date { white-space: nowrap; }
+.trow-status { flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 1280px) { .trow { grid-template-columns: auto minmax(0, 1fr) auto auto; } }
+@media (max-width: 560px) { .trow { grid-template-columns: auto minmax(0, 1fr) auto; } }
