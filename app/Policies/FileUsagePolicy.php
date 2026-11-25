@@ -22,6 +22,11 @@ class FileUsagePolicy
         if ($usable instanceof TicketMessage) {
             return ! $usable->is_internal && $usable->ticket->client_id === $user->client_id;
         }
+        if ($usable instanceof \App\Models\Content) {
+            // Klient widzi pliki treści, które mają udostępnioną mu publikację.
+            return $usable->client_id === $user->client_id
+                && $usable->publications()->where('visible_to_client', true)->exists();
+        }
         if ($usable instanceof Ticket) {
             return $usable->client_id === $user->client_id;
         }

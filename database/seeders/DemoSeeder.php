@@ -101,6 +101,7 @@ class DemoSeeder extends Seeder
             $t->changeStatus($done, $admin, TicketStatus::Done);
         }
         Carbon::setTestNow();
+        $this->call(SocialDemoSeeder::class);
 
         $this->command?->info("Admin: admin@example.com / demo-haslo-123, sekret 2FA: {$secret}");
         $this->command?->info('Klientka: anna@example.com / demo-haslo-123');

@@ -6,8 +6,19 @@
         chart.querySelectorAll('.hover').forEach(g => {
             g.addEventListener('mouseenter', () => {
                 tip.querySelector('strong').textContent = g.dataset.title;
-                tip.querySelector('[data-m]').textContent = g.dataset.m;
-                tip.querySelector('[data-a]').textContent = g.dataset.a;
+                if (g.dataset.values) {
+                    const rows = tip.querySelector('[data-rows]');
+                    rows.innerHTML = '';
+                    JSON.parse(g.dataset.values).forEach(([name, color, value]) => {
+                        const r = document.createElement('span');
+                        r.innerHTML = '<i style="background:' + color + '"></i>';
+                        r.append(name + ': ', Object.assign(document.createElement('b'), { textContent: value }));
+                        rows.appendChild(r);
+                    });
+                } else {
+                    tip.querySelector('[data-m]').textContent = g.dataset.m;
+                    tip.querySelector('[data-a]').textContent = g.dataset.a;
+                }
                 const box = chart.getBoundingClientRect(), r = g.querySelector('circle').getBoundingClientRect();
                 tip.hidden = false;
                 const left = Math.min(Math.max(r.left - box.left - tip.offsetWidth / 2, 0), box.width - tip.offsetWidth);

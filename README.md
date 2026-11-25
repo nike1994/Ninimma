@@ -13,7 +13,7 @@ bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/
 |---|---|---|
 | 1. Rdzeń | konta, role, zaproszenia, 2FA, klienci, zlecenia z rozmową i notatkami, statusy i oś czasu, pliki w kawałkach, e-maile, wyszukiwarka, dziennik systemu, kopie zapasowe | ✅ gotowy do testów |
 | 2. Tablice i wyceny | Excalidraw, wersje, wyceny z limitem, czas pracy, odbiór, regulamin | ⏳ |
-| 3. Plan publikacji | treści i publikacje (YT, TikTok, FB, IG, Pinterest), kalendarz, statystyki | ⏳ |
+| 3. Plan publikacji | treści i publikacje (YT, TikTok, FB, IG, Pinterest, LinkedIn), kalendarz, statystyki | ✅ gotowy do testów |
 | 4. Influencerzy i kampanie | osoby, współprace z etapami, przesyłki, materiały z licencjami, raporty | ⏳ |
 | 5. Strony, administracja, SEO | terminy, przeglądy z listą kontrolną, pakiety godzin, frazy, plan treści | ⏳ |
 | 6. Porządki | archiwizacja po roku, paczki offline, kartoteka z szyfrowanymi dostępami | ⏳ |
@@ -34,6 +34,16 @@ bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/
 - **Języki:** polski i angielski, wybierane na użytkownika (także e-maile).
 - **Planowanie i czas pracy** (część etapu 2): priorytet (normalny / wysoki / pilne), termin, osoba prowadząca i wpisy czasu pracy przy zleceniu.
 - **Pulpit administratora:** wskaźniki z trendem względem poprzedniego okresu (wiadomości, otwarte zadania, na dziś, do akceptacji, czas pracy), aktywne rozmowy z liczbą nieprzeczytanych, wykres aktywności zespołu, tablica zadań (do zrobienia / w trakcie / do akceptacji / zakończone), priorytety, nadchodzące terminy, zespół i przypomnienie o terminie na dziś.
+
+### Co działa w etapie 3 (Social media)
+
+- **Profile:** konta social media klientów (Instagram, Facebook, TikTok, YouTube, LinkedIn, Pinterest).
+- **Treści:** zapisane raz (tytuł, opis, hashtagi, typ, format, grafiki) z lejkiem: pomysł → w przygotowaniu → gotowe.
+- **Publikacje:** każda platforma ma własną publikację treści z datą, statusem, linkiem, opcjonalnym opisem pod platformę i promocją (budżet).
+- **Statystyki:** kolejka „do sprawdzenia” po 1, 7 i 30 dniach i jeden ekran do wpisania liczb dla wszystkich zaległych publikacji; każdy pomiar zapisany z datą, bez nadpisywania.
+- **Pulpit social media:** wskaźniki z trendem (posty, zasięg, zaangażowanie, kliknięcia), filtr marek, lejek treści, kalendarz tygodnia z miniaturami, wyniki według marek i platform, trend zaangażowania, zadania i publikacje czekające na klienta.
+- **Kalendarz miesięczny** z filtrem kont.
+- **Klient:** udostępnione publikacje z podglądem grafik i opisów (bez pól roboczych), akceptacja lub prośba o zmiany z komentarzem; kalendarz udostępnionych postów.
 
 ## Instalacja na hostingu
 

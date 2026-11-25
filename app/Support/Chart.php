@@ -23,6 +23,10 @@ class Chart
             $p3 = $points[min($n - 1, $i + 2)];
             $c1 = [$p1[0] + ($p2[0] - $p0[0]) / 6, $p1[1] + ($p2[1] - $p0[1]) / 6];
             $c2 = [$p2[0] - ($p3[0] - $p1[0]) / 6, $p2[1] - ($p3[1] - $p1[1]) / 6];
+            // Bez "przestrzeliwania": punkty kontrolne nie wychodzą poza odcinek (krzywa monotoniczna).
+            [$lo, $hi] = [min($p1[1], $p2[1]), max($p1[1], $p2[1])];
+            $c1[1] = max($lo, min($hi, $c1[1]));
+            $c2[1] = max($lo, min($hi, $c2[1]));
             $d .= sprintf(' C%.1f %.1f, %.1f %.1f, %.1f %.1f', $c1[0], $c1[1], $c2[0], $c2[1], $p2[0], $p2[1]);
         }
 

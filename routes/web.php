@@ -64,6 +64,23 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::put('/settings', [SettingsController::class, 'update']);
     Route::put('/settings/password', [SettingsController::class, 'password'])->name('settings.password');
 
+    // Plan publikacji (klient: udostępnione publikacje).
+    Route::get('/publications', [\App\Http\Controllers\Social\ClientPublicationController::class, 'index'])->name('publications.index');
+    Route::post('/publications/{publication}/respond', [\App\Http\Controllers\Social\ClientPublicationController::class, 'respond'])->name('publications.respond');
+    Route::get('/publications/calendar', \App\Http\Controllers\Social\CalendarController::class)->name('publications.calendar');
+
+    // Social media (administrator).
+    Route::middleware('admin')->prefix('social')->name('social.')->group(function () {
+        Route::get('/', \App\Http\Controllers\Social\SocialDashboardController::class)->name('dashboard');
+        Route::get('/calendar', \App\Http\Controllers\Social\CalendarController::class)->name('calendar');
+        Route::resource('contents', \App\Http\Controllers\Social\ContentController::class)->except('show');
+        Route::get('/stats', [\App\Http\Controllers\Social\StatsController::class, 'index'])->name('stats');
+        Route::post('/stats', [\App\Http\Controllers\Social\StatsController::class, 'store']);
+        Route::get('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'index'])->name('accounts');
+        Route::post('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'store']);
+        Route::patch('/accounts/{account}/toggle', [\App\Http\Controllers\Social\AccountController::class, 'toggle'])->name('accounts.toggle');
+    });
+
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
         Route::patch('/tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');

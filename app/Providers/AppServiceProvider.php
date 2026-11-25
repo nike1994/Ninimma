@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'ticket' => Ticket::class,
             'ticket_message' => TicketMessage::class,
+            'content' => \App\Models\Content::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.
