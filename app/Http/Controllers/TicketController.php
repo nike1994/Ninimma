@@ -97,6 +97,9 @@ class TicketController extends Controller
             'ticket' => $ticket->load(['client', 'parent', 'children', 'author', 'assignee']),
             'admins' => $user->isAdmin() ? \App\Models\User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get() : collect(),
             'timeEntries' => $user->isAdmin() ? $ticket->timeEntries()->with('user')->latest('spent_on')->latest('id')->get() : collect(),
+            'quotes' => $ticket->quotes()->with(['author', 'decider'])->get(),
+            'boards' => $ticket->boards()->with('latestVersion')->get(),
+            'costDocuments' => $ticket->costDocuments()->with('pdf')->get(),
             'messages' => $messages,
             'events' => $events,
             'clientReads' => $clientReads,
@@ -164,8 +167,9 @@ class TicketController extends Controller
         $minutes = self::parseHours($data['hours']);
         abort_if($minutes < 1 || $minutes > 24 * 60, 422);
         $this->tickets->logTime($ticket, $request->user(), $minutes, $data['spent_on'], $data['note'] ?? null);
+        $pct = app(\App\Services\QuoteService::class)->checkLimit($ticket, $request->user());
 
-        return back()->with('status', __('ui.saved'));
+        return back()->with('status', $pct !== null && $pct >= 80 ? __('ui.limit_warning', ['pct' => $pct]) : __('ui.saved'));
     }
 
     /** "1:30" | "1,5" | "2" → minuty */

@@ -1,0 +1,16 @@
+{
+  "name": "ninimma-excalidraw-bundle",
+  "private": true,
+  "description": "Buduje public/vendor/excalidraw (jeden plik IIFE). Uruchamiane tylko lokalnie: npm ci && npm run build",
+  "scripts": {
+    "build": "esbuild entry.jsx --bundle --minify --format=esm --splitting --outdir=../../public/vendor/excalidraw --entry-names=board --chunk-names=chunks/[name]-[hash] --asset-names=assets/[name]-[hash] --loader:.woff2=file --loader:.ttf=file --define:process.env.NODE_ENV='\"production\"' --conditions=production --legal-comments=external && node copy-assets.mjs"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.5"
+  }
+}

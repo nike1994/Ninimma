@@ -36,6 +36,8 @@
     <span class="tabs-spacer"></span>
     <button type="button" class="tab active" data-tab="ticket">{{ __('ui.ticket_no', ['n' => $ticket->id]) }}</button>
     <button type="button" class="tab" data-tab="history">{{ __('ui.history') }}</button>
+    <button type="button" class="tab" data-tab="boards">{{ __('ui.boards') }} @if($boards->count())<small>{{ $boards->count() }}</small>@endif
+        @if($boards->contains(fn ($b) => $b->hasUnseenVersionFor($me)))<span class="dot"></span>@endif</button>
     <button type="button" class="tab" data-tab="files">{{ __('ui.files') }} @if($attachments->count())<small>{{ $attachments->count() }}</small>@endif</button>
     <a class="tab" href="{{ $me->isAdmin() ? route('admin.clients.show', $client) : route('tickets.index') }}">{{ __('ui.other_tickets') }}</a>
 </nav>
@@ -58,6 +60,8 @@
                     </div>
                 @endforeach
             </div>
+
+            @include('tickets._quotes')
 
             <div class="card chat">
                 <div class="thread" data-thread
@@ -88,6 +92,26 @@
                 </form>
                 @endcan
             </div>
+        </section>
+
+        {{-- Zakładka: tablice --}}
+        <section class="panel card" data-panel="boards" hidden>
+            <h2>{{ __('ui.boards') }}</h2>
+            <div class="board-list">
+                @foreach($boards as $b)
+                    <a href="{{ route('boards.show', $b) }}" class="board-tile">
+                        <span class="board-thumb"><x-icon name="pencil" :size="26" /></span>
+                        <span><strong>@if($b->hasUnseenVersionFor($me))<span class="dot"></span>@endif{{ $b->name }}</strong>
+                            <small class="muted">{{ $b->latestVersion ? __('ui.last_version', ['date' => $b->latestVersion->created_at->format('d.m H:i')]) : __('ui.no_versions') }}</small></span>
+                    </a>
+                @endforeach
+            </div>
+            @can('reply', $ticket)
+                <form method="post" action="{{ route('boards.store', $ticket) }}" class="inline-form">
+                    @csrf<input name="name" placeholder="{{ __('ui.board_name') }}" required maxlength="120"><button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('ui.new_board') }}</button>
+                </form>
+            @endcan
+            <p class="muted small">{{ __('ui.boards_hint') }}</p>
         </section>
 
         {{-- Zakładka: historia (oś czasu) --}}
@@ -147,6 +171,9 @@
                         <form method="post" action="{{ route('admin.tickets.remind', $ticket) }}">@csrf<button class="btn btn-dark btn-small"><x-icon name="bell" :size="15" /> {{ __('ui.remind_now') }}</button></form>
                     @endif
                     <a href="{{ route('tickets.create', ['parent' => $ticket->id]) }}" class="btn btn-small"><x-icon name="plus" :size="15" /> {{ __('ui.new_follow_up') }}</a>
+                    @if(! $ticket->handover_requested_at && $ticket->status !== \App\Enums\TicketStatus::Done)
+                        <form method="post" action="{{ route('admin.tickets.handover', $ticket) }}">@csrf<button class="btn btn-small"><x-icon name="check-circle" :size="15" /> {{ __('ui.request_handover') }}</button></form>
+                    @endif
                 </div>
             @endif
         </section>
@@ -181,7 +208,13 @@
         <section class="card">
             @php($total = $timeEntries->sum('minutes'))
             <h3><x-icon name="clock" /> {{ __('ui.work_time') }}</h3>
-            <p class="time-total"><strong>{{ \App\Models\TimeEntry::format($total) }}</strong> <span class="muted">h</span></p>
+            @php($limit = $ticket->acceptedQuote()?->acceptedMinutes())
+            <p class="time-total"><strong>{{ \App\Models\TimeEntry::format($total) }}</strong> <span class="muted">@if($limit){{ __('ui.of_limit', ['limit' => \App\Models\TimeEntry::format($limit)]) }}@else h @endif</span></p>
+            @if($limit)
+                @php($pct = min(100, (int) round($total / $limit * 100)))
+                <div @class(['limit-bar', 'warn' => $pct >= 80])><span style="width: {{ $pct }}%"></span></div>
+                @if($pct >= 80)<p class="small overdue">{{ __('ui.limit_warning', ['pct' => (int) round($total / $limit * 100)]) }}</p>@endif
+            @endif
             @foreach($timeEntries->take(5) as $te)
                 <div class="side-file"><span>{{ $te->spent_on->format('d.m') }} · {{ $te->note ?: '—' }}</span><small class="muted">{{ \App\Models\TimeEntry::format($te->minutes) }}</small></div>
             @endforeach

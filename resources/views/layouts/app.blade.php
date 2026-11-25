@@ -38,7 +38,7 @@
             @else
                 <a href="{{ route('files.index') }}" @class(['active' => request()->routeIs('files.index')])><x-icon name="file" />{{ __('ui.files') }}</a>
                 <a href="{{ route('publications.index') }}" @class(['active' => request()->routeIs('publications.*')])><x-icon name="megaphone" />{{ __('ui.publications') }}</a>
-                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 2]) }}"><x-icon name="grid" />{{ __('ui.billing') }}</span>
+                <a href="{{ route('billing.index') }}" @class(['active' => request()->routeIs('billing.*')])><x-icon name="grid" />{{ __('ui.billing') }}</a>
                 <a href="{{ route('settings') }}" @class(['active' => request()->routeIs('settings')])><x-icon name="lock" />{{ __('ui.company_access') }}</a>
             @endif
         </nav>
@@ -95,6 +95,8 @@
                     <div class="user-menu">
                         <a href="{{ route('settings') }}"><x-icon name="sliders" :size="16" />{{ __('ui.settings') }}</a>
                         @if($me->isAdmin())
+                            <a href="{{ route('billing.index') }}"><x-icon name="grid" :size="16" />{{ __('ui.billing') }}</a>
+                            <a href="{{ route('admin.terms.edit') }}"><x-icon name="file-text" :size="16" />{{ __('ui.terms') }}</a>
                             <a href="{{ route('admin.templates.index') }}"><x-icon name="repeat" :size="16" />{{ __('ui.templates') }}</a>
                             <a href="{{ route('admin.team') }}"><x-icon name="shield" :size="16" />{{ __('ui.team') }}</a>
                             <a href="{{ route('admin.system') }}"><x-icon name="activity" :size="16" />{{ __('ui.system_log') }}</a>

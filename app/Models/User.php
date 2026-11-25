@@ -33,6 +33,7 @@ class User extends Authenticatable implements HasLocalePreference
             'last_login_at' => 'datetime',
             'last_digest_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
             'password' => 'hashed',

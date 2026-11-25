@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/two-factor/setup', [Auth\TwoFactorController::class, 'confirm'])->middleware('throttle:6,1');
 });
 
-Route::middleware(['auth', '2fa'])->group(function () {
+Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
@@ -53,6 +53,26 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::get('/tickets/{ticket}/poll', [TicketController::class, 'poll'])->name('tickets.poll');
     Route::post('/tickets/{ticket}/messages', [MessageController::class, 'store'])->name('tickets.messages.store');
+
+    // Wyceny i odbiór.
+    Route::post('/quotes/{quote}/decide', [\App\Http\Controllers\QuoteController::class, 'decide'])->name('quotes.decide');
+    Route::post('/tickets/{ticket}/handover/accept', [\App\Http\Controllers\QuoteController::class, 'acceptHandover'])->name('tickets.handover.accept');
+    Route::get('/billing', [\App\Http\Controllers\BillingController::class, 'index'])->name('billing.index');
+    Route::get('/terms', [\App\Http\Controllers\TermsController::class, 'show'])->name('terms.show');
+    Route::post('/terms', [\App\Http\Controllers\TermsController::class, 'accept'])->name('terms.accept');
+
+    // Tablice (Excalidraw).
+    Route::post('/tickets/{ticket}/boards', [\App\Http\Controllers\BoardController::class, 'store'])->name('boards.store');
+    Route::get('/boards/{board}', [\App\Http\Controllers\BoardController::class, 'show'])->name('boards.show');
+    Route::get('/boards/{board}/sync', [\App\Http\Controllers\BoardController::class, 'poll'])->name('boards.poll');
+    Route::post('/boards/{board}/sync', [\App\Http\Controllers\BoardController::class, 'push'])->middleware('throttle:240,1')->name('boards.push');
+    Route::post('/boards/{board}/versions', [\App\Http\Controllers\BoardController::class, 'saveVersion'])->name('boards.versions.store');
+    Route::post('/boards/{board}/session-end', [\App\Http\Controllers\BoardController::class, 'sessionEnd'])->name('boards.session-end');
+    Route::get('/boards/{board}/versions/{version}', [\App\Http\Controllers\BoardController::class, 'version'])->name('boards.versions.show');
+    Route::post('/boards/{board}/versions/{version}/restore', [\App\Http\Controllers\BoardController::class, 'restore'])->name('boards.versions.restore');
+    Route::post('/boards/{board}/seen', [\App\Http\Controllers\BoardController::class, 'seen'])->name('boards.seen');
+    Route::post('/boards/{board}/files', [\App\Http\Controllers\BoardController::class, 'storeFile'])->name('boards.files.store');
+    Route::get('/boards/{board}/files/{fileId}', [\App\Http\Controllers\BoardController::class, 'file'])->name('boards.files.show');
 
     Route::post('/uploads', [UploadController::class, 'start'])->name('uploads.start');
     Route::post('/uploads/{upload}/chunk', [UploadController::class, 'chunk'])->name('uploads.chunk');
@@ -91,6 +111,12 @@ Route::middleware(['auth', '2fa'])->group(function () {
         Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
         Route::patch('/tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');
         Route::post('/tickets/{ticket}/time', [TicketController::class, 'logTime'])->name('tickets.time');
+        Route::post('/tickets/{ticket}/quotes', [\App\Http\Controllers\QuoteController::class, 'store'])->name('tickets.quotes.store');
+        Route::post('/tickets/{ticket}/handover', [\App\Http\Controllers\QuoteController::class, 'requestHandover'])->name('tickets.handover');
+        Route::post('/cost-documents', [\App\Http\Controllers\BillingController::class, 'store'])->name('cost-documents.store');
+        Route::patch('/cost-documents/{document}/paid', [\App\Http\Controllers\BillingController::class, 'togglePaid'])->name('cost-documents.paid');
+        Route::get('/terms', [\App\Http\Controllers\TermsController::class, 'edit'])->name('terms.edit');
+        Route::put('/terms', [\App\Http\Controllers\TermsController::class, 'update']);
         Route::post('/tickets/{ticket}/remind', [TicketController::class, 'remind'])->name('tickets.remind');
 
         Route::resource('clients', Admin\ClientController::class)->except('destroy');

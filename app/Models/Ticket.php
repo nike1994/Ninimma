@@ -27,6 +27,9 @@ class Ticket extends Model
             'priority' => Priority::class,
             'due_on' => 'date',
             'started_at' => 'datetime',
+            'handover_requested_at' => 'datetime',
+            'accepted_at' => 'datetime',
+            'board_version_at' => 'datetime',
             'type' => TicketType::class,
             'last_activity_at' => 'datetime',
             'waiting_since' => 'datetime',
@@ -54,6 +57,32 @@ class Ticket extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function boards(): HasMany
+    {
+        return $this->hasMany(Board::class);
+    }
+
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class)->orderBy('version');
+    }
+
+    public function costDocuments(): HasMany
+    {
+        return $this->hasMany(CostDocument::class);
+    }
+
+    /** Ostatnia zaakceptowana wycena (limit pracy). */
+    public function acceptedQuote(): ?Quote
+    {
+        return $this->quotes()->where('status', 'accepted')->reorder()->orderByDesc('version')->first();
+    }
+
+    public function minutesLogged(): int
+    {
+        return (int) $this->timeEntries()->sum('minutes');
     }
 
     public function assignee(): BelongsTo
@@ -138,12 +167,15 @@ class Ticket extends Model
     public function hasUnreadFor(User $user): bool
     {
         $last = $this->lastVisibleMessageId($user);
-        if ($last === 0) {
-            return false;
-        }
         $read = $this->relationLoaded('reads')
             ? $this->reads->firstWhere('user_id', $user->id)
             : $this->reads()->where('user_id', $user->id)->first();
+        if ($this->board_version_at && $this->board_version_by !== $user->id && (! $read || $read->seen_at < $this->board_version_at)) {
+            return true;
+        }
+        if ($last === 0) {
+            return false;
+        }
 
         return ! $read || $read->last_seen_id < $last;
     }

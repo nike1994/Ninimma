@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
             'ticket' => Ticket::class,
             'ticket_message' => TicketMessage::class,
             'content' => \App\Models\Content::class,
+            'board' => \App\Models\Board::class,
+            'cost_document' => \App\Models\CostDocument::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.

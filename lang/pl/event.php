@@ -11,4 +11,12 @@ return [
     'due_changed' => 'Termin: :date',
     'assigned' => 'Prowadzi: :name',
     'time_logged' => 'Dodano czas pracy: :time h',
+    'board_created' => 'Utworzono tablicę „:name”',
+    'board_version' => 'Nowa wersja tablicy „:name”',
+    'quote_created' => 'Wysłano wycenę v:v',
+    'quote_accepted' => 'Zaakceptowano wycenę v:v',
+    'quote_rejected' => 'Odrzucono wycenę v:v',
+    'limit_warning' => 'Wykorzystano :pct% limitu z wyceny v:v',
+    'handover_requested' => 'Poproszono o odbiór',
+    'handover_accepted' => 'Klient potwierdził odbiór',
 ];

@@ -42,6 +42,10 @@ class InvitationController extends Controller
                 'is_active' => true,
             ]);
             $user->email_verified_at = now();
+            if ($invitation->role === 'client') {
+                $user->terms_accepted_at = now();
+                $user->terms_version = \App\Models\Setting::termsVersion();
+            }
             $user->save();
             $invitation->forceFill(['accepted_at' => now()])->save();
 

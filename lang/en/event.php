@@ -11,4 +11,12 @@ return [
     'due_changed' => 'Due date: :date',
     'assigned' => 'Assigned to: :name',
     'time_logged' => 'Time logged: :time h',
+    'board_created' => 'Board “:name” created',
+    'board_version' => 'New version of board “:name”',
+    'quote_created' => 'Quote v:v sent',
+    'quote_accepted' => 'Quote v:v accepted',
+    'quote_rejected' => 'Quote v:v rejected',
+    'limit_warning' => ':pct% of quote v:v limit used',
+    'handover_requested' => 'Sign-off requested',
+    'handover_accepted' => 'Client confirmed completion',
 ];

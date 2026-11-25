@@ -8,6 +8,8 @@
     <x-field name="password" type="password" :label="__('ui.password')" required autocomplete="new-password" />
     <x-field name="password_confirmation" type="password" :label="__('ui.confirm_password')" required autocomplete="new-password" />
     @if($invitation->role === 'client')
+        @php($terms = \App\Models\Setting::get('terms'))
+        @if($terms)<div class="terms-box">{!! nl2br(e($terms)) !!}</div>@endif
         <label class="check"><input type="checkbox" name="terms" value="1" required> {{ __('ui.accept_terms') }}</label>
         @error('terms')<small class="error">{{ $message }}</small>@enderror
     @endif
