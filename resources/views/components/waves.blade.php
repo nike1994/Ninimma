@@ -1,23 +1,23 @@
 @props(['variant' => 'sidebar'])
 @php($id = 'w'.substr(md5($variant.uniqid()), 0, 6))
 @if($variant === 'sidebar')
-{{-- Nakładające się fale: grzbiety w różnych miejscach + cień na krawędzi każdej warstwy. --}}
-<svg class="waves waves-sidebar" viewBox="0 0 300 220" preserveAspectRatio="none" aria-hidden="true">
+{{-- Miękkie, półprzezroczyste fale z gradientem (jasny grzbiet → ciemny dół), nachodzące na siebie. --}}
+<svg class="waves waves-sidebar" viewBox="0 0 300 240" preserveAspectRatio="none" aria-hidden="true">
     <defs>
-        <filter id="{{ $id }}s" x="-10%" y="-30%" width="120%" height="160%">
-            <feDropShadow dx="0" dy="-4" stdDeviation="4" flood-color="#06182c" flood-opacity=".45"/>
-        </filter>
-        <linearGradient id="{{ $id }}a" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0b6aa8"/><stop offset="1" stop-color="#5fd3df"/></linearGradient>
-        <linearGradient id="{{ $id }}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b4ec6a"/><stop offset=".55" stop-color="#36b45c"/><stop offset="1" stop-color="#13a3b4"/></linearGradient>
-        <linearGradient id="{{ $id }}c" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2cc58f"/><stop offset="1" stop-color="#0e8fa6"/></linearGradient>
-        <linearGradient id="{{ $id }}d" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0b6aa8"/><stop offset="1" stop-color="#1689c4"/></linearGradient>
-        <linearGradient id="{{ $id }}e" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c3a66"/><stop offset="1" stop-color="#0b2a4a"/></linearGradient>
+        <linearGradient id="{{ $id }}a" x1=".2" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="#7ee0a8"/><stop offset=".45" stop-color="#19b3c0"/><stop offset="1" stop-color="#0b5f9c"/></linearGradient>
+        <linearGradient id="{{ $id }}b" x1="0" y1=".3" x2="1" y2=".2"><stop offset="0" stop-color="#0e64a8"/><stop offset=".55" stop-color="#1a9fd8"/><stop offset="1" stop-color="#3fd0c0"/></linearGradient>
+        <linearGradient id="{{ $id }}c" x1="1" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#c3f06e"/><stop offset=".45" stop-color="#4cc95a"/><stop offset="1" stop-color="#139c8e"/></linearGradient>
+        <linearGradient id="{{ $id }}d" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#1a86c8"/><stop offset="1" stop-color="#0a3966"/></linearGradient>
+        <linearGradient id="{{ $id }}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     </defs>
-    <path d="M0 125 C 55 125, 95 35, 175 45 S 265 105, 300 55 V220 H0 Z" fill="url(#{{ $id }}a)" opacity=".75"/>
-    <path d="M0 62 C 45 52, 95 112, 150 120 S 245 88, 300 128 V220 H0 Z" fill="url(#{{ $id }}b)" filter="url(#{{ $id }}s)"/>
-    <path d="M0 160 C 65 112, 125 100, 185 138 S 270 172, 300 145 V220 H0 Z" fill="url(#{{ $id }}c)" filter="url(#{{ $id }}s)"/>
-    <path d="M0 178 C 45 150, 105 196, 165 184 S 255 142, 300 172 V220 H0 Z" fill="url(#{{ $id }}d)" filter="url(#{{ $id }}s)"/>
-    <path d="M0 206 C 80 188, 160 218, 300 196 V220 H0 Z" fill="url(#{{ $id }}e)" filter="url(#{{ $id }}s)"/>
+    {{-- tylna, wysoka plama po lewej --}}
+    <path d="M0 52 C 55 18, 140 28, 136 108 C 133 165, 70 205, 0 236 Z" fill="url(#{{ $id }}a)"/>
+    {{-- środkowe wzgórze po prawej --}}
+    <path d="M40 240 C 80 175, 130 128, 196 138 C 246 146, 262 182, 300 158 V240 Z" fill="url(#{{ $id }}b)" opacity=".92"/>
+    {{-- przednia zielona fala od prawej --}}
+    <path d="M110 240 C 160 206, 225 168, 300 150 V240 Z" fill="url(#{{ $id }}c)" opacity=".95"/>
+    {{-- przednia granatowa fala od lewej --}}
+    <path d="M0 168 C 55 150, 105 172, 140 212 C 152 226, 160 236, 166 240 H0 Z" fill="url(#{{ $id }}d)"/>
 </svg>
 @elseif($variant === 'corner')
 <svg class="waves waves-corner" viewBox="0 0 400 300" aria-hidden="true">

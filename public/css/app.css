@@ -37,7 +37,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: .88em; }
 /* ---------- Dekoracyjne fale ---------- */
 .waves { pointer-events: none; display: block; }
 .waves-corner { position: fixed; top: 0; right: 0; width: min(420px, 40vw); height: auto; z-index: 0; }
-.waves-sidebar { position: absolute; left: 0; bottom: 0; width: 100%; height: 200px; z-index: 0; }
+.waves-sidebar { position: absolute; left: 0; bottom: 0; width: 100%; height: 220px; z-index: 0; }
 .waves-card { position: absolute; top: 0; right: 0; width: 55%; height: 110px; z-index: 0; }
 
 /* ---------- Układ ---------- */
