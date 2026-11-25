@@ -37,7 +37,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: .88em; }
 /* ---------- Dekoracyjne fale ---------- */
 .waves { pointer-events: none; display: block; }
 .waves-corner { position: fixed; top: 0; right: 0; width: min(420px, 40vw); height: auto; z-index: 0; }
-.waves-sidebar { position: absolute; left: 0; bottom: 0; width: 100%; height: 160px; z-index: 0; }
+.waves-sidebar { position: absolute; left: 0; bottom: 0; width: 100%; height: 200px; z-index: 0; }
 .waves-card { position: absolute; top: 0; right: 0; width: 55%; height: 110px; z-index: 0; }
 
 /* ---------- Układ ---------- */
@@ -46,7 +46,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: .88em; }
     width: 268px; flex-shrink: 0; position: sticky; top: 18px; height: calc(100vh - 36px);
     background: linear-gradient(180deg, #0d2f54 0%, #0a2644 60%, #08203a 100%);
     border-radius: var(--r-lg); color: #d6e6f5; display: flex; flex-direction: column;
-    padding: 22px 16px 150px; overflow: hidden; box-shadow: 0 20px 50px rgba(8, 32, 58, .25);
+    padding: 22px 16px 180px; overflow: hidden; box-shadow: 0 20px 50px rgba(8, 32, 58, .25);
 }
 .sidebar > *:not(.waves) { position: relative; z-index: 1; }
 .sidebar .brand { display: flex; align-items: center; gap: .7rem; padding: 0 .5rem 1.2rem; color: #fff; font-weight: 700; font-size: 1.45rem; letter-spacing: -.01em; }
