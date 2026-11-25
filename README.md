@@ -2,57 +2,69 @@
 
 # Ninimma — panel agencji
 
-Samodzielna aplikacja w PHP 8.3 + MySQL (Laravel 13) do obsługi klientów agencji: zlecenia z rozmową,
-statusem i osią czasu, a w kolejnych etapach tablice, plan publikacji social media, influencerzy,
-kampanie oraz strony/SEO. Działa na zwykłym hostingu współdzielonym obok WordPressa (osobna subdomena),
-bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/specyfikacja.pdf`.
+Samodzielna aplikacja w PHP 8.3 + MySQL (Laravel 13) dla agencji: zlecenia z rozmową, tablice, wyceny,
+social media, influencerzy, kampanie, strony i SEO. Działa na zwykłym hostingu współdzielonym obok WordPressa
+(osobna subdomena), bez Node, Redisa, WebSocketów i stałych procesów — zadania w tle wykonuje cron.
+Opcjonalna wtyczka WordPress łączy panel ze stronami klientów. Specyfikacja: `docs/specyfikacja.pdf`.
 
 ## Stan prac
 
 | Etap | Zakres | Stan |
 |---|---|---|
-| 1. Rdzeń | konta, role, zaproszenia, 2FA, klienci, zlecenia z rozmową i notatkami, statusy i oś czasu, pliki w kawałkach, e-maile, wyszukiwarka, dziennik systemu, kopie zapasowe | ✅ gotowy do testów |
-| 2. Tablice i wyceny | Excalidraw, wersje, wyceny z limitem, czas pracy, odbiór, regulamin | ⏳ |
-| 3. Plan publikacji | treści i publikacje (YT, TikTok, FB, IG, Pinterest, LinkedIn), kalendarz, statystyki | ✅ gotowy do testów |
-| 4. Influencerzy i kampanie | osoby, współprace z etapami, przesyłki, materiały z licencjami, raporty | ⏳ |
-| 5. Strony, administracja, SEO | terminy, przeglądy z listą kontrolną, pakiety godzin, frazy, plan treści | ⏳ |
-| 6. Porządki | archiwizacja po roku, paczki offline, kartoteka z szyfrowanymi dostępami | ⏳ |
+| 1. Rdzeń | konta, role, zaproszenia, 2FA, klienci, zlecenia z rozmową, notatki, statusy, oś czasu, pliki, e-maile, wyszukiwarka, dziennik, kopie | ✅ |
+| 2. Tablice i wyceny | Excalidraw z wersjami, kropką i listą zmian, wyceny z limitem, zmiana zakresu, odbiór, czas pracy, regulamin, rozliczenia | ✅ |
+| 3. Plan publikacji | profile, treści i publikacje na platformach, kalendarze, kolejka statystyk, akceptacja klienta, kampanie, pulpit social media | ✅ |
+| 4. Influencerzy i kampanie | osoby, współprace z 6 etapami, przesyłki, materiały z licencjami, przypomnienia, raport kampanii | ✅ |
+| 5. Strony, administracja i SEO | terminy, dziennik, przeglądy z listą kontrolną, pakiety godzin, frazy, plan treści, wspólny kalendarz, raport miesięczny | ✅ |
+| 6. Porządki i wygoda | archiwizacja po roku, paczki eksportu, offline, przechowywanie, zajętość, kartoteka z szyfrowanymi dostępami | ✅ |
+| Wtyczka WordPress | wspólne logowanie klienta i przycisk „Zgłoś problem” | ✅ |
 
-### Co działa w etapie 1
+## Najważniejsze funkcje
 
-- **Role:** administrator widzi wszystko; klient tylko zlecenia swojej firmy, bez notatek wewnętrznych.
-- **Konta:** zaproszenia z linkiem aktywacyjnym (ważne 7 dni), reset hasła, obowiązkowe 2FA (TOTP + kody awaryjne) dla administratorów, dezaktywacja kont.
-- **Zlecenia:** typ, status i strona, po której jest piłka (`u nas`, `czeka na klienta`, `wymaga decyzji klienta`, `zablokowane` z powodem, `zakończone`), powiązanie „wynikło z”, oś czasu budowana automatycznie.
-- **Rozmowa:** wiadomości + notatki wewnętrzne, odświeżanie co kilka sekund (oszczędne: rzadziej przy bezczynności, wcale przy ukrytej karcie), potwierdzenie przeczytania, kropki przy nowościach, Ctrl+Enter.
-- **Zgłaszanie:** wklejanie zrzutu ze schowka, przeciąganie plików, nagrywanie ekranu z przeglądarki (limit dla klienta), działa na telefonie.
-- **Sygnał zastoju:** powiadomienie od razu, przypomnienie po dniu (jeśli nieprzeczytane), kolejne po tygodniu → lista zastojów na pulpicie; przycisk „Przypomnij”.
-- **Pliki:** wysyłka w kawałkach (omija limity uploadu hostingu), kompresja obrazów w przeglądarce, deduplikacja po SHA-256, pliki poza katalogiem publicznym wydawane po sprawdzeniu uprawnień.
-- **Powiadomienia e-mail** (SMTP, kolejka w bazie): każda wiadomość albo dzienne podsumowanie — wybór użytkownika.
-- **Szablony i zlecenia cykliczne** (np. comiesięczna opieka nad stroną, `{month}` w tytule).
-- **Wyszukiwarka** po tytułach i treści wiadomości, także w archiwum.
-- **Dziennik systemu:** ostatnie uruchomienie crona, nieudane e-maile/zadania, błędy uploadu, kopie zapasowe.
-- **Języki:** polski i angielski, wybierane na użytkownika (także e-maile).
-- **Planowanie i czas pracy** (część etapu 2): priorytet (normalny / wysoki / pilne), termin, osoba prowadząca i wpisy czasu pracy przy zleceniu.
-- **Pulpit administratora:** wskaźniki z trendem względem poprzedniego okresu (wiadomości, otwarte zadania, na dziś, do akceptacji, czas pracy), aktywne rozmowy z liczbą nieprzeczytanych, wykres aktywności zespołu, tablica zadań (do zrobienia / w trakcie / do akceptacji / zakończone), priorytety, nadchodzące terminy, zespół i przypomnienie o terminie na dziś.
+**Zlecenia (wszystko jest zleceniem).** Rozmowa z notatkami wewnętrznymi, status i strona, po której jest piłka,
+oś czasu tworzona automatycznie, „wynikło z”, potwierdzenia przeczytania, odświeżanie co kilka sekund,
+wklejanie zrzutów, nagrywanie ekranu, pliki w kawałkach (deduplikacja SHA-256, wydawane po sprawdzeniu uprawnień),
+sygnał zastoju z przypomnieniami (od razu, po dniu, po tygodniu), szablony i zlecenia cykliczne, priorytet,
+termin, osoba prowadząca, czas pracy.
 
-### Co działa w etapie 3 (Social media)
+**Tablice (Excalidraw, MIT).** Przy zleceniu; synchronizacja przez odpytywanie co 2–3 s (tylko zmienione elementy,
+łączone po id i wersji), blokada elementów drugiej strony, obecność, obrazy w magazynie, osadzanie linków
+(YouTube, Canva, Facebook…), wersje świadome i po sesji, podgląd i przywracanie, kropka i lista zmian, podgląd na telefonie.
 
-- **Profile:** konta social media klientów (Instagram, Facebook, TikTok, YouTube, LinkedIn, Pinterest).
-- **Treści:** zapisane raz (tytuł, opis, hashtagi, typ, format, grafiki) z lejkiem: pomysł → w przygotowaniu → gotowe.
-- **Publikacje:** każda platforma ma własną publikację treści z datą, statusem, linkiem, opcjonalnym opisem pod platformę i promocją (budżet).
-- **Statystyki:** kolejka „do sprawdzenia” po 1, 7 i 30 dniach i jeden ekran do wpisania liczb dla wszystkich zaległych publikacji; każdy pomiar zapisany z datą, bez nadpisywania.
-- **Pulpit social media:** wskaźniki z trendem (posty, zasięg, zaangażowanie, kliknięcia), filtr marek, lejek treści, kalendarz tygodnia z miniaturami, wyniki według marek i platform, trend zaangażowania, zadania i publikacje czekające na klienta.
-- **Kalendarz miesięczny** z filtrem kont.
-- **Kampanie marketingowe** (podstawa etapu 4): klient, cel, budżet, okres, status; treści przypinane do kampanii; wynik jako ROAS (z przychodu), leady albo zasięg publikacji.
-- **Zadania social media** to zlecenia typu „Social media” — szybkie dodawanie i odhaczanie z pulpitu; **notatki / priorytety** zespołu.
-- **Klient:** udostępnione publikacje z podglądem grafik i opisów (bez pól roboczych), akceptacja lub prośba o zmiany z komentarzem; kalendarz udostępnionych postów.
+**Wyceny i rozliczenia.** Wycena jako limit pracy (godziny/kwota) z opcjami (pełna naprawa, obejście, stop),
+płatna diagnoza, historia wersji, ostrzeżenie przy 80% limitu, odbiór jednym kliknięciem, faktury z KSeF jako PDF +
+status płatności, regulamin współpracy z wersjami i ponowną akceptacją.
+
+**Social media.** Profile (IG, FB, TikTok, YouTube, LinkedIn, Pinterest), treść zapisana raz + publikacja na każdej
+platformie, lejek treści, kalendarz tygodnia i miesiąca, kolejka statystyk po 1/7/30 dniach (pomiary bez nadpisywania),
+pulpit z KPI i trendami, wyniki według marek i platform, kampanie (ROAS/leady/zasięg), zadania i notatki,
+akceptacja postów przez klienta.
+
+**Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
+współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem
+z publikacją, przypomnienia, raport kampanii (koszt na materiał i interakcję, porównanie osób i formatów),
+wersja dla klienta bez stawek i danych osobowych.
+
+**Strony i SEO.** Terminy (domena, SSL, hosting, licencje) z odnowieniem, dziennik zmian, przeglądy cykliczne
+tworzone przez cron jako zlecenia z listą kontrolną, problem z przeglądu → osobne zlecenie, pakiety godzin,
+frazy z pomiarami (import CSV), plan treści jako zlecenia, zadania techniczne, linki zewnętrzne,
+wspólny kalendarz, raport miesięczny dla klienta.
+
+**Porządki.** Archiwizacja rok po zamknięciu (zostaje wersja końcowa i opisane wersje tablic), paczki ZIP
+(zlecenie, klient/RODO), przenoszenie offline do homelabu i przywracanie z paczki, licznik zajętości, próg,
+okres przechowywania, usunięcie na wniosek, kartoteka klienta z szyfrowanymi dostępami (odsłonięcia logowane).
+
+**Pulpity.** Administrator: KPI z trendem, rozmowy, wykres aktywności, tablica zadań, priorytety, terminy,
+przypomnienia i licencje. Klient: zlecenia, pliki, wiadomości, publikacje, strony i SEO, materiały, raporty, rozliczenia.
+
+Interfejs i e-maile po polsku i angielsku (wybór na użytkownika).
 
 ## Instalacja na hostingu
 
-1. Sprawdź wersję PHP (wymagane **8.3+**) i utwórz bazę MySQL.
-2. Lokalnie: `composer install --no-dev --optimize-autoloader`, potem wgraj cały katalog (razem z `vendor/`) na hosting, np. do `~/panel`.
-3. Ustaw katalog główny subdomeny (np. `panel.twojadomena.pl`) na `~/panel/public`.
-4. Skopiuj `.env.example` do `.env`, uzupełnij `APP_URL`, dane bazy i SMTP (domena z SPF/DKIM), ustaw `APP_ENV=production`, `APP_DEBUG=false`.
+1. PHP **8.3+**, MySQL/MariaDB, możliwość ustawienia katalogu subdomeny na `public/`.
+2. Lokalnie: `composer install --no-dev --optimize-autoloader`, wgraj cały katalog (z `vendor/` i `public/vendor/`) np. do `~/panel`.
+3. Katalog główny subdomeny (np. `panel.agencja.pl`) → `~/panel/public`.
+4. `.env` z `.env.example`: `APP_URL`, baza, SMTP (domena z SPF/DKIM), `APP_ENV=production`, `APP_DEBUG=false`, `AGENCY_BACKUP_TOKEN`.
 5. Przez SSH:
    ```bash
    php artisan key:generate
@@ -60,46 +72,57 @@ bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/
    php artisan agency:create-admin ty@agencja.pl "Imię Nazwisko"
    php artisan config:cache && php artisan route:cache && php artisan view:cache
    ```
-6. Dodaj jeden wpis crona (co minutę):
+   **Zachowaj `APP_KEY`** — szyfruje dostępy w kartotece i sekret 2FA. Bez niego nie da się ich odczytać.
+6. Cron (co minutę):
    ```
    * * * * * cd ~/panel && php artisan schedule:run >> /dev/null 2>&1
    ```
-   Cron obsługuje kolejkę e-maili, przypomnienia, podsumowania, zlecenia cykliczne i kopie zapasowe.
-7. Zaloguj się — przy pierwszym logowaniu panel poprosi o skonfigurowanie 2FA.
+   Obsługuje: kolejkę e-maili, przypomnienia o zastojach (co godz.), podsumowania (7:30), zlecenia cykliczne (6:00),
+   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), sprzątanie wysyłek.
+7. Pierwsze logowanie — konfiguracja 2FA. Potem: Ustawienia → Regulamin współpracy, Archiwum → stawka godzinowa.
 
-### Kopie zapasowe (homelab)
+### Homelab (kopie i paczki)
 
-Codziennie o 2:15 powstaje zrzut bazy w `storage/app/backups` (ostatnie 7). Homelab może go pobrać:
 ```bash
-curl -H "Authorization: Bearer $AGENCY_BACKUP_TOKEN" https://panel.twojadomena.pl/backup/latest -o db.jsonl.gz
+curl -H "Authorization: Bearer $TOKEN" https://panel.agencja.pl/backup/latest -o db.jsonl.gz   # zrzut bazy
+curl -H "Authorization: Bearer $TOKEN" https://panel.agencja.pl/backup/exports                   # lista paczek (JSON)
+curl -H "Authorization: Bearer $TOKEN" https://panel.agencja.pl/backup/exports/NAZWA.zip -O      # paczka
 ```
-Pliki z `storage/app/store` najlepiej synchronizować przez SFTP/rsync.
+Pliki z `storage/app/store` najlepiej synchronizować przez SFTP/rsync. Paczki offline muszą mieć kopię w homelabie —
+z hostingu znikają z nich ciężkie pliki.
+
+### Wtyczka WordPress
+
+Katalog `wordpress-plugin/ninimma-connect` (instrukcja w `readme.txt`). W panelu: Strony i SEO → strona →
+Wtyczka WordPress → Wygeneruj sekret; w WordPressie: Ustawienia → Ninimma Connect.
+
+### Tablice (Excalidraw)
+
+Gotowa paczka jest w `public/vendor/excalidraw` — na hostingu nie trzeba Node. Odbudowa (tylko lokalnie):
+`cd resources/excalidraw && npm ci && npm run build`.
 
 ## Praca lokalna
 
 ```bash
 composer install
-cp .env.example .env   # ustaw DB_CONNECTION=sqlite dla szybkiego startu
+cp .env.example .env          # DB_CONNECTION=sqlite dla szybkiego startu
 php artisan key:generate
-php artisan migrate --seed --seeder=DemoSeeder   # dane demo, wypisuje sekret 2FA
+php artisan migrate --seed --seeder=DemoSeeder   # dane demo; wypisuje sekret 2FA administratora
 php artisan serve
-php artisan test
+php artisan test               # 39 testów
 ```
+Konta demo: `admin@example.com` / `anna@example.com`, hasło `demo-haslo-123`.
 
-## Otwarte decyzje (ze specyfikacji)
+## Świadomie odłożone (ze specyfikacji)
 
-- [ ] Wersja PHP na hostingu (Laravel 13 wymaga 8.3) i możliwość wskazania katalogu subdomeny.
-- [ ] Dokładne limity dla klienta (obecnie 100 MB / 5 min nagrania — `.env`).
-- [ ] Próg zajętości dysku dla przenoszenia offline.
-- [ ] Domyślny okres przechowywania danych.
-- [ ] Treść regulaminu współpracy i zapisy RODO (checkbox przy aktywacji już jest).
+Edycja tablic w pełni na żywo (WebSocket), automatyczna publikacja i pobieranie statystyk przez API platform,
+własne fakturowanie i integracja z KSeF, zgłoszenia przez odpowiedź na e-mail, role podwykonawców, wiele agencji
+w jednej instalacji. Architektura zostawia na nie miejsce (np. `public/js/live.js` — jeden moduł transportu).
+
+## Otwarte decyzje
+
+- [ ] Wersja PHP na hostingu (8.3+) i katalog subdomeny.
+- [ ] Limity dla klienta (teraz 100 MB / 5 min nagrania — `.env`).
+- [ ] Próg zajętości dla offline i domyślny okres przechowywania (Archiwum → Ustawienia).
+- [ ] Treść regulaminu współpracy i zapisy RODO (konsultacja z prawnikiem).
 - [ ] Pierwszy klient testowy.
-
-## Struktura
-
-- `app/Services/TicketService.php` — logika zleceń (statusy, wiadomości, przypomnienia, odczyty)
-- `app/Services/FileStore.php` — magazyn plików
-- `app/Services/Totp.php` — 2FA bez zewnętrznych zależności
-- `app/Console/Commands` — zadania crona (`agency:*`)
-- `public/js/live.js` — jedyne miejsce wymiany zdarzeń z serwerem (łatwa podmiana na WebSocket)
-- `lang/pl`, `lang/en` — tłumaczenia interfejsu i e-maili

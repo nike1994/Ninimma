@@ -950,3 +950,20 @@ form.todo-row { margin: 0; }
 .btn.danger { border-color: var(--red); color: var(--red); }
 .version-thumb { width: 44px; height: 32px; object-fit: contain; border-radius: 6px; border: 1px solid var(--line); background: #fff; flex-shrink: 0; }
 label.side-file { cursor: pointer; }
+@media (max-width: 560px) {
+    .search-field { min-width: 0; flex: 1 1 100%; }
+    .social-filters .filters { width: 100%; }
+    .segmented { flex-wrap: wrap; }
+    .segmented a { padding: .4rem .7rem; }
+    .material-fields select, .material-fields input { max-width: 100%; width: 100%; }
+    .phrase-add { grid-template-columns: 1fr 1fr; }
+    .ship-row { flex-wrap: wrap; }
+    .collab-row { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+    .dash-head-right { flex-wrap: wrap; }
+    .steps-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .step6 { min-width: 0; padding: .7rem; }
+    .step-check { flex-wrap: wrap; }
+}
+@media (max-width: 1200px) and (min-width: 561px) { .steps-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

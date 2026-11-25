@@ -13,7 +13,7 @@
                 <label class="check"><input type="checkbox" name="state" value="unpaid" @checked(request('state') === 'unpaid') onchange="this.form.submit()"> {{ __('ui.only_unpaid') }}</label>
             </form>
             @endif
-            <table class="table">
+            <div class="table-scroll"><table class="table">
                 <thead><tr><th>{{ __('ui.doc_number') }}</th>@if($me->isAdmin())<th>{{ __('ui.client') }}</th>@endif<th>{{ __('ui.ticket') }}</th><th>{{ __('ui.issued_on') }}</th><th>{{ __('ui.amount') }}</th><th>{{ __('ui.payment') }}</th><th></th></tr></thead>
                 <tbody>
                 @forelse($docs as $d)
@@ -37,7 +37,7 @@
                     <tr><td colspan="7" class="muted">{{ __('ui.nothing_here') }}</td></tr>
                 @endforelse
                 </tbody>
-            </table>
+            </table></div>
             <x-pager :paginator="$docs" />
         </section>
         <section class="card">

@@ -33,6 +33,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/invitation/{token}', [InvitationController::class, 'accept'])->middleware('throttle:10,1')->name('invitation.accept');
 });
 
+// Wspólne logowanie z wtyczki WordPress (link podpisany sekretem strony).
+Route::get('/sso/wordpress', \App\Http\Controllers\WordPressSsoController::class)->middleware('throttle:20,1')->name('sso.wordpress');
+
 // Kopie zapasowe pobierane przez homelab (token w nagłówku).
 Route::get('/backup/latest', [BackupController::class, 'latest'])->middleware('throttle:10,1')->name('backup.latest');
 Route::get('/backup/exports', [BackupController::class, 'exports'])->middleware('throttle:10,1')->name('backup.exports');
@@ -78,6 +81,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::get('/calendar', \App\Http\Controllers\Sites\JointCalendarController::class)->name('calendar');
         Route::resource('sites', $s)->except('destroy');
         Route::post('/sites/{site}/deadlines', [$s, 'storeDeadline'])->name('sites.deadlines.store');
+        Route::post('/sites/{site}/sso-secret', [$s, 'ssoSecret'])->name('sites.sso-secret');
         Route::post('/deadlines/{deadline}/renew', [$s, 'renewDeadline'])->name('deadlines.renew');
         Route::post('/sites/{site}/logs', [$s, 'storeLog'])->name('sites.logs.store');
         Route::post('/sites/{site}/reviews', [$s, 'startReview'])->name('sites.reviews.store');

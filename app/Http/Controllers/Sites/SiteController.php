@@ -95,6 +95,15 @@ class SiteController extends Controller
         return $data + ['is_active' => $request->boolean('is_active', true)];
     }
 
+    /** Nowy sekret dla wtyczki WordPress (pokazywany jednorazowo). */
+    public function ssoSecret(Site $site)
+    {
+        $secret = \Illuminate\Support\Str::random(48);
+        $site->forceFill(['sso_secret' => $secret])->save();
+
+        return back()->with('sso_secret', $secret)->with('status', __('site.sso_generated'));
+    }
+
     public function storeDeadline(Request $request, Site $site)
     {
         $site->deadlines()->create($request->validate([

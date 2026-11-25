@@ -15,11 +15,11 @@
             </select>
         </label>
     @endif
-    <x-field name="title" :label="__('ui.title')" required maxlength="200" />
+    <x-field name="title" :label="__('ui.title')" :value="request('title')" required maxlength="200" />
     <label class="field"><span>{{ __('ui.type') }}</span>
         <select name="type">
             @foreach(\App\Enums\TicketType::cases() as $type)
-                <option value="{{ $type->value }}" @selected(old('type', 'task') === $type->value)>{{ $type->label() }}</option>
+                <option value="{{ $type->value }}" @selected(old('type', request('type', 'task')) === $type->value)>{{ $type->label() }}</option>
             @endforeach
         </select>
     </label>
@@ -34,7 +34,7 @@
         </label>
     </div>
     @endif
-    <x-field name="body" type="textarea" :label="__('ui.description')" rows="6" data-paste-target />
+    <x-field name="body" type="textarea" :label="__('ui.description')" rows="6" data-paste-target :value="request('page') ? __('ui.reported_from', ['url' => request('page')]).PHP_EOL.PHP_EOL : null" />
     @include('tickets._uploader', ['noSend' => true])
     <button class="btn btn-send btn-block"><x-icon name="send" :size="18" />{{ __('ui.submit_ticket') }}</button>
 </form>

@@ -80,6 +80,18 @@
             <p class="small">{{ $site->review_recurrence ? __('site.rec_'.$site->review_recurrence) : __('site.no_reviews') }}@if($site->next_review_on) · {{ __('site.next_review') }}: <strong>{{ $site->next_review_on->format('d.m.Y') }}</strong>@endif</p>
             <form method="post" action="{{ route('sites.reviews.store', $site) }}">@csrf<button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('site.start_review') }}</button></form>
         </section>
+        <section class="card">
+            <h2><x-icon name="link" /> {{ __('site.wp_plugin') }}</h2>
+            <p class="muted small">{{ __('site.wp_plugin_hint') }}</p>
+            @if(session('sso_secret'))
+                <p class="small"><strong>{{ __('site.sso_copy') }}</strong></p>
+                <div class="cred-body">{{ session('sso_secret') }}</div>
+                <p class="small muted">{{ __('site.sso_panel_url') }}: <code>{{ url('/') }}</code></p>
+            @else
+                <p class="small">{{ $site->sso_secret ? __('site.sso_set') : __('site.sso_not_set') }}</p>
+            @endif
+            <form method="post" action="{{ route('sites.sso-secret', $site) }}" onsubmit="return {{ $site->sso_secret ? 'confirm(\''.__('site.sso_regen_confirm').'\')' : 'true' }}">@csrf<button class="btn btn-small">{{ $site->sso_secret ? __('site.sso_regen') : __('site.sso_generate') }}</button></form>
+        </section>
         @if($site->notes)<section class="card"><h2>{{ __('site.notes') }}</h2><p class="small">{!! nl2br(e($site->notes)) !!}</p></section>@endif
     </aside>
 </div>
@@ -108,7 +120,7 @@
         <div class="card-head"><h2><x-icon name="search" /> {{ __('site.phrases') }}</h2></div>
         <form method="post" action="{{ route('sites.positions.store', $site) }}">
             @csrf
-            <table class="table phrase-table">
+            <div class="table-scroll"><table class="table phrase-table">
                 <thead><tr><th>{{ __('site.phrase') }}</th><th></th><th>{{ __('site.position') }}</th><th>{{ __('site.new_measurement') }}</th></tr></thead>
                 <tbody>
                 @forelse($phrases as $p)
@@ -125,7 +137,7 @@
                     <tr><td colspan="4" class="muted">{{ __('ui.nothing_here') }}</td></tr>
                 @endforelse
                 </tbody>
-            </table>
+            </table></div>
             @if($phrases->isNotEmpty())<div class="inline-form"><input type="date" name="measured_on" value="{{ today()->toDateString() }}" required><button class="btn btn-small btn-dark">{{ __('site.save_positions') }}</button></div>@endif
         </form>
         <form method="post" action="{{ route('sites.phrases.store', $site) }}" class="phrase-add">

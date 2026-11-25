@@ -341,4 +341,7 @@ return [
     'waiting_for_handover' => 'Awaiting sign-off',
     'today_reminders' => 'Reminders & licenses',
     'license_ends' => 'License ending: :what',
+    'sso_invalid' => 'The sign-in link is invalid or expired.',
+    'sso_no_account' => 'No client account found for :email. Ask us for an invitation.',
+    'reported_from' => 'Reported from page: :url',
 ];

@@ -16,9 +16,11 @@ class Site extends Model
 
     protected $attributes = ['platform' => 'wordpress', 'is_active' => true];
 
+    protected $hidden = ['sso_secret'];
+
     protected function casts(): array
     {
-        return ['care_hours' => 'decimal:2', 'next_review_on' => 'date', 'is_active' => 'boolean'];
+        return ['care_hours' => 'decimal:2', 'next_review_on' => 'date', 'is_active' => 'boolean', 'sso_secret' => 'encrypted'];
     }
 
     public function client(): BelongsTo { return $this->belongsTo(Client::class); }

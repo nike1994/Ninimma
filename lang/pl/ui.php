@@ -341,4 +341,7 @@ return [
     'waiting_for_handover' => 'Czeka na odbiór',
     'today_reminders' => 'Przypomnienia i licencje',
     'license_ends' => 'Kończy się licencja: :what',
+    'sso_invalid' => 'Link logowania jest nieprawidłowy lub wygasł.',
+    'sso_no_account' => 'Nie znaleźliśmy konta klienta dla :email. Poproś nas o zaproszenie do panelu.',
+    'reported_from' => 'Zgłoszone ze strony: :url',
 ];
