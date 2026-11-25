@@ -25,6 +25,13 @@
     <path d="M140 0 C 200 60, 300 40, 330 110 S 360 260, 400 300 L400 0 Z" fill="url(#{{ $id }}a)" opacity=".9"/>
     <path d="M260 0 C 300 40, 380 50, 400 120 L400 0 Z" fill="url(#{{ $id }}b)" opacity=".85"/>
 </svg>
+@elseif($variant === 'kpi')
+<svg class="waves waves-kpi" viewBox="0 0 120 90" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="{{ $id }}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ee0c0" stop-opacity=".25"/><stop offset=".6" stop-color="#19b3c0" stop-opacity=".55"/><stop offset="1" stop-color="#0b6aa8" stop-opacity=".85"/></linearGradient>
+    <linearGradient id="{{ $id }}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c3f06e" stop-opacity="0"/><stop offset="1" stop-color="#36b45c" stop-opacity=".45"/></linearGradient></defs>
+    <path d="M120 0 C 100 30, 70 50, 60 90 L120 90 Z" fill="url(#{{ $id }}b)"/>
+    <path d="M120 20 C 105 45, 90 60, 82 90 L120 90 Z" fill="url(#{{ $id }}a)"/>
+</svg>
 @else
 <svg class="waves waves-card" viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
     <defs><linearGradient id="{{ $id }}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9be15d"/><stop offset=".6" stop-color="#14a7b8"/><stop offset="1" stop-color="#0b6aa8" stop-opacity="0"/></linearGradient></defs>

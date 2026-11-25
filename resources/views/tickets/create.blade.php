@@ -23,6 +23,17 @@
             @endforeach
         </select>
     </label>
+    @if($admins->isNotEmpty())
+    <div class="form-row">
+        <label class="field"><span>{{ __('ui.priority') }}</span>
+            <select name="priority">@foreach(\App\Enums\Priority::cases() as $p)<option value="{{ $p->value }}" @selected(old('priority', 'normal') === $p->value)>{{ $p->label() }}</option>@endforeach</select>
+        </label>
+        <x-field name="due_on" type="date" :label="__('ui.due_on')" />
+        <label class="field"><span>{{ __('ui.assignee') }}</span>
+            <select name="assigned_to"><option value="">—</option>@foreach($admins as $a)<option value="{{ $a->id }}" @selected(old('assigned_to', auth()->id()) == $a->id)>{{ $a->name }}</option>@endforeach</select>
+        </label>
+    </div>
+    @endif
     <x-field name="body" type="textarea" :label="__('ui.description')" rows="6" data-paste-target />
     @include('tickets._uploader', ['noSend' => true])
     <button class="btn btn-send btn-block"><x-icon name="send" :size="18" />{{ __('ui.submit_ticket') }}</button>

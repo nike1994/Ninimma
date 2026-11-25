@@ -9,6 +9,7 @@ use App\Models\SystemLog;
 use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Models\User;
+use App\Services\DashboardStats;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,11 +23,23 @@ class DashboardController extends Controller
             ->orderByDesc('last_activity_at')->get();
 
         if ($user->isAdmin()) {
+            $period = in_array($request->query('period'), DashboardStats::PERIODS, true) ? $request->query('period') : '7d';
+            $stats = new DashboardStats($user, $period);
+            $tickets->load('assignee');
+            $upcoming = $tickets->filter(fn (Ticket $t) => $t->due_on && ! $t->due_on->isBefore(today()))->sortBy('due_on')->take(4);
+
             return view('dashboard.admin', [
-                'byBall' => $tickets->groupBy(fn (Ticket $t) => $t->status->ball()),
+                'stats' => $stats,
+                'period' => $period,
+                'cards' => $stats->cards($tickets),
+                'conversations' => $stats->conversations(),
+                'activity' => $stats->activity(),
+                'board' => $stats->board($tickets),
+                'priorities' => DashboardStats::sortByUrgency($tickets->filter(fn ($t) => $t->priority->isElevated() || $t->isOverdue()))->take(4),
+                'upcoming' => $upcoming,
+                'dueToday' => $tickets->first(fn (Ticket $t) => $t->due_on?->isToday()),
                 'stalled' => $tickets->filter->isStalled(),
-                'unread' => $tickets->filter(fn ($t) => $t->hasUnreadFor($user)),
-                'clientsCount' => Client::where('is_active', true)->count(),
+                'team' => User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get(),
                 'lastCron' => Cache::get('agency:last_cron'),
                 'recentErrors' => SystemLog::where('level', 'error')->where('created_at', '>', now()->subDays(7))->count(),
             ]);

@@ -32,6 +32,9 @@ class TicketEvent extends Model
         if (isset($d['from'])) {
             $d['from'] = __('status.'.$d['from']);
         }
+        if (isset($d['priority'])) {
+            $d['priority'] = __('priority.'.$d['priority']);
+        }
         if (isset($d['to'])) {
             $d['to'] = __('status.'.$d['to']);
         }

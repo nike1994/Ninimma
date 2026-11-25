@@ -1,69 +1,143 @@
 @extends('layouts.app')
 @section('content')
-<div class="greeting">
-    <h1>{{ __('ui.hello', ['name' => \Illuminate\Support\Str::before(auth()->user()->name, ' ') ?: auth()->user()->name]) }} 👋</h1>
-    <p class="muted">{{ __('ui.admin_intro') }}</p>
-</div>
-
-<div class="stats">
-    <x-stat icon="play" :value="($byBall['agency'] ?? collect())->count()" :label="__('ui.ball_agency')" tone="blue" />
-    <x-stat icon="clock" :value="($byBall['client'] ?? collect())->count()" :label="__('ui.ball_client')" tone="amber" />
-    <x-stat icon="alert" :value="$stalled->count()" :label="__('ui.stalled')" :tone="$stalled->isNotEmpty() ? 'pink' : 'green'" />
-    <x-stat icon="activity" :value="$lastCron ? \Illuminate\Support\Carbon::parse($lastCron)->diffForHumans(short: true) : '—'"
-            :label="__('ui.last_cron').($recentErrors ? ' · '.trans_choice('ui.errors_count', $recentErrors, ['n' => $recentErrors]) : '')"
-            :tone="$recentErrors || ! $lastCron ? 'pink' : 'teal'" :href="route('admin.system')" />
-</div>
-
-<div class="grid-main">
+<div class="dash-head">
     <div>
-        @if($stalled->isNotEmpty())
-        <section class="card card-alert">
-            <div class="card-head"><h2><x-icon name="alert" /> {{ __('ui.stalled') }}</h2></div>
-            @foreach($stalled as $t)
-                <div class="trow">
-                    <x-type-icon :type="$t->type" />
-                    <a href="{{ route('tickets.show', $t) }}" class="trow-main"><strong>{{ $t->title }}</strong><small class="muted">{{ $t->client->name }} · {{ __('ui.waiting_since', ['time' => $t->waiting_since?->diffForHumans(syntax: \Carbon\CarbonInterface::DIFF_ABSOLUTE)]) }}</small></a>
-                    <form method="post" action="{{ route('admin.tickets.remind', $t) }}">@csrf<button class="btn btn-small"><x-icon name="bell" :size="15" /> {{ __('ui.remind') }}</button></form>
-                </div>
-            @endforeach
-        </section>
-        @endif
-        <section class="card">
-            <div class="card-head"><h2>{{ __('ui.ball_agency') }}</h2><a href="{{ route('tickets.index', ['status' => 'open']) }}" class="link-arrow">{{ __('ui.all_tickets') }} <x-icon name="arrow-right" :size="16" /></a></div>
-            @forelse($byBall['agency'] ?? [] as $t) @include('tickets._row') @empty <p class="muted">{{ __('ui.nothing_here') }}</p> @endforelse
-        </section>
-        <section class="card">
-            <div class="card-head"><h2>{{ __('ui.ball_client') }}</h2></div>
-            @forelse($byBall['client'] ?? [] as $t) @include('tickets._row') @empty <p class="muted">{{ __('ui.nothing_here') }}</p> @endforelse
-        </section>
+        <h1>{{ __('ui.dashboard') }}</h1>
+        <p class="muted">{{ __('ui.dashboard_sub') }}</p>
     </div>
-    <aside>
-        <section class="card card-dark">
-            <x-waves variant="card" />
-            <h2>{{ __('ui.today') }}</h2>
-            <dl class="dark-dl">
-                <dt><x-icon name="message" :size="18" />{{ __('ui.unread_tickets') }}</dt><dd>{{ $unread->count() }}</dd>
-                <dt><x-icon name="layers" :size="18" />{{ __('ui.open_tickets_all') }}</dt><dd>{{ $byBall->flatten()->count() }}</dd>
-                <dt><x-icon name="users" :size="18" />{{ __('ui.active_clients') }}</dt><dd>{{ $clientsCount }}</dd>
-            </dl>
-        </section>
+    <div class="dash-head-right">
+        <form class="period">
+            <x-icon name="calendar" :size="18" />
+            <select name="period" onchange="this.form.submit()" aria-label="{{ __('ui.period') }}">
+                @foreach(\App\Services\DashboardStats::PERIODS as $p)
+                    <option value="{{ $p }}" @selected($period === $p)>{{ __('ui.period_'.$p) }}</option>
+                @endforeach
+            </select>
+            <span class="period-range">{{ $stats->chartLabel() }}</span>
+        </form>
+        <a href="{{ route('admin.team') }}" class="avatar-stack" title="{{ __('ui.my_team') }}">
+            @foreach($team->take(3) as $m)<x-avatar :name="$m->name" :size="38" />@endforeach
+            @if($team->count() > 3)<span class="avatar-more">+{{ $team->count() - 3 }}</span>@endif
+        </a>
+    </div>
+</div>
+
+<div class="kpis">
+    @foreach($cards as $c)
+        <div class="kpi">
+            <div class="kpi-top"><x-icon :name="$c['icon']" :size="22" /><span>{{ $c['label'] }}</span></div>
+            <div class="kpi-value"><strong>{{ $c['value'] }}</strong>
+                @if($c['trend'] !== null)
+                    <span @class(['trend', 'trend-down' => $c['trend'] < 0])><x-icon :name="$c['trend'] < 0 ? 'trend-down' : 'trend-up'" :size="15" />{{ $c['trend'] > 0 ? '+' : '' }}{{ $c['trend'] }}%</span>
+                @endif
+            </div>
+            <small class="muted">{{ $c['note'] }}</small>
+            <x-waves variant="kpi" />
+        </div>
+    @endforeach
+</div>
+
+<div class="dash">
+    <div class="dash-main">
+        <div class="dash-row">
+            <section class="card">
+                <div class="card-head"><h2><x-icon name="message" /> {{ __('ui.active_conversations') }}</h2>
+                    <a href="{{ route('tickets.index', ['status' => 'open']) }}" class="link-arrow small">{{ __('ui.all_conversations') }} <x-icon name="arrow-right" :size="15" /></a></div>
+                @forelse($conversations as $m)
+                    <a href="{{ route('tickets.show', $m->ticket).'#m'.$m->id }}" class="convo">
+                        <x-avatar :name="$m->user->name" :size="42" />
+                        <span class="convo-body">
+                            <span class="convo-top"><strong>{{ $m->user->name }}</strong><span class="tag tag-{{ $m->ticket->type->value }}">{{ $m->ticket->client->name }}</span>
+                                <time class="muted small">{{ $m->created_at->isToday() ? $m->created_at->format('H:i') : $m->created_at->format('d.m') }}</time></span>
+                            <small class="muted">{{ \Illuminate\Support\Str::limit($m->body ?: '📎', 70) }}</small>
+                        </span>
+                        @if($m->unread)<span class="count-badge">{{ $m->unread }}</span>@endif
+                    </a>
+                @empty
+                    <p class="muted">{{ __('ui.no_messages') }}</p>
+                @endforelse
+            </section>
+
+            <section class="card">
+                <div class="card-head"><h2><x-icon name="bar-chart" /> {{ __('ui.team_activity') }}</h2>
+                    <span class="legend"><span><i class="m"></i>{{ __('ui.messages') }}</span><span><i class="a"></i>{{ __('ui.team_actions') }}</span></span></div>
+                @include('dashboard._chart')
+            </section>
+        </div>
+
         <section class="card">
-            <div class="card-head"><h2><x-icon name="zap" /> {{ __('ui.quick_actions') }}</h2></div>
-            <div class="quick">
-                <a href="{{ route('tickets.create') }}" class="btn btn-dark"><x-icon name="plus" :size="16" />{{ __('ui.new_ticket_short') }}</a>
-                <a href="{{ route('admin.clients.create') }}" class="btn"><x-icon name="user-plus" :size="16" />{{ __('ui.new_client') }}</a>
-                <a href="{{ route('admin.templates.index') }}" class="btn"><x-icon name="repeat" :size="16" />{{ __('ui.templates') }}</a>
+            <div class="card-head">
+                <h2><x-icon name="check-square" /> {{ __('ui.task_board') }} <small class="muted">{{ trans_choice('ui.tasks_count', collect($board)->except('done')->flatten()->count(), ['n' => collect($board)->except('done')->flatten()->count()]) }}</small></h2>
+                <a href="{{ route('tickets.index', ['status' => 'open']) }}" class="link-arrow small">{{ __('ui.all_tickets') }} <x-icon name="arrow-right" :size="15" /></a>
+            </div>
+            <div class="board">
+                @foreach(['todo' => 'circle', 'doing' => 'loader', 'review' => 'layers', 'done' => 'check-circle'] as $col => $icon)
+                    <div class="board-col col-{{ $col }}">
+                        <div class="board-head"><x-icon :name="$icon" :size="18" />{{ __('ui.col_'.$col) }} <span>{{ $board[$col]->count() }}</span></div>
+                        @forelse($board[$col]->take(4) as $t) @include('dashboard._task') @empty <p class="board-empty">{{ __('ui.nothing_here') }}</p> @endforelse
+                        @if($board[$col]->count() > 4)<a href="{{ route('tickets.index', ['status' => $col === 'done' ? 'done' : 'open']) }}" class="board-more">+{{ $board[$col]->count() - 4 }}</a>@endif
+                    </div>
+                @endforeach
             </div>
         </section>
-        @if($unread->isNotEmpty())
-        <section class="card">
-            <div class="card-head"><h2>{{ __('ui.unread_tickets') }}</h2></div>
-            @foreach($unread->take(6) as $t)
-                <a href="{{ route('tickets.show', $t) }}" class="list-item list-item-sm"><x-avatar :name="$t->client->name" :size="32" />
-                    <span class="list-main"><strong>{{ \Illuminate\Support\Str::limit($t->title, 40) }}</strong><small class="muted">{{ $t->client->name }}</small></span><span class="dot"></span></a>
-            @endforeach
+    </div>
+
+    <aside class="dash-side">
+        <section class="card card-flag">
+            <x-waves variant="card" />
+            <h2><x-icon name="flag" /> {{ __('ui.priorities') }}</h2>
+            @forelse($priorities as $t)
+                <a href="{{ route('tickets.show', $t) }}" class="prio-item">
+                    <span class="prio-circle prio-{{ $t->priority->value }}"></span>
+                    <span><strong>{{ $t->title }}</strong><small class="muted">{{ $t->client->name }} · @if($t->isOverdue())<span class="overdue">{{ __('ui.overdue_since', ['date' => $t->due_on->format('d.m')]) }}</span>@else{{ $t->priority->label() }}@endif</small></span>
+                    <x-icon name="chevron-right" :size="16" />
+                </a>
+            @empty
+                <p class="muted small">{{ __('ui.no_priorities') }}</p>
+            @endforelse
         </section>
-        @endif
+
+        <section class="card">
+            <h2><x-icon name="calendar" /> {{ __('ui.upcoming_deadlines') }}</h2>
+            @forelse($upcoming as $t)
+                <a href="{{ route('tickets.show', $t) }}" class="deadline">
+                    <span class="date-tile"><strong>{{ $t->due_on->format('j') }}</strong><small>{{ $t->due_on->translatedFormat('M') }}</small></span>
+                    <span><strong>{{ $t->title }}</strong><small class="muted">{{ $t->client->name }} · #{{ $t->id }}</small></span>
+                </a>
+            @empty
+                <p class="muted small">{{ __('ui.no_deadlines') }}</p>
+            @endforelse
+        </section>
+
+        <section class="card">
+            <h2><x-icon name="users" /> {{ __('ui.my_team') }}</h2>
+            <div class="team">
+                @foreach($team->take(6) as $m)<x-avatar :name="$m->name" :size="44" title="{{ $m->name }}" />@endforeach
+                @if($team->count() > 6)<span class="avatar-more avatar-more-lg">+{{ $team->count() - 6 }}</span>@endif
+                <a href="{{ route('admin.team') }}" class="team-add" title="{{ __('ui.invite_admin') }}"><x-icon name="plus" :size="18" /></a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2><x-icon name="zap" /> {{ __('ui.quick_actions') }}</h2>
+            <div class="stack">
+                <a href="{{ route('tickets.index', ['status' => 'waiting_client']) }}" class="btn btn-dark btn-block btn-lg"><x-icon name="message" :size="18" />{{ __('ui.awaiting_reply') }}</a>
+                <a href="{{ route('tickets.create') }}" class="btn btn-send btn-block btn-lg"><x-icon name="plus" :size="18" />{{ __('ui.create_task') }}</a>
+            </div>
+            <a href="{{ route('admin.system') }}" @class(['sys-status', 'bad' => $recentErrors || ! $lastCron])>
+                <span class="sys-dot"></span>{{ __('ui.last_cron') }}: {{ $lastCron ? \Illuminate\Support\Carbon::parse($lastCron)->diffForHumans() : __('ui.never') }}
+                @if($recentErrors) · {{ trans_choice('ui.errors_count', $recentErrors, ['n' => $recentErrors]) }}@endif
+            </a>
+        </section>
     </aside>
 </div>
+
+@if($dueToday)
+<div class="toast" data-toast="due-{{ $dueToday->id }}-{{ today()->toDateString() }}" hidden>
+    <span class="toast-icon"><x-icon name="calendar" :size="24" /></span>
+    <a href="{{ route('tickets.show', $dueToday) }}"><small>{{ __('ui.reminder') }}</small><strong>{{ __('ui.due_today') }}</strong><span>{{ $dueToday->title }} – {{ $dueToday->client->name }}</span></a>
+    <button type="button" class="link" data-toast-close aria-label="×"><x-icon name="x" :size="18" /></button>
+</div>
+@endif
 @endsection
+@push('scripts')<script src="{{ asset('js/dashboard.js') }}?v=1"></script>@endpush

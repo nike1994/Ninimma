@@ -32,6 +32,8 @@ bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/
 - **Wyszukiwarka** po tytułach i treści wiadomości, także w archiwum.
 - **Dziennik systemu:** ostatnie uruchomienie crona, nieudane e-maile/zadania, błędy uploadu, kopie zapasowe.
 - **Języki:** polski i angielski, wybierane na użytkownika (także e-maile).
+- **Planowanie i czas pracy** (część etapu 2): priorytet (normalny / wysoki / pilne), termin, osoba prowadząca i wpisy czasu pracy przy zleceniu.
+- **Pulpit administratora:** wskaźniki z trendem względem poprzedniego okresu (wiadomości, otwarte zadania, na dziś, do akceptacji, czas pracy), aktywne rozmowy z liczbą nieprzeczytanych, wykres aktywności zespołu, tablica zadań (do zrobienia / w trakcie / do akceptacji / zakończone), priorytety, nadchodzące terminy, zespół i przypomnienie o terminie na dziś.
 
 ## Instalacja na hostingu
 

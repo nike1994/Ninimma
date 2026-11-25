@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Priority;
 use App\Enums\TicketStatus;
 use App\Enums\TicketType;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,12 +16,17 @@ class Ticket extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by'];
+    protected $attributes = ['priority' => 'normal', 'archive_state' => 'active', 'reminders_sent' => 0];
+
+    protected $fillable = ['client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by', 'priority', 'due_on', 'assigned_to'];
 
     protected function casts(): array
     {
         return [
             'status' => TicketStatus::class,
+            'priority' => Priority::class,
+            'due_on' => 'date',
+            'started_at' => 'datetime',
             'type' => TicketType::class,
             'last_activity_at' => 'datetime',
             'waiting_since' => 'datetime',
@@ -48,6 +54,32 @@ class Ticket extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->due_on !== null && $this->status !== TicketStatus::Done && $this->due_on->isBefore(today());
+    }
+
+    /** Kolumna tablicy zadań: todo | doing | review | done. */
+    public function boardColumn(): string
+    {
+        return match (true) {
+            $this->status === TicketStatus::Done => 'done',
+            $this->status->waitsForClient() => 'review',
+            $this->started_at !== null || $this->status === TicketStatus::Blocked => 'doing',
+            default => 'todo',
+        };
     }
 
     public function messages(): HasMany

@@ -29,6 +29,9 @@ class TicketService
                 'type' => $data['type'] ?? 'task',
                 'status' => TicketStatus::WithAgency,
                 'created_by' => $author->id,
+                'priority' => $author->isAdmin() ? ($data['priority'] ?? 'normal') : 'normal',
+                'due_on' => $author->isAdmin() ? ($data['due_on'] ?? null) : null,
+                'assigned_to' => $author->isAdmin() ? ($data['assigned_to'] ?? null) : null,
             ]);
             $ticket->forceFill(['last_activity_at' => now()])->save();
             $this->event($ticket, $author, 'created');
@@ -37,6 +40,8 @@ class TicketService
             }
             if (filled($body) || $uploadIds) {
                 $this->postMessage($ticket, $author, (string) $body, false, $uploadIds);
+                // Opis zlecenia to nie rozpoczęcie pracy.
+                $ticket->forceFill(['started_at' => null])->save();
             }
 
             return $ticket;
@@ -60,6 +65,11 @@ class TicketService
                 $ticket->last_public_message_id = $message->id;
             }
             $ticket->last_activity_at = now();
+
+            // Pierwsza odpowiedź agencji oznacza, że praca się rozpoczęła.
+            if ($author->isAdmin() && ! $internal && $ticket->started_at === null) {
+                $ticket->started_at = now();
+            }
 
             // Odpowiedź klienta przerywa zastój i oddaje piłkę agencji.
             if (! $author->isAdmin()) {
@@ -115,6 +125,45 @@ class TicketService
         $this->event($ticket, $by, 'status_changed', array_filter([
             'from' => $from?->value, 'to' => $status->value, 'reason' => $ticket->blocked_reason,
         ]));
+    }
+
+    /** Priorytet, termin i osoba prowadząca (tylko administrator). */
+    public function updateDetails(Ticket $ticket, User $by, array $data): void
+    {
+        DB::transaction(function () use ($ticket, $by, $data) {
+            $before = ['priority' => $ticket->priority->value, 'due_on' => $ticket->due_on?->toDateString(), 'assigned_to' => $ticket->assigned_to];
+            $ticket->fill([
+                'priority' => $data['priority'] ?? $ticket->priority->value,
+                'due_on' => $data['due_on'] ?? null,
+                'assigned_to' => $data['assigned_to'] ?? null,
+            ]);
+            if (! $ticket->isDirty()) {
+                return;
+            }
+            $ticket->save();
+            if ($before['priority'] !== $ticket->priority->value) {
+                $this->event($ticket, $by, 'priority_changed', ['priority' => $ticket->priority->value]);
+            }
+            if ($before['due_on'] !== $ticket->due_on?->toDateString()) {
+                $this->event($ticket, $by, 'due_changed', ['date' => $ticket->due_on?->format('d.m.Y') ?? '—']);
+            }
+            if ($before['assigned_to'] !== $ticket->assigned_to) {
+                $this->event($ticket, $by, 'assigned', ['name' => $ticket->assignee?->name ?? '—'], true);
+            }
+        });
+    }
+
+    public function logTime(Ticket $ticket, User $by, int $minutes, string $date, ?string $note): void
+    {
+        DB::transaction(function () use ($ticket, $by, $minutes, $date, $note) {
+            $ticket->timeEntries()->create(['user_id' => $by->id, 'minutes' => $minutes, 'spent_on' => $date, 'note' => $note]);
+            if ($ticket->started_at === null) {
+                $ticket->started_at = now();
+            }
+            $ticket->last_activity_at = now();
+            $ticket->save();
+            $this->event($ticket, $by, 'time_logged', ['time' => \App\Models\TimeEntry::format($minutes)], true);
+        });
     }
 
     /** Ręczne lub automatyczne przypomnienie dla klienta. */

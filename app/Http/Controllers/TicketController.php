@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Priority;
 use App\Enums\TicketStatus;
 use App\Enums\TicketType;
 use App\Models\Client;
@@ -46,6 +47,7 @@ class TicketController extends Controller
             : null;
 
         return view('tickets.create', [
+            'admins' => $user->isAdmin() ? \App\Models\User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get() : collect(),
             'clients' => $user->isAdmin() ? Client::where('is_active', true)->orderBy('name')->get() : collect(),
             'parent' => $parent,
         ]);
@@ -59,6 +61,9 @@ class TicketController extends Controller
             'type' => ['required', Rule::enum(TicketType::class)],
             'client_id' => [Rule::requiredIf($user->isAdmin()), 'nullable', 'exists:clients,id'],
             'parent_id' => ['nullable', 'integer'],
+            'priority' => ['nullable', Rule::enum(Priority::class)],
+            'due_on' => ['nullable', 'date'],
+            'assigned_to' => ['nullable', Rule::exists('users', 'id')->where('role', 'admin')],
             'body' => ['nullable', 'string', 'max:20000'],
             'uploads' => ['array'],
             'uploads.*' => ['integer'],
@@ -89,7 +94,9 @@ class TicketController extends Controller
         $this->tickets->markRead($ticket, $user);
 
         return view('tickets.show', [
-            'ticket' => $ticket->load(['client', 'parent', 'children', 'author']),
+            'ticket' => $ticket->load(['client', 'parent', 'children', 'author', 'assignee']),
+            'admins' => $user->isAdmin() ? \App\Models\User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get() : collect(),
+            'timeEntries' => $user->isAdmin() ? $ticket->timeEntries()->with('user')->latest('spent_on')->latest('id')->get() : collect(),
             'messages' => $messages,
             'events' => $events,
             'clientReads' => $clientReads,
@@ -133,6 +140,44 @@ class TicketController extends Controller
         $this->tickets->changeStatus($ticket, $request->user(), TicketStatus::from($data['status']), $data['blocked_reason'] ?? null);
 
         return back()->with('status', __('ui.saved'));
+    }
+
+    public function details(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'priority' => ['required', Rule::enum(Priority::class)],
+            'due_on' => ['nullable', 'date'],
+            'assigned_to' => ['nullable', Rule::exists('users', 'id')->where('role', 'admin')],
+        ]);
+        $this->tickets->updateDetails($ticket, $request->user(), $data);
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function logTime(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'hours' => ['required', 'regex:/^\d{1,3}([:.,]\d{1,2})?$/'],
+            'spent_on' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:250'],
+        ]);
+        $minutes = self::parseHours($data['hours']);
+        abort_if($minutes < 1 || $minutes > 24 * 60, 422);
+        $this->tickets->logTime($ticket, $request->user(), $minutes, $data['spent_on'], $data['note'] ?? null);
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    /** "1:30" | "1,5" | "2" → minuty */
+    public static function parseHours(string $value): int
+    {
+        if (str_contains($value, ':')) {
+            [$h, $m] = explode(':', $value);
+
+            return (int) $h * 60 + (int) $m;
+        }
+
+        return (int) round((float) str_replace(',', '.', $value) * 60);
     }
 
     public function remind(Request $request, Ticket $ticket)

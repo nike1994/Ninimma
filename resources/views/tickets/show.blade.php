@@ -20,6 +20,8 @@
         @if($client->contact_email)<a href="mailto:{{ $client->contact_email }}"><x-icon name="mail" :size="18" />{{ $client->contact_email }}</a>@endif
     </div>
     <div class="client-badges">
+        @if($ticket->priority->isElevated())<span class="pill pill-lg prio-{{ $ticket->priority->value }}"><x-icon name="flag" :size="15" />{{ $ticket->priority->label() }}</span>@endif
+        @if($ticket->due_on)<span @class(['pill pill-lg', 'pill-pink' => $ticket->isOverdue()])><x-icon name="calendar" :size="15" />{{ $ticket->due_on->format('d.m') }}</span>@endif
         @if($ticket->isStalled())<span class="pill pill-pink pill-lg">{{ __('ui.stalled') }}</span>@endif
         @if($ticket->status === \App\Enums\TicketStatus::Blocked)<span class="pill pill-blocked pill-lg">{{ __('status.blocked') }}</span>@endif
         <span class="pill pill-lg pill-type">{{ $ticket->type->label() }}</span>
@@ -162,6 +164,35 @@
             <input name="blocked_reason" value="{{ $ticket->blocked_reason }}" placeholder="{{ __('ui.blocked_reason') }}" data-reason>
             <button class="btn btn-small">{{ __('ui.save') }}</button>
         </form>
+
+        <form method="post" action="{{ route('admin.tickets.details', $ticket) }}" class="card stack">
+            @csrf @method('patch')
+            <h3><x-icon name="flag" /> {{ __('ui.planning') }}</h3>
+            <label class="field"><span>{{ __('ui.priority') }}</span>
+                <select name="priority">@foreach(\App\Enums\Priority::cases() as $p)<option value="{{ $p->value }}" @selected($ticket->priority === $p)>{{ $p->label() }}</option>@endforeach</select>
+            </label>
+            <label class="field"><span>{{ __('ui.due_on') }}</span><input type="date" name="due_on" value="{{ $ticket->due_on?->toDateString() }}"></label>
+            <label class="field"><span>{{ __('ui.assignee') }}</span>
+                <select name="assigned_to"><option value="">—</option>@foreach($admins as $a)<option value="{{ $a->id }}" @selected($ticket->assigned_to === $a->id)>{{ $a->name }}</option>@endforeach</select>
+            </label>
+            <button class="btn btn-small">{{ __('ui.save') }}</button>
+        </form>
+
+        <section class="card">
+            @php($total = $timeEntries->sum('minutes'))
+            <h3><x-icon name="clock" /> {{ __('ui.work_time') }}</h3>
+            <p class="time-total"><strong>{{ \App\Models\TimeEntry::format($total) }}</strong> <span class="muted">h</span></p>
+            @foreach($timeEntries->take(5) as $te)
+                <div class="side-file"><span>{{ $te->spent_on->format('d.m') }} · {{ $te->note ?: '—' }}</span><small class="muted">{{ \App\Models\TimeEntry::format($te->minutes) }}</small></div>
+            @endforeach
+            <form method="post" action="{{ route('admin.tickets.time', $ticket) }}" class="time-form">
+                @csrf
+                <input name="hours" placeholder="1:30" required size="5" aria-label="{{ __('ui.hours') }}">
+                <input type="date" name="spent_on" value="{{ today()->toDateString() }}" required>
+                <input name="note" placeholder="{{ __('ui.what_done') }}">
+                <button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('ui.add') }}</button>
+            </form>
+        </section>
         @else
             <a href="{{ route('tickets.create', ['parent' => $ticket->id]) }}" class="btn btn-block"><x-icon name="plus" :size="16" /> {{ __('ui.new_follow_up') }}</a>
         @endif

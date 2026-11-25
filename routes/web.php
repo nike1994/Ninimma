@@ -66,6 +66,8 @@ Route::middleware(['auth', '2fa'])->group(function () {
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
+        Route::patch('/tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');
+        Route::post('/tickets/{ticket}/time', [TicketController::class, 'logTime'])->name('tickets.time');
         Route::post('/tickets/{ticket}/remind', [TicketController::class, 'remind'])->name('tickets.remind');
 
         Route::resource('clients', Admin\ClientController::class)->except('destroy');

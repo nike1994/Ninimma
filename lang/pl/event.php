@@ -7,4 +7,8 @@ return [
     'reminder' => 'Wysłano przypomnienie do klienta',
     'auto_reminder' => 'Automatyczne przypomnienie nr :n',
     'stalled' => 'Zlecenie trafiło na listę zastojów',
+    'priority_changed' => 'Priorytet: :priority',
+    'due_changed' => 'Termin: :date',
+    'assigned' => 'Prowadzi: :name',
+    'time_logged' => 'Dodano czas pracy: :time h',
 ];
