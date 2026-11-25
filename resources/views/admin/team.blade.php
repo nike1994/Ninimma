@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('ui.team'))
 @section('content')
-<h1>{{ __('ui.team') }}</h1>
+<h1 class="page-title">{{ __('ui.team') }}</h1>
 <div class="two-col">
 <section class="card">
     <ul class="plain">

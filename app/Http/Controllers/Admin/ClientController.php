@@ -34,11 +34,24 @@ class ClientController extends Controller
         return redirect()->route('admin.clients.show', $client);
     }
 
-    public function show(Client $client)
+    public function show(Request $request, Client $client)
     {
+        $all = $client->tickets()->get(['id', 'status', 'last_activity_at']);
+        $tickets = $client->tickets()->with(['client', 'reads' => fn ($q) => $q->where('user_id', $request->user()->id)])
+            ->search($request->query('q'), $request->user())
+            ->when($request->query('status'), fn ($q, $s) => $s === 'open' ? $q->open() : $q->where('status', $s))
+            ->when($request->query('type'), fn ($q, $t) => $q->where('type', $t))
+            ->orderByDesc('last_activity_at')->paginate(15)->withQueryString();
+
         return view('admin.clients.show', [
             'client' => $client->load(['users', 'invitations' => fn ($q) => $q->whereNull('accepted_at')->latest()]),
-            'tickets' => $client->tickets()->orderByDesc('last_activity_at')->limit(20)->get(),
+            'tickets' => $tickets,
+            'counts' => [
+                'active' => $all->filter(fn ($t) => $t->status->ball() === 'agency')->count(),
+                'waiting' => $all->filter(fn ($t) => $t->status->waitsForClient())->count(),
+                'done' => $all->filter(fn ($t) => $t->status->value === 'done')->count(),
+            ],
+            'lastActivity' => $all->max('last_activity_at'),
         ]);
     }
 

@@ -6,45 +6,96 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('ui.dashboard')) · {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('img/logo.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=2">
 </head>
 <body>
 @php($me = auth()->user())
+<x-waves variant="corner" />
 <div class="shell">
     <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
     <aside class="sidebar">
         <a href="{{ route('dashboard') }}" class="brand"><img src="{{ asset('img/logo.png') }}" alt=""> <span>{{ config('app.name') }}</span></a>
-        <nav>
-            <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>{{ __('ui.dashboard') }}</a>
-            <a href="{{ route('tickets.index') }}" @class(['active' => request()->routeIs('tickets.*')])>{{ __('ui.tickets') }}</a>
+        @unless($me->isAdmin())<div class="sidebar-label">{{ __('ui.client_panel') }}</div>@endunless
+        <nav class="nav">
+            <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])><x-icon name="home" />{{ __('ui.dashboard') }}</a>
+            <a href="{{ route('tickets.index') }}" @class(['active' => request()->routeIs('tickets.*')])><x-icon name="folder" />{{ $me->isAdmin() ? __('ui.tickets') : __('ui.my_tickets') }}
+                @if(! $me->isAdmin() && $unreadCount)<span class="nav-count">{{ $unreadCount }}</span>@endif</a>
             @if($me->isAdmin())
-                <a href="{{ route('admin.clients.index') }}" @class(['active' => request()->routeIs('admin.clients.*')])>{{ __('ui.clients') }}</a>
-                <a href="{{ route('admin.templates.index') }}" @class(['active' => request()->routeIs('admin.templates.*')])>{{ __('ui.templates') }}</a>
-                <span class="nav-section">{{ __('ui.coming_soon') }}</span>
-                <span class="nav-disabled" title="{{ __('ui.stage', ['n' => 3]) }}">{{ __('ui.publications') }}</span>
-                <span class="nav-disabled" title="{{ __('ui.stage', ['n' => 4]) }}">{{ __('ui.influencers') }}</span>
-                <span class="nav-disabled" title="{{ __('ui.stage', ['n' => 4]) }}">{{ __('ui.campaigns') }}</span>
-                <span class="nav-disabled" title="{{ __('ui.stage', ['n' => 5]) }}">{{ __('ui.sites_seo') }}</span>
-                <span class="nav-section">{{ __('ui.system') }}</span>
-                <a href="{{ route('admin.team') }}" @class(['active' => request()->routeIs('admin.team')])>{{ __('ui.team') }}</a>
-                <a href="{{ route('admin.system') }}" @class(['active' => request()->routeIs('admin.system')])>{{ __('ui.system_log') }}</a>
+                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 3]) }}"><x-icon name="calendar" />{{ __('ui.publications') }}</span>
+                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 4]) }}"><x-icon name="megaphone" />{{ __('ui.influencers') }}</span>
+                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 5]) }}"><x-icon name="layers" />{{ __('ui.sites_seo') }}</span>
+                <a href="{{ route('admin.clients.index') }}" @class(['active' => request()->routeIs('admin.clients.*')])><x-icon name="users" />{{ __('ui.clients') }}</a>
+            @else
+                <a href="{{ route('files.index') }}" @class(['active' => request()->routeIs('files.index')])><x-icon name="file" />{{ __('ui.files') }}</a>
+                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 3]) }}"><x-icon name="megaphone" />{{ __('ui.publications') }}</span>
+                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 2]) }}"><x-icon name="grid" />{{ __('ui.billing') }}</span>
+                <a href="{{ route('settings') }}" @class(['active' => request()->routeIs('settings')])><x-icon name="lock" />{{ __('ui.company_access') }}</a>
             @endif
         </nav>
-        <div class="sidebar-foot">
-            <a href="{{ route('settings') }}">{{ $me->name }}</a>
-            <form method="post" action="{{ route('logout') }}">@csrf<button class="link">{{ __('ui.logout') }}</button></form>
-        </div>
+
+        @if($me->isAdmin())
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-label">{{ __('ui.ticket_list') }}</div>
+            <div class="mini-list">
+                @forelse($sidebarTickets as $st)
+                    <a href="{{ route('tickets.show', $st) }}" @class(['mini', 'current' => request()->route('ticket')?->id === $st->id])>
+                        <span class="mini-title">{{ $st->client->name }}<x-icon name="chevron-right" :size="16" /></span>
+                        <span class="mini-sub">@if($st->hasUnreadFor($me))<span class="dot"></span>@endif{{ \Illuminate\Support\Str::limit($st->title, 48) }}</span>
+                        @if($st->isStalled())
+                            <span class="pill pill-pink">{{ __('ui.stalled_for', ['n' => (int) $st->waiting_since?->diffInDays(now())]) }}</span>
+                        @else
+                            <span class="pill pill-{{ $st->status->value }}">{{ $st->status->label() }}</span>
+                        @endif
+                    </a>
+                @empty
+                    <p class="mini-empty">{{ __('ui.nothing_here') }}</p>
+                @endforelse
+            </div>
+            <nav class="nav nav-small">
+                <a href="{{ route('admin.templates.index') }}" @class(['active' => request()->routeIs('admin.templates.*')])><x-icon name="repeat" :size="17" />{{ __('ui.templates') }}</a>
+                <a href="{{ route('admin.team') }}" @class(['active' => request()->routeIs('admin.team')])><x-icon name="shield" :size="17" />{{ __('ui.team') }}</a>
+                <a href="{{ route('admin.system') }}" @class(['active' => request()->routeIs('admin.system')])><x-icon name="activity" :size="17" />{{ __('ui.system_log') }}</a>
+            </nav>
+        @else
+            <div class="help-box">
+                <span class="help-icon"><x-icon name="help" :size="22" /></span>
+                <span>{{ __('ui.need_help') }}</span>
+                <a href="{{ route('tickets.create') }}" class="btn btn-white">{{ __('ui.write_to_us') }} <x-icon name="arrow-right" :size="16" /></a>
+            </div>
+        @endif
+        <x-waves variant="sidebar" />
     </aside>
+
     <main class="main">
         <header class="topbar">
-            <label for="nav-toggle" class="burger" aria-label="Menu">☰</label>
-            <form action="{{ route('tickets.index') }}" class="search">
-                <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('ui.search_placeholder') }}">
-            </form>
-            <a href="{{ route('tickets.create') }}" class="btn btn-primary">+ {{ __('ui.new_ticket') }}</a>
+            <label for="nav-toggle" class="burger" aria-label="Menu"><x-icon name="menu" /></label>
+            @if($me->isAdmin())
+                <form action="{{ route('tickets.index') }}" class="search">
+                    <x-icon name="search" :size="18" />
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('ui.search_placeholder') }}">
+                </form>
+            @else
+                <div class="company">
+                    <span class="company-logo"><x-icon name="building" :size="22" /></span>
+                    <span><strong>{{ $me->client?->name }}</strong><small>{{ $me->client?->company_name }}</small></span>
+                </div>
+            @endif
+            <div class="topbar-right">
+                <a href="{{ route('tickets.create') }}" class="btn btn-primary"><x-icon name="plus" :size="18" /><span class="hide-sm">{{ __('ui.new_ticket') }}</span></a>
+                @unless($me->isAdmin())
+                    <a href="{{ route('tickets.index') }}" class="icon-btn" title="{{ __('ui.new_messages') }}"><x-icon name="bell" />@if($unreadCount)<span class="bell-dot"></span>@endif</a>
+                @endunless
+                <details class="user-chip">
+                    <summary><x-avatar :name="$me->name" :size="36" /><span class="hide-sm"><small>{{ $me->isAdmin() ? __('ui.account_manager') : __('ui.account') }}</small><strong>{{ \Illuminate\Support\Str::before($me->name, ' ') ?: $me->name }}</strong></span><x-icon name="chevron-down" :size="16" /></summary>
+                    <div class="user-menu">
+                        <a href="{{ route('settings') }}"><x-icon name="sliders" :size="16" />{{ __('ui.settings') }}</a>
+                        <form method="post" action="{{ route('logout') }}">@csrf<button><x-icon name="logout" :size="16" />{{ __('ui.logout') }}</button></form>
+                    </div>
+                </details>
+            </div>
         </header>
-        @if(session('status'))<div class="flash">{{ session('status') }}</div>@endif
-        @if($errors->any())<div class="flash flash-error">{{ $errors->first() }}</div>@endif
+        @if(session('status'))<div class="flash"><x-icon name="check-circle" :size="18" />{{ session('status') }}</div>@endif
+        @if($errors->any())<div class="flash flash-error"><x-icon name="alert" :size="18" />{{ $errors->first() }}</div>@endif
         <div class="content">@yield('content')</div>
     </main>
 </div>

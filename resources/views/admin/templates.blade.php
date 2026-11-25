@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('ui.templates'))
 @section('content')
-<h1>{{ __('ui.templates') }}</h1>
+<h1 class="page-title">{{ __('ui.templates') }}</h1>
 <section class="card">
     <table class="table">
         <thead><tr><th>{{ __('ui.name') }}</th><th>{{ __('ui.client') }}</th><th>{{ __('ui.recurrence') }}</th><th>{{ __('ui.next_run') }}</th><th></th></tr></thead>
@@ -48,6 +48,6 @@
     <x-field name="next_run_on" type="date" :label="__('ui.next_run')" :value="$t->next_run_on?->format('Y-m-d')" />
     <input type="hidden" name="is_active" value="0">
     <label class="check"><input type="checkbox" name="is_active" value="1" @checked($t->is_active)> {{ __('ui.active') }}</label>
-    <button class="btn btn-primary">{{ __('ui.save') }}</button>
+    <button class="btn btn-dark">{{ __('ui.save') }}</button>
 </form>
 @endsection

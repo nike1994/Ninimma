@@ -97,6 +97,7 @@
         const recBtn = root.querySelector('[data-record]');
         if (!navigator.mediaDevices?.getDisplayMedia || !window.MediaRecorder) { recBtn.hidden = true; return; }
         let recorder = null, timer = null;
+        const recLabel = recBtn.querySelector('span') || recBtn;
         recBtn.addEventListener('click', async () => {
             if (recorder) { recorder.stop(); return; }
             let stream;
@@ -107,16 +108,16 @@
             recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
             recorder.onstop = () => {
                 clearInterval(timer); stream.getTracks().forEach(t => t.stop());
-                recBtn.textContent = recBtn.dataset.label; recorder = null;
+                recLabel.textContent = recBtn.dataset.label; recBtn.classList.remove('recording'); recorder = null;
                 const type = (mime || 'video/webm').split(';')[0];
                 add(new File([new Blob(chunks, { type })], 'nagranie-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + (type === 'video/mp4' ? '.mp4' : '.webm'), { type }));
             };
             stream.getVideoTracks()[0].addEventListener('ended', () => recorder?.state === 'recording' && recorder.stop());
-            recBtn.dataset.label = recBtn.dataset.label || recBtn.textContent;
+            recBtn.dataset.label = recBtn.dataset.label || recLabel.textContent; recBtn.classList.add('recording');
             const started = Date.now();
             timer = setInterval(() => {
                 const s = Math.floor((Date.now() - started) / 1000);
-                recBtn.textContent = '⏹ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + (maxRec ? ' / ' + Math.floor(maxRec / 60) + ':' + String(maxRec % 60).padStart(2, '0') : '');
+                recLabel.textContent = '⏹ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + (maxRec ? ' / ' + Math.floor(maxRec / 60) + ':' + String(maxRec % 60).padStart(2, '0') : '');
                 if (maxRec && s >= maxRec) recorder.stop();
             }, 500);
             recorder.start(1000);

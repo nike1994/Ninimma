@@ -10,6 +10,13 @@ class FileController extends Controller
 {
     private const INLINE = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf'];
 
+    public function index(Request $request)
+    {
+        return view('files.index', [
+            'files' => DashboardController::visibleFiles($request->user())->latest('id')->paginate(40),
+        ]);
+    }
+
     public function show(Request $request, FileUsage $usage, FileStore $store)
     {
         $this->authorize('view', $usage);

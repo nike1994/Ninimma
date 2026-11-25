@@ -2,7 +2,7 @@
 @section('title', __('ui.settings'))
 @section('content')
 @php($me = auth()->user())
-<h1>{{ __('ui.settings') }}</h1>
+<h1 class="page-title">{{ __('ui.settings') }}</h1>
 <div class="two-col">
 <form method="post" action="{{ route('settings') }}" class="card stack">
     @csrf @method('put')
@@ -17,7 +17,7 @@
             <option value="daily" @selected($me->notify_mode === 'daily')>{{ __('ui.notify_daily') }}</option>
         </select>
     </label>
-    <button class="btn btn-primary">{{ __('ui.save') }}</button>
+    <button class="btn btn-dark">{{ __('ui.save') }}</button>
 </form>
 <form method="post" action="{{ route('settings.password') }}" class="card stack">
     @csrf @method('put')

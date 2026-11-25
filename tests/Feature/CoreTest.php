@@ -195,8 +195,8 @@ class CoreTest extends TestCase
         $ticket = Ticket::factory()->create(['title' => 'Coś innego']);
         app(TicketService::class)->postMessage($ticket, $admin, 'Formularz kontaktowy nie wysyła', false);
 
-        $this->get(route('tickets.index', ['q' => 'kontaktowy']))->assertSee('Coś innego');
-        $this->get(route('tickets.index', ['q' => 'zupełnie-nic']))->assertDontSee('Coś innego');
+        $this->get(route('tickets.index', ['q' => 'kontaktowy']))->assertViewHas('tickets', fn ($p) => $p->total() === 1);
+        $this->get(route('tickets.index', ['q' => 'zupełnie-nic']))->assertViewHas('tickets', fn ($p) => $p->total() === 0);
     }
 
     public function test_recurring_templates_create_tickets(): void
@@ -218,7 +218,7 @@ class CoreTest extends TestCase
         Notification::fake();
         $admin = $this->actingAsAdmin();
         $ticket = Ticket::factory()->create();
-        foreach (['dashboard', 'tickets.index', 'tickets.create', 'settings', 'admin.clients.index', 'admin.clients.create',
+        foreach (['dashboard', 'tickets.index', 'files.index', 'tickets.create', 'settings', 'admin.clients.index', 'admin.clients.create',
             'admin.team', 'admin.templates.index', 'admin.system'] as $route) {
             $this->get(route($route))->assertOk();
         }
@@ -228,6 +228,8 @@ class CoreTest extends TestCase
         $client = User::factory()->create(['client_id' => $ticket->client_id]);
         $this->actingAs($client)->get(route('dashboard'))->assertOk()->assertSee($ticket->title);
         $this->actingAs($client)->get(route('admin.clients.index'))->assertForbidden();
+        $this->actingAs($client)->get(route('files.index'))->assertOk();
+        $this->actingAs($client)->get(route('tickets.show', $ticket))->assertOk();
     }
 
     public function test_backup_endpoint_requires_token(): void

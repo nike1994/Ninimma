@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('ui.system_log'))
 @section('content')
-<h1>{{ __('ui.system_log') }}</h1>
+<h1 class="page-title">{{ __('ui.system_log') }}</h1>
 <div class="cards">
     <div class="card stat"><strong>{{ $lastCron ? \Illuminate\Support\Carbon::parse($lastCron)->diffForHumans() : '—' }}</strong><span>{{ __('ui.last_cron') }}</span></div>
     <div class="card stat"><strong>{{ $pendingJobs }}</strong><span>{{ __('ui.pending_jobs') }}</span></div>

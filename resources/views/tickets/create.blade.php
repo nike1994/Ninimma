@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('title', __('ui.new_ticket'))
 @section('content')
-<h1>{{ __('ui.new_ticket') }}</h1>
-<form method="post" action="{{ route('tickets.store') }}" class="card stack" data-message-form>
+<h1 class="page-title">{{ __('ui.new_ticket') }}</h1>
+<form method="post" action="{{ route('tickets.store') }}" class="card stack narrow-lg" data-message-form>
     @csrf
     @if($parent)
         <input type="hidden" name="parent_id" value="{{ $parent->id }}">
@@ -24,8 +24,8 @@
         </select>
     </label>
     <x-field name="body" type="textarea" :label="__('ui.description')" rows="6" data-paste-target />
-    @include('tickets._uploader')
-    <button class="btn btn-primary">{{ __('ui.submit_ticket') }}</button>
+    @include('tickets._uploader', ['noSend' => true])
+    <button class="btn btn-send btn-block"><x-icon name="send" :size="18" />{{ __('ui.submit_ticket') }}</button>
 </form>
 @endsection
-@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=1"></script>@endpush
+@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=2"></script>@endpush

@@ -57,6 +57,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::post('/uploads', [UploadController::class, 'start'])->name('uploads.start');
     Route::post('/uploads/{upload}/chunk', [UploadController::class, 'chunk'])->name('uploads.chunk');
     Route::post('/uploads/{upload}/finish', [UploadController::class, 'finish'])->name('uploads.finish');
+    Route::get('/files', [FileController::class, 'index'])->name('files.index');
     Route::get('/files/{usage}/{name?}', [FileController::class, 'show'])->name('files.show');
 
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings');
