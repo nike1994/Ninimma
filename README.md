@@ -121,7 +121,8 @@ w jednej instalacji. Architektura zostawia na nie miejsce (np. `public/js/live.j
 
 ## Otwarte decyzje
 
-- [ ] Wersja PHP na hostingu (8.3+) i katalog subdomeny.
+- [x] Wersja PHP na hostingu — hosting ma najnowsze PHP (wymagane 8.3+).
+- [ ] Katalog subdomeny ustawiony na `public/`.
 - [ ] Limity dla klienta (teraz 100 MB / 5 min nagrania — `.env`).
 - [ ] Próg zajętości dla offline i domyślny okres przechowywania (Archiwum → Ustawienia).
 - [ ] Treść regulaminu współpracy i zapisy RODO (konsultacja z prawnikiem).
