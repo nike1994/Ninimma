@@ -97,7 +97,7 @@
             @endforelse
         </section>
 
-        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount || $siteDeadlines->isNotEmpty())
+        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount || $siteDeadlines->isNotEmpty() || $adsEnding->isNotEmpty())
         <section class="card">
             <h2><x-icon name="bell" /> {{ __('ui.today_reminders') }}</h2>
             @foreach($reminders as $r)
@@ -107,6 +107,10 @@
             @foreach($licenses as $m)
                 <a href="{{ route('collaborations.show', $m->collaboration) }}" class="prio-item"><span class="prio-circle prio-urgent"></span>
                     <span><strong>{{ __('ui.license_ends', ['what' => $m->description]) }}</strong><small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->license_until->format('d.m') }}</small></span></a>
+            @endforeach
+            @foreach($adsEnding as $a)
+                <a href="{{ route('social.ads.edit', $a) }}" class="prio-item"><span class="prio-circle prio-high"></span>
+                    <span><strong>{{ __('ads.ends_on_reminder', ['name' => $a->name]) }}</strong><small class="muted">{{ $a->client->name }} · {{ $a->ends_on->format('d.m') }}</small></span></a>
             @endforeach
             @foreach($siteDeadlines as $d)
                 <a href="{{ route('sites.show', $d->site) }}" class="prio-item"><span class="prio-circle {{ $d->daysLeft() <= 14 ? 'prio-urgent' : 'prio-high' }}"></span>

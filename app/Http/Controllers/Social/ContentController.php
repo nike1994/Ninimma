@@ -106,6 +106,8 @@ class ContentController extends Controller
             'pubs.*.caption' => ['nullable', 'string', 'max:5000'],
             'pubs.*.promoted' => ['nullable', 'boolean'],
             'pubs.*.promo_budget' => ['nullable', 'numeric', 'min:0'],
+            'pubs.*.promo_from' => ['nullable', 'date'],
+            'pubs.*.promo_to' => ['nullable', 'date'],
             'pubs.*.visible_to_client' => ['nullable', 'boolean'],
         ])['pubs'] ?? [];
 
@@ -130,6 +132,8 @@ class ContentController extends Controller
                 'caption' => $row['caption'] ?? null,
                 'promoted' => ! empty($row['promoted']),
                 'promo_budget' => $row['promo_budget'] ?? null,
+                'promo_from' => $row['promo_from'] ?? null,
+                'promo_to' => $row['promo_to'] ?? null,
                 'visible_to_client' => ! empty($row['visible_to_client']),
             ];
             $pub ??= new Publication(['content_id' => $content->id]);
@@ -142,6 +146,7 @@ class ContentController extends Controller
                 $pub->published_at = null;
             }
             $pub->save();
+            app(\App\Services\AdService::class)->syncFromPublication($pub);
         }
 
         // Treść z zaplanowaną publikacją jest gotowa.

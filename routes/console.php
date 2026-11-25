@@ -38,6 +38,14 @@ Schedule::call(function () {
     }
 })->dailyAt('06:10')->name('site-reviews');
 
+// Reklamy: start i koniec według dat.
+Schedule::call(function () {
+    [$a, $f] = app(\App\Services\AdService::class)->updateStatuses();
+    if ($a || $f) {
+        SystemLog::record('ads', "Ads started {$a}, finished {$f}");
+    }
+})->dailyAt('00:20')->name('ads-status');
+
 // Archiwizacja rok po zamknięciu i usuwanie po okresie przechowywania.
 Schedule::call(function () {
     $a = app(\App\Services\ArchiveService::class);

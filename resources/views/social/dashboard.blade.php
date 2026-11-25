@@ -62,7 +62,7 @@
             <a href="{{ route('social.contents.create', ['stage' => 'preparing']) }}" class="qt qt-green"><span><x-icon name="plus" :size="22" /></span>{{ __('social.new_post') }}</a>
             <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="qt"><span><x-icon name="layers" :size="20" /></span>{{ __('social.new_campaign') }}</a>
             <a href="{{ route('social.stats') }}" class="qt"><span><x-icon name="bar-chart" :size="20" /></span>{{ __('social.enter_stats') }} @if($statsQueue->count())<em>{{ $statsQueue->count() }}</em>@endif</a>
-            <a href="{{ route('social.calendar') }}" class="qt"><span><x-icon name="calendar" :size="20" /></span>{{ __('social.calendar') }}</a>
+            <a href="{{ route('social.ads.index') }}" class="qt"><span><x-icon name="zap" :size="20" /></span>{{ __('ads.title_short') }} @if($adsEnding)<em>{{ $adsEnding }}</em>@endif</a>
         </div>
     </section>
 
@@ -125,13 +125,15 @@
 
     <section class="card">
         <div class="card-head"><h2>{{ __('social.campaigns') }}</h2>
-            <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="btn btn-small btn-pill-round"><x-icon name="plus" :size="14" /> {{ __('social.new_campaign') }}</a></div>
+            <span class="head-links"><a href="{{ route('social.ads.index') }}" class="link-arrow small">{{ __('ads.paid_spend', ['spend' => number_format($adSummary['spend'], 0, ',', ' ')]) }} <x-icon name="arrow-right" :size="15" /></a>
+            <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="btn btn-small btn-pill-round"><x-icon name="plus" :size="14" /> {{ __('social.new_campaign') }}</a></span></div>
         @forelse($campaigns as $cmp)
             @php($metric = $cmp->headlineMetric())
             <a href="{{ route('social.campaigns.edit', $cmp) }}" class="campaign-row">
                 <x-avatar :name="$cmp->client->name" :size="40" />
                 <span class="campaign-name"><strong>{{ $cmp->name }}</strong><span class="pill cmp-{{ $cmp->status }}"><i></i>{{ __('social.cmp_'.$cmp->status) }}</span></span>
-                <span class="campaign-num"><small>{{ __('social.budget_short') }}</small><strong>{{ number_format((float) $cmp->budget, 0, ',', ' ') }} zł</strong></span>
+                <span class="campaign-num"><small>{{ __('social.budget_short') }}</small><strong>{{ number_format((float) $cmp->budget, 0, ',', ' ') }} zł</strong>
+                    @if($cmp->budgetUsedPct() !== null)<span @class(['mini-bar', 'warn' => $cmp->budgetUsedPct() >= 90])><i style="width: {{ min(100, $cmp->budgetUsedPct()) }}%"></i></span><small class="muted">{{ __('ads.used_pct', ['pct' => $cmp->budgetUsedPct()]) }}</small>@endif</span>
                 <span class="campaign-num"><small>{{ $metric['label'] }}</small><strong>{{ $metric['value'] }}</strong></span>
             </a>
         @empty

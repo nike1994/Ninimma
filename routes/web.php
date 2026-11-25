@@ -155,6 +155,18 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::get('/stats', [\App\Http\Controllers\Social\StatsController::class, 'index'])->name('stats');
         Route::post('/stats', [\App\Http\Controllers\Social\StatsController::class, 'store']);
         Route::resource('campaigns', \App\Http\Controllers\Social\CampaignController::class)->except(['show', 'destroy']);
+        $ad = \App\Http\Controllers\Social\AdController::class;
+        Route::get('/ads', [$ad, 'index'])->name('ads.index');
+        Route::get('/ads/create', [$ad, 'create'])->name('ads.create');
+        Route::post('/ads', [$ad, 'store'])->name('ads.store');
+        Route::get('/ads/{ad}', [$ad, 'edit'])->name('ads.edit');
+        Route::put('/ads/{ad}', [$ad, 'update'])->name('ads.update');
+        Route::delete('/ads/{ad}', [$ad, 'destroy'])->name('ads.destroy');
+        Route::post('/ads/{ad}/results', [$ad, 'storeResult'])->name('ads.results.store');
+        Route::post('/ads/{ad}/import', [$ad, 'import'])->name('ads.import.one');
+        Route::post('/ads-import', [$ad, 'import'])->name('ads.import');
+        Route::post('/campaigns/{campaign}/utm', [\App\Http\Controllers\Social\UtmController::class, 'store'])->name('utm.store');
+        Route::delete('/utm/{link}', [\App\Http\Controllers\Social\UtmController::class, 'destroy'])->name('utm.destroy');
         Route::post('/tasks', [\App\Http\Controllers\Social\TaskController::class, 'store'])->name('tasks.store');
         Route::patch('/tasks/{ticket}/toggle', [\App\Http\Controllers\Social\TaskController::class, 'toggle'])->name('tasks.toggle');
         Route::post('/notes', [\App\Http\Controllers\Social\NoteController::class, 'store'])->name('notes.store');

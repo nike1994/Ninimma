@@ -24,6 +24,30 @@ class Campaign extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function ads(): HasMany
+    {
+        return $this->hasMany(AdCampaign::class);
+    }
+
+    public function utmLinks(): HasMany
+    {
+        return $this->hasMany(UtmLink::class)->latest();
+    }
+
+    /** Wydatki kampanii (bez godzin pracy): stawki, produkty i reklamy — do paska wykorzystania budżetu. */
+    public function spent(): float
+    {
+        $collabs = $this->collaborations()->where('status', '!=', 'cancelled')->with('shipments')->get();
+
+        return (float) $collabs->sum('rate') + (float) $collabs->flatMap->shipments->sum('value')
+            + (float) $this->ads()->with('latestResult')->get()->sum(fn ($a) => $a->costForReports());
+    }
+
+    public function budgetUsedPct(): ?int
+    {
+        return (float) $this->budget > 0 ? (int) round($this->spent() / (float) $this->budget * 100) : null;
+    }
+
     public function collaborations(): HasMany
     {
         return $this->hasMany(Collaboration::class);

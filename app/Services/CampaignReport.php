@@ -13,7 +13,7 @@ class CampaignReport
 {
     public function __construct(public Campaign $campaign)
     {
-        $campaign->loadMissing(['collaborations.influencer', 'collaborations.shipments', 'collaborations.materials', 'contents']);
+        $campaign->loadMissing(['collaborations.influencer', 'collaborations.shipments', 'collaborations.materials', 'contents', 'ads.latestResult', 'ads.publication']);
     }
 
     public static function hourlyRate(): float
@@ -41,7 +41,8 @@ class CampaignReport
         $costs = [
             'rates' => (float) $this->collabs()->sum('rate'),
             'products' => (float) $this->collabs()->flatMap->shipments->sum('value'),
-            'promotion' => (float) $this->publications()->where('promoted', true)->sum('promo_budget'),
+            // Reklamy i promowane posty: rzeczywisty wydatek (bez pomiarów — budżet planowany).
+            'promotion' => (float) $this->campaign->ads->sum(fn ($a) => $a->costForReports()),
             'hours' => round($minutes / 60 * self::hourlyRate(), 2),
         ];
         $costs['minutes'] = $minutes;
@@ -54,13 +55,16 @@ class CampaignReport
     {
         $pubs = $this->publications();
 
+        $paid = AdService::aggregate($this->campaign->ads);
+
         return [
             'publications' => $pubs->where('status', 'published')->count(),
-            'reach' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->reach ?? 0),
+            // Łącznie: organiczne + płatne (zasięgi mogą się pokrywać — w raporcie pokazujemy też osobno).
+            'reach' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->reach ?? 0) + $paid['reach'],
             'engagement' => (int) $pubs->sum(fn ($p) => $p->engagement()),
-            'clicks' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->clicks ?? 0),
-            'sales' => (int) $this->collabs()->sum('sales'),
-            'revenue' => (float) $this->collabs()->sum('revenue') + (float) $this->campaign->revenue,
+            'clicks' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->clicks ?? 0) + $paid['clicks'],
+            'sales' => (int) $this->collabs()->sum('sales') + $paid['conversions'],
+            'revenue' => (float) $this->collabs()->sum('revenue') + (float) $this->campaign->revenue + $paid['revenue'],
             'materials' => $this->collabs()->flatMap->materials->where('is_received', true)->count(),
         ];
     }
@@ -75,6 +79,24 @@ class CampaignReport
             'per_material' => $r['materials'] ? round($influencerCost / $r['materials'], 2) : null,
             'per_interaction' => $r['engagement'] ? round($c['total'] / $r['engagement'], 2) : null,
             'roas' => $c['total'] > 0 && $r['revenue'] > 0 ? round($r['revenue'] / $c['total'], 2) : null,
+        ];
+    }
+
+    /** Wyniki płatne (reklamy kampanii) — osobno od organicznych. */
+    public function paid(): array
+    {
+        return AdService::aggregate($this->campaign->ads) + ['count' => $this->campaign->ads->count()];
+    }
+
+    /** Wyniki organiczne publikacji (pomiary statystyk). */
+    public function organic(): array
+    {
+        $pubs = $this->publications();
+
+        return [
+            'reach' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->reach ?? 0),
+            'engagement' => (int) $pubs->sum(fn ($p) => $p->engagement()),
+            'clicks' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->clicks ?? 0),
         ];
     }
 

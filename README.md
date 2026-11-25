@@ -40,6 +40,13 @@ platformie, lejek treści, kalendarz tygodnia i miesiąca, kolejka statystyk po 
 pulpit z KPI i trendami, wyniki według marek i platform, kampanie (ROAS/leady/zasięg), zadania i notatki,
 akceptacja postów przez klienta.
 
+**Marketing płatny (reklamy i promocje).** Promowane posty (budżet i okres przy publikacji tworzą wpis reklamy)
+oraz samodzielne kampanie reklamowe (Meta, Google, TikTok, LinkedIn, Pinterest, YouTube) z celem, budżetem planowanym
+i okresem. Wyniki płatne narastająco z datą, bez nadpisywania (wydatek, wyświetlenia, zasięg, kliknięcia, konwersje,
+leady, przychód) — ręcznie albo importem CSV z menedżera reklam (dopasowanie po nazwie kampanii). Wskaźniki: CTR, CPC,
+CPM, koszt wyniku, ROAS. Lista promocji z filtrami i paskiem wykorzystania budżetu, alert przed końcem, start i koniec
+według dat (cron). Budżet kampanii: wydane vs planowane. Generator linków UTM. Raport: wyniki płatne osobno od organicznych.
+
 **Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
 współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem
 z publikacją, przypomnienia, raport kampanii (koszt na materiał i interakcję, porównanie osób i formatów),
@@ -78,7 +85,7 @@ Interfejs i e-maile po polsku i angielsku (wybór na użytkownika).
    * * * * * cd ~/panel && php artisan schedule:run >> /dev/null 2>&1
    ```
    Obsługuje: kolejkę e-maili, przypomnienia o zastojach (co godz.), podsumowania (7:30), zlecenia cykliczne (6:00),
-   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), sprzątanie wysyłek.
+   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), statusy reklam (0:20), sprzątanie wysyłek.
 7. Pierwsze logowanie — konfiguracja 2FA. Potem: Ustawienia → Regulamin współpracy, Archiwum → stawka godzinowa.
 
 ### Homelab (kopie i paczki)
@@ -109,7 +116,7 @@ cp .env.example .env          # DB_CONNECTION=sqlite dla szybkiego startu
 php artisan key:generate
 php artisan migrate --seed --seeder=DemoSeeder   # dane demo; wypisuje sekret 2FA administratora
 php artisan serve
-php artisan test               # 39 testów
+php artisan test               # 42 testy
 ```
 Konta demo: `admin@example.com` / `anna@example.com`, hasło `demo-haslo-123`.
 

@@ -36,7 +36,7 @@
             <dl class="dl">
                 <dt>{{ __('inf.cost_rates') }}</dt><dd>{{ $zl($costs['rates']) }}</dd>
                 <dt>{{ __('inf.cost_products') }}</dt><dd>{{ $zl($costs['products']) }}</dd>
-                <dt>{{ __('inf.cost_promotion') }}</dt><dd>{{ $zl($costs['promotion']) }}</dd>
+                <dt>{{ __('ads.cost_ads') }}</dt><dd>{{ $zl($costs['promotion']) }}</dd>
                 <dt>{{ __('inf.cost_hours', ['h' => \App\Models\TimeEntry::hours($costs['minutes'])]) }}</dt><dd>{{ $zl($costs['hours']) }}</dd>
                 <dt><strong>{{ __('inf.total_cost') }}</strong></dt><dd><strong>{{ $zl($costs['total']) }}</strong></dd>
             </dl>
@@ -46,6 +46,44 @@
         @endif
     </section>
 </div>
+@if($paid['count'])
+<div class="grid-2">
+    <section class="card">
+        <h2><x-icon name="zap" /> {{ __('ads.paid_results') }}</h2>
+        <div class="metric-grid">
+            <div><small>{{ __('ads.spend') }}</small><strong>{{ $zl($paid['spend']) }}</strong>@if($full && $paid['budget'])<small class="muted">{{ __('ads.of_budget', ['b' => number_format($paid['budget'], 0, ',', ' ')]) }}</small>@endif</div>
+            <div><small>{{ __('ads.impressions') }}</small><strong>{{ \App\Support\Num::short($paid['impressions']) }}</strong></div>
+            <div><small>{{ __('ads.clicks') }}</small><strong>{{ \App\Support\Num::short($paid['clicks']) }}</strong>@if($paid['ctr'] !== null)<small class="muted">CTR {{ number_format($paid['ctr'], 2, ',', ' ') }}%</small>@endif</div>
+            <div><small>{{ __('ads.results') }}</small><strong>{{ $paid['conversions'] + $paid['leads'] }}</strong></div>
+            <div><small>CPC</small><strong>{{ $zl($paid['cpc']) }}</strong></div>
+            <div><small>CPM</small><strong>{{ $zl($paid['cpm']) }}</strong></div>
+            <div><small>{{ __('ads.cpa') }}</small><strong>{{ $zl($paid['cpa']) }}</strong></div>
+            <div><small>ROAS</small><strong>{{ $paid['roas'] !== null ? number_format($paid['roas'], 2, ',', ' ') : '—' }}</strong></div>
+        </div>
+    </section>
+    <section class="card">
+        <h2><x-icon name="heart" /> {{ __('ads.organic_results') }}</h2>
+        <div class="metric-grid">
+            <div><small>{{ __('social.kpi_reach') }}</small><strong>{{ \App\Support\Num::short($organic['reach']) }}</strong></div>
+            <div><small>{{ __('social.kpi_engagement') }}</small><strong>{{ \App\Support\Num::short($organic['engagement']) }}</strong></div>
+            <div><small>{{ __('social.kpi_clicks') }}</small><strong>{{ \App\Support\Num::short($organic['clicks']) }}</strong></div>
+        </div>
+        <p class="muted small">{{ __('ads.overlap_hint') }}</p>
+    </section>
+</div>
+@if($full)
+<section class="card">
+    <h2>{{ __('ads.title') }}</h2>
+    <div class="table-scroll"><table class="table">
+        <thead><tr><th>{{ __('ads.ad') }}</th><th>{{ __('ads.spend') }}</th><th>{{ __('ads.clicks') }}</th><th>CPC</th><th>{{ __('ads.results') }}</th><th>{{ __('ads.cpa') }}</th><th>ROAS</th></tr></thead>
+        <tbody>@foreach($ads as $a)@php($m = \App\Services\AdService::metrics($a->totals()))<tr>
+            <td><a href="{{ route('social.ads.edit', $a) }}">{{ $a->name }}</a><small class="muted d-block">{{ __('ads.platform_'.$a->platform) }}</small></td>
+            <td>{{ $zl($m['spend']) }}</td><td>{{ $m['clicks'] }}</td><td>{{ $zl($m['cpc']) }}</td><td>{{ $m['conversions'] + $m['leads'] }}</td><td>{{ $zl($m['cpa']) }}</td><td>{{ $m['roas'] !== null ? number_format($m['roas'], 2, ',', ' ') : '—' }}</td>
+        </tr>@endforeach</tbody>
+    </table></div>
+</section>
+@endif
+@endif
 @if($full && $rows->isNotEmpty())
 <section class="card">
     <h2>{{ __('inf.compare_influencers') }}</h2>

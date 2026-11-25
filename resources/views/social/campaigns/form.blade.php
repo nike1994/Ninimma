@@ -3,6 +3,7 @@
 @section('content')
 <h1 class="page-title">{{ $campaign->exists ? $campaign->name : __('social.new_campaign') }}</h1>
 <div class="grid-main">
+    <div>
     <form method="post" action="{{ $campaign->exists ? route('social.campaigns.update', $campaign) : route('social.campaigns.store') }}" class="card stack">
         @csrf @if($campaign->exists) @method('put') @endif
         <div class="form-row">
@@ -30,6 +31,31 @@
         <button class="btn btn-send"><x-icon name="check" :size="18" />{{ __('ui.save') }}</button>
     </form>
     @if($campaign->exists)
+    <section class="card utm-card">
+        <h2><x-icon name="link" /> {{ __('ads.utm_builder') }}</h2>
+        <p class="muted small">{{ __('ads.utm_hint') }}</p>
+        <form method="post" action="{{ route('social.utm.store', $campaign) }}" class="utm-form" data-utm-form>
+            @csrf
+            <input name="base_url" type="url" placeholder="https://sklep.pl/produkt" required class="utm-base">
+            <input name="source" placeholder="utm_source (facebook)" required list="utm-sources">
+            <input name="medium" placeholder="utm_medium (paid_social)" required list="utm-mediums">
+            <input name="name" placeholder="utm_campaign" value="{{ \Illuminate\Support\Str::slug($campaign->name, '_') }}" required>
+            <input name="content" placeholder="utm_content ({{ __('ads.optional') }})">
+            <input name="term" placeholder="utm_term ({{ __('ads.optional') }})">
+            <code class="utm-preview" data-utm-preview></code>
+            <button class="btn btn-dark btn-small">{{ __('ads.utm_save') }}</button>
+            <datalist id="utm-sources"><option value="facebook"><option value="instagram"><option value="google"><option value="tiktok"><option value="newsletter"><option value="influencer"></datalist>
+            <datalist id="utm-mediums"><option value="paid_social"><option value="cpc"><option value="social"><option value="email"><option value="influencer"><option value="display"></datalist>
+        </form>
+        @foreach($campaign->utmLinks as $u)
+            <div class="utm-row"><code>{{ $u->full_url }}</code>
+                <button type="button" class="btn btn-small" data-copy="{{ $u->full_url }}"><x-icon name="link" :size="13" /> {{ __('ads.copy') }}</button>
+                <form method="post" action="{{ route('social.utm.destroy', $u) }}">@csrf @method('delete')<button class="btn btn-small">✕</button></form></div>
+        @endforeach
+    </section>
+    @endif
+    </div>
+    @if($campaign->exists)
     <aside>
         <section class="card card-dark">
             <x-waves variant="card" />
@@ -40,6 +66,21 @@
                 <dt>{{ __('social.kpi_reach') }}</dt><dd>{{ \App\Support\Num::short($campaign->reach()) }}</dd>
                 <dt>{{ $metric['label'] }}</dt><dd>{{ $metric['value'] }}</dd>
             </dl>
+        </section>
+        <section class="card">
+            <h2><x-icon name="grid" /> {{ __('ads.campaign_budget') }}</h2>
+            @include('social.ads._budget', ['spent' => $campaign->spent(), 'budget' => (float) $campaign->budget])
+            <p class="muted small">{{ __('ads.campaign_budget_hint') }}</p>
+        </section>
+        <section class="card">
+            <div class="card-head"><h2><x-icon name="zap" /> {{ __('ads.title') }}</h2>
+                <a href="{{ route('social.ads.create', ['client' => $campaign->client_id, 'campaign' => $campaign->id]) }}" class="btn btn-small"><x-icon name="plus" :size="14" /></a></div>
+            @forelse($campaign->ads()->with('latestResult')->get() as $a)
+                <a href="{{ route('social.ads.edit', $a) }}" class="side-file"><span class="ad-platform ap-{{ $a->platform }}">{{ __('ads.platform_short_'.$a->platform) }}</span><span>{{ $a->name }}</span>
+                    <small class="muted">{{ number_format($a->totals()['spend'], 0, ',', ' ') }} / {{ number_format((float) $a->budget, 0, ',', ' ') }} zł</small></a>
+            @empty
+                <p class="muted small">{{ __('ads.none') }}</p>
+            @endforelse
         </section>
         <a href="{{ route('reports.campaign', $campaign) }}" class="btn btn-send btn-block" style="margin-bottom: 18px"><x-icon name="bar-chart" :size="18" />{{ __('inf.report') }}</a>
         <section class="card">
@@ -64,3 +105,26 @@
     @endif
 </div>
 @endsection
+@push('scripts')
+<script>
+(function () {
+    const f = document.querySelector('[data-utm-form]');
+    if (f) {
+        const preview = f.querySelector('[data-utm-preview]');
+        const update = () => {
+            const base = f.base_url.value.trim(); if (!base) { preview.textContent = ''; return; }
+            const [url, hash] = base.split('#');
+            const p = new URLSearchParams();
+            [['utm_source', 'source'], ['utm_medium', 'medium'], ['utm_campaign', 'name'], ['utm_content', 'content'], ['utm_term', 'term']].forEach(([k, n]) => {
+                const v = f[n].value.trim().toLowerCase().replace(/\s+/g, '_'); if (v) p.set(k, v);
+            });
+            preview.textContent = url + (url.includes('?') ? '&' : '?') + p.toString() + (hash ? '#' + hash : '');
+        };
+        f.addEventListener('input', update); update();
+    }
+    document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+        await navigator.clipboard?.writeText(b.dataset.copy); b.classList.add('copied'); setTimeout(() => b.classList.remove('copied'), 1500);
+    }));
+})();
+</script>
+@endpush

@@ -38,6 +38,9 @@ class MaterialController extends Controller
             'summary' => $report->summary(),
             'rows' => $user->isAdmin() ? $report->byInfluencer() : collect(),
             'formats' => $report->byFormat(),
+            'paid' => $report->paid(),
+            'organic' => $report->organic(),
+            'ads' => $campaign->ads()->with('latestResult')->get(),
             'full' => $user->isAdmin(),
         ]);
     }

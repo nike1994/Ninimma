@@ -46,6 +46,11 @@ class SocialDashboardController extends Controller
                 ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
                 ->where(fn ($q) => $q->where('status', '!=', 'done')->orWhere('closed_at', '>=', now()->subDays(2)))
                 ->orderByRaw("case when status = 'done' then 0 else 1 end")->orderByRaw('due_on is null')->orderBy('due_on')->limit(6)->get(),
+            'adSummary' => \App\Services\AdService::aggregate(\App\Models\AdCampaign::with('latestResult')->whereIn('status', ['active', 'paused', 'finished'])
+                ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
+                ->where(fn ($q) => $q->whereNull('ends_on')->orWhereDate('ends_on', '>=', $stats->from->toDateString()))->get()),
+            'adsEnding' => \App\Models\AdCampaign::where('status', 'active')->whereNotNull('ends_on')->whereDate('ends_on', '<=', today()->addDays(3))
+                ->when($clientId, fn ($q) => $q->where('client_id', $clientId))->count(),
             'notes' => \App\Models\SocialNote::orderBy('is_done')->latest()->limit(6)->get(),
             'team' => \App\Models\User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get(),
             'clients' => \App\Models\Client::where('is_active', true)->orderBy('name')->get(),

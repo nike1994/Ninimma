@@ -46,6 +46,11 @@ class Publication extends Model
         return $this->belongsTo(SocialAccount::class, 'social_account_id');
     }
 
+    public function ad(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AdCampaign::class);
+    }
+
     public function measurements(): HasMany
     {
         return $this->hasMany(Measurement::class);

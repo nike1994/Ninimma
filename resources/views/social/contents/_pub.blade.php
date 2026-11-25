@@ -20,7 +20,10 @@
         <div class="pub-grid">
             <label class="check"><input type="checkbox" name="pubs[{{ $i }}][promoted]" value="1" @checked($p?->promoted)> {{ __('social.promoted') }}</label>
             <label class="field"><span>{{ __('social.budget') }}</span><input type="number" step="0.01" min="0" name="pubs[{{ $i }}][promo_budget]" value="{{ $p?->promo_budget }}"></label>
+            <label class="field"><span>{{ __('ads.promo_from') }}</span><input type="date" name="pubs[{{ $i }}][promo_from]" value="{{ $p?->promo_from?->toDateString() }}"></label>
+            <label class="field"><span>{{ __('ads.promo_to') }}</span><input type="date" name="pubs[{{ $i }}][promo_to]" value="{{ $p?->promo_to?->toDateString() }}"></label>
         </div>
+        @if($p?->ad)<a href="{{ route('social.ads.edit', $p->ad) }}" class="small"><x-icon name="bar-chart" :size="14" /> {{ __('ads.open_results') }}</a>@endif
     </details>
     <div class="pub-foot">
         <label class="check"><input type="checkbox" name="pubs[{{ $i }}][visible_to_client]" value="1" @checked($p?->visible_to_client)> {{ __('social.visible_to_client') }}</label>
