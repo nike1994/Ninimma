@@ -41,6 +41,7 @@ class AdController extends Controller
     {
         return $this->form(new AdCampaign([
             'client_id' => $request->integer('client') ?: null, 'campaign_id' => $request->integer('campaign') ?: null,
+            'material_id' => $request->integer('material') ?: null,
             'platform' => 'meta', 'starts_on' => today(), 'ends_on' => today()->addDays(14),
         ]));
     }
@@ -57,6 +58,8 @@ class AdController extends Controller
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'campaigns' => Campaign::where('status', '!=', 'finished')->orWhere('id', $ad->campaign_id)->orderBy('name')->get(),
             'metrics' => $ad->exists ? AdService::metrics($ad->totals()) : null,
+            'materials' => \App\Services\LicenseGuard::pickerMaterials(array_filter([$ad->material_id])),
+            'licenseIssues' => $ad->exists ? app(\App\Services\LicenseGuard::class)->allIssues()->where('ad_id', $ad->id)->values() : collect(),
         ]);
     }
 
@@ -127,6 +130,7 @@ class AdController extends Controller
             'status' => ['required', Rule::in(AdCampaign::STATUSES)],
             'target_url' => ['nullable', 'url', 'max:500'],
             'notes' => ['nullable', 'string', 'max:2000'],
-        ]);
+            'material_id' => ['nullable', 'exists:materials,id'],
+        ]) + ['material_id' => null];
     }
 }

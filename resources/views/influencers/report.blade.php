@@ -37,6 +37,7 @@
                 <dt>{{ __('inf.cost_rates') }}</dt><dd>{{ $zl($costs['rates']) }}</dd>
                 <dt>{{ __('inf.cost_products') }}</dt><dd>{{ $zl($costs['products']) }}</dd>
                 <dt>{{ __('ads.cost_ads') }}</dt><dd>{{ $zl($costs['promotion']) }}</dd>
+                @if($costs['licenses'])<dt>{{ __('lic.cost_licenses') }}</dt><dd>{{ $zl($costs['licenses']) }}</dd>@endif
                 <dt>{{ __('inf.cost_hours', ['h' => \App\Models\TimeEntry::hours($costs['minutes'])]) }}</dt><dd>{{ $zl($costs['hours']) }}</dd>
                 <dt><strong>{{ __('inf.total_cost') }}</strong></dt><dd><strong>{{ $zl($costs['total']) }}</strong></dd>
             </dl>

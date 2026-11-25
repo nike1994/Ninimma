@@ -30,6 +30,11 @@ class Content extends Model
         return $this->belongsTo(Campaign::class);
     }
 
+    public function materials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Material::class);
+    }
+
     public function publications(): HasMany
     {
         return $this->hasMany(Publication::class);

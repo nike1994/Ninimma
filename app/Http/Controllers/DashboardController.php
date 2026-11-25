@@ -42,6 +42,7 @@ class DashboardController extends Controller
                 'reminders' => \App\Models\Reminder::with('remindable')->where('is_done', false)->whereDate('due_on', '<=', today())->orderBy('due_on')->limit(6)->get(),
                 'licenses' => \App\Models\Material::with('collaboration.influencer')->whereNotNull('license_until')
                     ->whereDate('license_until', '<=', today()->addDays(14))->whereDate('license_until', '>=', today()->subDays(7))->orderBy('license_until')->limit(5)->get(),
+                'licConflicts' => app(\App\Services\LicenseGuard::class)->allIssues()->where('severity', 'error')->count(),
                 'siteDeadlines' => \App\Models\SiteDeadline::with('site')->whereNull('renewed_at')->whereDate('due_on', '<=', today()->addDays(30))->orderBy('due_on')->limit(5)->get(),
                 'adsEnding' => \App\Models\AdCampaign::with('client')->where('status', 'active')->whereNotNull('ends_on')
                     ->whereDate('ends_on', '<=', today()->addDays(2))->orderBy('ends_on')->get(),

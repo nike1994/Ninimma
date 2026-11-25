@@ -18,10 +18,14 @@
             <span class="content-body">
                 <strong>{{ $m->description }}</strong>
                 <small class="muted">{{ $m->collaboration->campaign->name }}@if($me->isAdmin()) · {{ $m->collaboration->influencer->name }}@endif</small>
-                <small>{{ __('inf.license_until') }}: <strong>{{ $m->license_until?->format('d.m.Y') ?? '—' }}</strong></small>
+                <span class="lic-inline">
+                    <x-license-ring :material="$m" :size="46" />
+                    <span><small>{{ $me->isAdmin() ? __('inf.license_until') : __('lic.client_until') }}: <strong>{{ $m->license_until?->format('d.m.Y') ?? '—' }}</strong></small>
+                    <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach</small></span>
+                </span>
                 @if($m->publication)<small class="muted"><x-platform :platform="$m->publication->platform" :size="14" /> {{ $m->publication->scheduled_at->format('d.m') }}</small>@endif
                 @if($m->file)<a href="{{ route('files.show', [$m->file, $m->file->name]) }}?download=1" class="small"><x-icon name="download" :size="14" /> {{ __('ui.download') }}</a>@endif
-                @if($me->isAdmin())<a href="{{ route('collaborations.show', $m->collaboration) }}" class="small">{{ __('inf.open_collab') }}</a>@endif
+                @if($me->isAdmin())<a href="{{ route('collaborations.show', $m->collaboration) }}" class="small">{{ __('inf.open_collab') }}</a> <a href="{{ route('licenses.index') }}#m{{ $m->id }}" class="small">{{ __('lic.manage') }} →</a>@endif
             </span>
         </div>
     @empty

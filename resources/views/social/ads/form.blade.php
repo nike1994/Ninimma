@@ -73,6 +73,15 @@
                 <small class="muted">{{ __('ads.use_utm') }}</small>
                 @foreach($ad->campaign->utmLinks->take(3) as $u)<code class="utm-pick" data-utm="{{ $u->full_url }}">{{ \Illuminate\Support\Str::limit($u->full_url, 60) }}</code>@endforeach
             @endif
+            <div class="stack">
+                <span class="field-label">{{ __('lic.material') }}</span>
+                <small class="muted">{{ __('lic.material_hint') }}</small>
+                @include('licenses._issues', ['issues' => $licenseIssues])
+                <details class="mat-details" @if($ad->material_id || $licenseIssues->isNotEmpty()) open @endif>
+                    <summary class="small">{{ $ad->material ? $ad->material->description : __('lic.no_material') }}</summary>
+                    @include('licenses._picker', ['name' => 'material_id', 'selected' => array_filter([old('material_id', $ad->material_id)]), 'multiple' => false])
+                </details>
+            </div>
             <x-field name="notes" type="textarea" rows="2" :label="__('site.notes')" :value="$ad->notes" />
             <button class="btn btn-dark">{{ __('ui.save') }}</button>
         </form>
@@ -86,7 +95,7 @@
 <script>
 (function () {
     const client = document.querySelector('[data-client-select]');
-    const filter = () => document.querySelectorAll('[data-campaign-select] option[data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value);
+    const filter = () => document.querySelectorAll('[data-campaign-select] option[data-client], [data-mat-picker] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));
     client?.addEventListener('change', filter); filter();
     document.querySelectorAll('[data-utm]').forEach(c => c.addEventListener('click', () => { document.querySelector('input[name=target_url]').value = c.dataset.utm; }));
 })();

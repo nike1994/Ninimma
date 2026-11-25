@@ -46,6 +46,14 @@ Schedule::call(function () {
     }
 })->dailyAt('00:20')->name('ads-status');
 
+// Licencje materiałów: e-mail 30/14/7/1/0 dni przed końcem (każdy próg raz).
+Schedule::call(function () {
+    $n = app(\App\Services\LicenseGuard::class)->sendAlerts();
+    if ($n) {
+        SystemLog::record('licenses', "License alerts for {$n} materials");
+    }
+})->dailyAt('07:40')->name('license-alerts');
+
 // Archiwizacja rok po zamknięciu i usuwanie po okresie przechowywania.
 Schedule::call(function () {
     $a = app(\App\Services\ArchiveService::class);

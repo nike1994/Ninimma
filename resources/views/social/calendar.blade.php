@@ -30,7 +30,8 @@
         <div @class(['month-cell', 'other' => ! $day->isSameMonth($month), 'today' => $day->isToday()])>
             <span class="month-num">{{ $day->day }}</span>
             @foreach($pubs[$day->toDateString()] ?? [] as $pub)
-                <a href="{{ $me->isAdmin() ? route('social.contents.edit', $pub->content_id) : route('publications.index').'#p'.$pub->id }}" class="month-item {{ $pub->status }}">
+                <a href="{{ $me->isAdmin() ? route('social.contents.edit', $pub->content_id) : route('publications.index').'#p'.$pub->id }}" @class(['month-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) @isset($licFlags[$pub->id]) title="{{ __('lic.calendar_flag') }}: {{ $licFlags[$pub->id]->implode(' ') }}" @endisset>
+                    @isset($licFlags[$pub->id])<x-icon name="shield" :size="13" class="lic-flag-icon" />@endisset
                     <x-platform :platform="$pub->platform" :size="16" />
                     <span>{{ $pub->scheduled_at->format('H:i') }} {{ $pub->content->title }}</span>
                 </a>

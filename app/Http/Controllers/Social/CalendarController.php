@@ -30,6 +30,7 @@ class CalendarController extends Controller
             'month' => $month, 'gridStart' => $gridStart, 'gridEnd' => $gridEnd, 'pubs' => $pubs,
             'accounts' => $user->isAdmin() ? SocialAccount::where('is_active', true)->orderBy('name')->get() : collect(),
             'accountId' => $accountId,
+            'licFlags' => $user->isAdmin() ? app(\App\Services\LicenseGuard::class)->issuesByPublication() : collect(),
         ]);
     }
 }

@@ -1,0 +1,21 @@
+{{-- Wybór materiałów influencerów/UGC z licznikiem licencji. $materials, $selected (ids), $name, $multiple --}}
+@php($multiple = $multiple ?? true)
+<div class="mat-picker" data-mat-picker>
+    @forelse($materials as $m)
+        @php($st = \App\Services\LicenseGuard::status($m))
+        <label class="mat-opt lic-{{ $st->state }}" data-client="{{ $m->collaboration->campaign->client_id }}">
+            <input type="{{ $multiple ? 'checkbox' : 'radio' }}" name="{{ $name }}" value="{{ $m->id }}" @checked(in_array($m->id, $selected))>
+            <x-license-ring :material="$m" :size="40" />
+            <span class="mat-opt-body">
+                <strong>{{ $m->description }}</strong>
+                <small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->collaboration->campaign->name }}</small>
+                <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach</small>
+            </span>
+        </label>
+    @empty
+        <p class="muted small">{{ __('lic.no_materials') }}</p>
+    @endforelse
+    @unless($multiple)
+        <label class="mat-opt"><input type="radio" name="{{ $name }}" value="" @checked(empty($selected))><span class="mat-opt-body"><strong>{{ __('lic.no_material') }}</strong></span></label>
+    @endunless
+</div>

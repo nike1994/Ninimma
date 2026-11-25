@@ -16,7 +16,7 @@ class AdCampaign extends Model
 
     public const STATUSES = ['planned', 'active', 'paused', 'finished'];
 
-    protected $fillable = ['client_id', 'campaign_id', 'publication_id', 'platform', 'name', 'external_name', 'objective',
+    protected $fillable = ['client_id', 'campaign_id', 'publication_id', 'material_id', 'platform', 'name', 'external_name', 'objective',
         'budget', 'starts_on', 'ends_on', 'status', 'target_url', 'notes'];
 
     protected $attributes = ['status' => 'planned', 'objective' => 'traffic', 'budget' => 0];
@@ -29,6 +29,7 @@ class AdCampaign extends Model
     public function client(): BelongsTo { return $this->belongsTo(Client::class); }
     public function campaign(): BelongsTo { return $this->belongsTo(Campaign::class); }
     public function publication(): BelongsTo { return $this->belongsTo(Publication::class); }
+    public function material(): BelongsTo { return $this->belongsTo(Material::class); }
     public function results(): HasMany { return $this->hasMany(AdResult::class)->orderBy('measured_on')->orderBy('id'); }
     public function latestResult(): HasOne { return $this->hasOne(AdResult::class)->latestOfMany('measured_on'); }
 

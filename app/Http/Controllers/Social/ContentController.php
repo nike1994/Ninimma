@@ -9,6 +9,7 @@ use App\Models\Content;
 use App\Models\Publication;
 use App\Models\SocialAccount;
 use App\Services\FileStore;
+use App\Services\LicenseGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,7 @@ class ContentController extends Controller
 
     public function edit(Content $content)
     {
-        return $this->form($content->load(['publications', 'files.file']));
+        return $this->form($content->load(['publications', 'files.file', 'materials']));
     }
 
     private function form(Content $content)
@@ -44,6 +45,9 @@ class ContentController extends Controller
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'accounts' => SocialAccount::where('is_active', true)->orderBy('name')->get(),
             'campaigns' => \App\Models\Campaign::where('status', '!=', 'finished')->orWhere('id', $content->campaign_id)->orderBy('name')->get(),
+            'materials' => LicenseGuard::pickerMaterials($content->exists ? $content->materials->pluck('id')->all() : []),
+            'selectedMaterials' => $content->exists ? $content->materials->pluck('id')->all() : array_filter([request()->integer('material')]),
+            'licenseIssues' => $content->exists ? app(LicenseGuard::class)->issuesForContent($content) : collect(),
         ]);
     }
 
@@ -51,6 +55,7 @@ class ContentController extends Controller
     {
         $content = DB::transaction(function () use ($request, $files) {
             $content = Content::create($this->validated($request) + ['created_by' => $request->user()->id]);
+            $this->syncMaterials($request, $content);
             $files->attachUploads($request->input('uploads', []), $request->user(), $content);
             $this->syncPublications($request, $content);
 
@@ -64,6 +69,7 @@ class ContentController extends Controller
     {
         DB::transaction(function () use ($request, $content, $files) {
             $content->update($this->validated($request));
+            $this->syncMaterials($request, $content);
             $files->attachUploads($request->input('uploads', []), $request->user(), $content);
             $this->syncPublications($request, $content);
         });
@@ -90,6 +96,13 @@ class ContentController extends Controller
             'stage' => ['required', Rule::in(Content::STAGES)],
             'campaign_id' => ['nullable', Rule::exists('campaigns', 'id')->where('client_id', $request->input('client_id'))],
         ]);
+    }
+
+    /** Materiały influencerów/UGC użyte w treści (licencja sprawdzana przy publikacjach). */
+    private function syncMaterials(Request $request, Content $content): void
+    {
+        $ids = $request->validate(['material_ids' => ['array'], 'material_ids.*' => ['integer', 'exists:materials,id']])['material_ids'] ?? [];
+        $content->materials()->sync($ids);
     }
 
     /** Publikacje tej treści na poszczególnych kontach (dodawanie, zmiana, usuwanie). */

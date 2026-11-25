@@ -34,6 +34,8 @@
                     </div>
                 </div>
                 <a href="{{ route('influencers.index') }}" @class(['active' => request()->routeIs('influencers.*', 'collaborations.*', 'materials.*')])><x-icon name="users" />{{ __('ui.influencers') }}</a>
+                @php($licSoon = \App\Models\Material::whereNotNull('license_until')->whereDate('license_until', '>=', today())->whereDate('license_until', '<=', today()->addDays(\App\Services\LicenseGuard::EXPIRING_DAYS))->count())
+                <a href="{{ route('licenses.index') }}" @class(['active' => request()->routeIs('licenses.*')])><x-icon name="shield" />{{ __('lic.nav') }}@if($licSoon)<span class="nav-count nav-count-warn" title="{{ __('lic.kpi_expiring') }}">{{ $licSoon }}</span>@endif</a>
                 <div @class(['nav-group', 'open' => request()->routeIs('sites.*', 'calendar', 'checklists.*')])>
                     <a href="{{ route('sites.index') }}" @class(['nav-group-head', 'active-soft' => request()->routeIs('sites.*', 'calendar', 'checklists.*')])><x-icon name="layers" />{{ __('ui.sites_seo') }}<x-icon name="chevron-down" :size="16" class="nav-caret" /></a>
                     <div class="nav-sub">

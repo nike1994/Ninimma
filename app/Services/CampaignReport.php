@@ -44,9 +44,11 @@ class CampaignReport
             // Reklamy i promowane posty: rzeczywisty wydatek (bez pomiarów — budżet planowany).
             'promotion' => (float) $this->campaign->ads->sum(fn ($a) => $a->costForReports()),
             'hours' => round($minutes / 60 * self::hourlyRate(), 2),
+            // Przedłużenia licencji materiałów z tej kampanii.
+            'licenses' => (float) \App\Models\LicenseExtension::whereIn('material_id', $this->collabs()->flatMap->materials->pluck('id'))->sum('cost'),
         ];
         $costs['minutes'] = $minutes;
-        $costs['total'] = $costs['rates'] + $costs['products'] + $costs['promotion'] + $costs['hours'];
+        $costs['total'] = $costs['rates'] + $costs['products'] + $costs['promotion'] + $costs['licenses'] + $costs['hours'];
 
         return $costs;
     }

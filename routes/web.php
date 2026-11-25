@@ -116,6 +116,11 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::put('/materials/{material}', [$c, 'updateMaterial'])->name('materials.update');
         Route::post('/reminders', [$c, 'storeReminder'])->name('reminders.store');
         Route::patch('/reminders/{reminder}', [$c, 'toggleReminder'])->name('reminders.toggle');
+
+        // Strażnik licencji materiałów.
+        Route::get('/licenses', [\App\Http\Controllers\LicenseController::class, 'index'])->name('licenses.index');
+        Route::put('/licenses/{material}', [\App\Http\Controllers\LicenseController::class, 'update'])->name('licenses.update');
+        Route::post('/licenses/{material}/extend', [\App\Http\Controllers\LicenseController::class, 'extend'])->name('licenses.extend');
     });
 
     // Tablice (Excalidraw).

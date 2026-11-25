@@ -63,6 +63,7 @@
             <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="qt"><span><x-icon name="layers" :size="20" /></span>{{ __('social.new_campaign') }}</a>
             <a href="{{ route('social.stats') }}" class="qt"><span><x-icon name="bar-chart" :size="20" /></span>{{ __('social.enter_stats') }} @if($statsQueue->count())<em>{{ $statsQueue->count() }}</em>@endif</a>
             <a href="{{ route('social.ads.index') }}" class="qt"><span><x-icon name="zap" :size="20" /></span>{{ __('ads.title_short') }} @if($adsEnding)<em>{{ $adsEnding }}</em>@endif</a>
+            <a href="{{ route('licenses.index', ['filter' => $licConflicts ? 'conflicts' : 'expiring']) }}" class="qt"><span><x-icon name="shield" :size="20" /></span>{{ __('lic.nav') }} @if($licConflicts + $licExpiring)<em @class(['em-alert' => $licConflicts])>{{ $licConflicts + $licExpiring }}</em>@endif</a>
         </div>
     </section>
 
@@ -85,8 +86,9 @@
                     <div class="week-slots">
                         @foreach($week->filter(fn ($p) => $p->scheduled_at->isSameDay($day)) as $pub)
                             @php($pos = max(0, min(100, (($pub->scheduled_at->hour + $pub->scheduled_at->minute / 60) - 8) / 13 * 100)))
-                            <a href="{{ route('social.contents.edit', $pub->content_id) }}" class="week-item {{ $pub->status }}" style="top: {{ $pos }}%" title="{{ $pub->scheduled_at->format('H:i') }} · {{ $pub->account->name }} · {{ $pub->content->title }}">
+                            <a href="{{ route('social.contents.edit', $pub->content_id) }}" @class(['week-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) style="top: {{ $pos }}%" title="{{ $pub->scheduled_at->format('H:i') }} · {{ $pub->account->name }} · {{ $pub->content->title }}@isset($licFlags[$pub->id]) — {{ $licFlags[$pub->id]->implode(' ') }}@endisset">
                                 @include('social._thumb', ['pub' => $pub])
+                                @isset($licFlags[$pub->id])<span class="lic-flag" aria-label="{{ __('lic.calendar_flag') }}"><x-icon name="shield" :size="11" /></span>@endisset
                                 <i class="status-bar"></i>
                             </a>
                         @endforeach
@@ -159,6 +161,12 @@
                     <span class="todo-text">{{ trans_choice('social.stats_due', $statsQueue->count(), ['n' => $statsQueue->count()]) }}</span>
                 </a>
             @endif
+            @if($licConflicts)
+                <a href="{{ route('licenses.index', ['filter' => 'conflicts']) }}" class="todo-row todo-auto">
+                    <span class="todo-box auto lic"><x-icon name="shield" :size="12" /></span>
+                    <span class="todo-text"><span class="overdue">{{ trans_choice('lic.n_conflicts', $licConflicts, ['n' => $licConflicts]) }}</span> · {{ __('lic.kpi_conflicts_hint') }}</span>
+                </a>
+            @endif
             @if($awaitingClient->isNotEmpty())
                 <a href="{{ route('social.contents.edit', $awaitingClient->first()->content_id) }}" class="todo-row todo-auto">
                     <span class="todo-box auto"><x-icon name="eye" :size="12" /></span>
@@ -175,7 +183,7 @@
                     @if($t->assignee)<x-avatar :name="$t->assignee->name" :size="28" title="{{ $t->assignee->name }}" />@endif
                 </div>
             @endforeach
-            @if($tasks->isEmpty() && $statsQueue->isEmpty() && $awaitingClient->isEmpty())<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
+            @if($tasks->isEmpty() && $statsQueue->isEmpty() && $awaitingClient->isEmpty() && ! $licConflicts)<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
         </section>
 
         <section class="card">

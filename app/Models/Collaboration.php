@@ -13,13 +13,13 @@ class Collaboration extends Model
     public const STAGES = ['contract', 'brief', 'shipment', 'materials', 'publication', 'settlement'];
 
     protected $fillable = ['influencer_id', 'campaign_id', 'rate', 'billing', 'scope', 'license_scope', 'license_from', 'license_to',
-        'private_notes', 'needs_shipment', 'tracking_link', 'discount_code', 'sales', 'revenue'];
+        'private_notes', 'needs_shipment', 'tracking_link', 'discount_code', 'sales', 'revenue', 'license_channels', 'requires_takedown'];
 
     protected $attributes = ['status' => 'active', 'billing' => 'contract', 'needs_shipment' => true, 'rate' => 0];
 
     protected function casts(): array
     {
-        $c = ['license_from' => 'date', 'license_to' => 'date', 'needs_shipment' => 'boolean', 'rate' => 'decimal:2', 'revenue' => 'decimal:2'];
+        $c = ['license_channels' => 'array', 'requires_takedown' => 'boolean', 'license_from' => 'date', 'license_to' => 'date', 'needs_shipment' => 'boolean', 'rate' => 'decimal:2', 'revenue' => 'decimal:2'];
         foreach (['contract_sent', 'contract_signed', 'brief_sent', 'brief_accepted', 'materials_complete', 'published', 'paid'] as $col) {
             $c[$col.'_at'] = 'datetime';
         }

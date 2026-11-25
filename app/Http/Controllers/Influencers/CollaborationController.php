@@ -41,7 +41,16 @@ class CollaborationController extends Controller
 
     public function update(Request $request, Collaboration $collaboration)
     {
+        $old = ['from' => $collaboration->license_from?->toDateString(), 'to' => $collaboration->license_to?->toDateString(),
+            'channels' => $collaboration->license_channels, 'takedown' => $collaboration->requires_takedown];
         $collaboration->update($this->validated($request));
+        // Materiały bez własnych warunków (daty jak w umowie, bez przedłużeń) idą za zmianą umowy.
+        $collaboration->materials()->whereDoesntHave('extensions')->get()
+            ->filter(fn ($m) => $m->license_until?->toDateString() === $old['to'] && $m->license_from?->toDateString() === $old['from'])
+            ->each(fn ($m) => $m->update(['license_from' => $collaboration->license_from, 'license_until' => $collaboration->license_to]));
+        // Zmiana kanałów / zasady zdjęcia w umowie dotyczy materiałów, które miały warunki z umowy.
+        $collaboration->materials()->get()->filter(fn ($m) => $m->license_channels == $old['channels'] && $m->requires_takedown === $old['takedown'])
+            ->each(fn ($m) => $m->update(['license_channels' => $collaboration->license_channels, 'requires_takedown' => $collaboration->requires_takedown]));
         $this->attachUpload($request, fn (FileUsage $u) => $collaboration->update(['contract_usage_id' => $u->id]), 'collaboration', $collaboration->id);
 
         return back()->with('status', __('ui.saved'));
@@ -95,7 +104,9 @@ class CollaborationController extends Controller
     public function storeMaterial(Request $request, Collaboration $collaboration)
     {
         $data = $request->validate(['description' => ['required', 'string', 'max:255']]);
-        $collaboration->materials()->create($data + ['license_until' => $collaboration->license_to]);
+        // Nowy materiał dziedziczy warunki licencji z umowy współpracy.
+        $collaboration->materials()->create($data + ['license_from' => $collaboration->license_from, 'license_until' => $collaboration->license_to,
+            'license_channels' => $collaboration->license_channels, 'requires_takedown' => $collaboration->requires_takedown]);
 
         return back();
     }
@@ -105,10 +116,11 @@ class CollaborationController extends Controller
         $data = $request->validate([
             'is_received' => ['nullable', 'boolean'],
             'publication_id' => ['nullable', 'exists:publications,id'],
-            'license_until' => ['nullable', 'date'],
+            'license_from' => ['nullable', 'date'],
+            'license_until' => ['nullable', 'date', 'after_or_equal:license_from'],
         ]);
         $material->update(['is_received' => $request->boolean('is_received'), 'publication_id' => $data['publication_id'] ?? null,
-            'license_until' => $data['license_until'] ?? null]);
+            'license_from' => $data['license_from'] ?? null, 'license_until' => $data['license_until'] ?? null]);
         $this->attachUpload($request, function (FileUsage $u) use ($material) {
             $material->update(['file_usage_id' => $u->id, 'is_received' => true]);
         }, 'material', $material->id);
@@ -166,6 +178,12 @@ class CollaborationController extends Controller
             'sales' => ['nullable', 'integer', 'min:0'],
             'revenue' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        if ($request->boolean('lic_form')) {
+            $request->validate(['license_channels' => ['nullable', 'array'], 'license_channels.*' => [Rule::in(\App\Models\Material::CHANNELS)]]);
+            $data['license_channels'] = \App\Http\Controllers\LicenseController::channels($request->input('license_channels', []));
+            $data['requires_takedown'] = $request->boolean('requires_takedown');
+        }
 
         return $data + ['needs_shipment' => $request->boolean('needs_shipment')];
     }

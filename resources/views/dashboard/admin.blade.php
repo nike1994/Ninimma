@@ -97,15 +97,19 @@
             @endforelse
         </section>
 
-        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount || $siteDeadlines->isNotEmpty() || $adsEnding->isNotEmpty())
+        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $licConflicts || $statsQueueCount || $siteDeadlines->isNotEmpty() || $adsEnding->isNotEmpty())
         <section class="card">
             <h2><x-icon name="bell" /> {{ __('ui.today_reminders') }}</h2>
             @foreach($reminders as $r)
                 <a href="{{ $r->url() ?? '#' }}" class="prio-item"><span class="prio-circle prio-high"></span>
                     <span><strong>{{ $r->body }}</strong><small class="muted">{{ $r->due_on->isToday() ? __('ui.today') : $r->due_on->format('d.m') }}@if($r->remindable instanceof \App\Models\Influencer) · {{ $r->remindable->name }}@elseif($r->remindable instanceof \App\Models\Collaboration) · {{ $r->remindable->influencer->name }}@endif</small></span></a>
             @endforeach
+            @if($licConflicts)
+                <a href="{{ route('licenses.index', ['filter' => 'conflicts']) }}" class="prio-item"><span class="prio-circle prio-urgent"></span>
+                    <span><strong>{{ trans_choice('lic.n_conflicts', $licConflicts, ['n' => $licConflicts]) }}</strong><small class="muted">{{ __('lic.kpi_conflicts_hint') }}</small></span></a>
+            @endif
             @foreach($licenses as $m)
-                <a href="{{ route('collaborations.show', $m->collaboration) }}" class="prio-item"><span class="prio-circle prio-urgent"></span>
+                <a href="{{ route('licenses.index') }}#m{{ $m->id }}" class="prio-item prio-lic"><x-license-ring :material="$m" :size="38" />
                     <span><strong>{{ __('ui.license_ends', ['what' => $m->description]) }}</strong><small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->license_until->format('d.m') }}</small></span></a>
             @endforeach
             @foreach($adsEnding as $a)

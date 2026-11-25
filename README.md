@@ -47,6 +47,14 @@ leady, przychód) — ręcznie albo importem CSV z menedżera reklam (dopasowani
 CPM, koszt wyniku, ROAS. Lista promocji z filtrami i paskiem wykorzystania budżetu, alert przed końcem, start i koniec
 według dat (cron). Budżet kampanii: wydane vs planowane. Generator linków UTM. Raport: wyniki płatne osobno od organicznych.
 
+**Strażnik licencji (influencerzy / UGC).** Każdy materiał ma licencję od–do, kanały użycia (posty, reklamy, strona,
+e-mail, druk) i zasadę „zdjąć po końcu” — domyślnie przejmowane z umowy współpracy. Materiał podpina się do treści
+(a przez nią do publikacji) i do reklam. Panel wykrywa konflikty: publikacja po końcu / przed startem licencji, reklama
+dłuższa niż licencja lub trwająca po końcu, kanał nieobjęty licencją, opublikowany post do zdjęcia. Ekran „Licencje”:
+liczniki-pierścienie, oś czasu z dziś, postami i reklamami, przedłużenia z kosztem (wchodzi do kosztów kampanii)
+i historią. Ostrzeżenia w formularzu treści i reklamy, w kalendarzach, na pulpitach i w karcie współpracy; klient widzi
+termin i kanały swoich materiałów. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
+
 **Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
 współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem
 z publikacją, przypomnienia, raport kampanii (koszt na materiał i interakcję, porównanie osób i formatów),
@@ -85,7 +93,7 @@ Interfejs i e-maile po polsku i angielsku (wybór na użytkownika).
    * * * * * cd ~/panel && php artisan schedule:run >> /dev/null 2>&1
    ```
    Obsługuje: kolejkę e-maili, przypomnienia o zastojach (co godz.), podsumowania (7:30), zlecenia cykliczne (6:00),
-   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), statusy reklam (0:20), sprzątanie wysyłek.
+   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), statusy reklam (0:20), alerty licencji (7:40), sprzątanie wysyłek.
 7. Pierwsze logowanie — konfiguracja 2FA. Potem: Ustawienia → Regulamin współpracy, Archiwum → stawka godzinowa.
 
 ### Homelab (kopie i paczki)

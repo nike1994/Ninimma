@@ -24,7 +24,15 @@ class SocialDashboardController extends Controller
         $weekStart = CarbonImmutable::parse($request->query('week', 'now'))->startOfWeek();
         $rows = $stats->byBrand($clientId ? $accounts->where('client_id', $clientId) : $accounts);
 
+        $guard = app(\App\Services\LicenseGuard::class);
+        $licIssues = $guard->allIssues($clientId);
+
         return view('social.dashboard', [
+            'licFlags' => $licIssues->whereNotNull('publication_id')->groupBy('publication_id')->map(fn ($g) => $g->pluck('message')->unique()),
+            'licConflicts' => $licIssues->where('severity', 'error')->count(),
+            'licExpiring' => \App\Models\Material::whereNotNull('license_until')->whereDate('license_until', '>=', today())
+                ->whereDate('license_until', '<=', today()->addDays(\App\Services\LicenseGuard::EXPIRING_DAYS))
+                ->when($clientId, fn ($q) => $q->whereHas('collaboration.campaign', fn ($c) => $c->where('client_id', $clientId)))->count(),
             'stats' => $stats,
             'period' => $period,
             'clientId' => $clientId,

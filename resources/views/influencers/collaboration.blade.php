@@ -74,15 +74,17 @@
             @foreach($c->materials as $m)
                 <form method="post" action="{{ route('materials.update', $m) }}" class="material-row" data-message-form>
                     @csrf @method('put')
-                    <span class="material-thumb">@if($m->file && $m->file->file->isImage())<img src="{{ route('files.show', [$m->file, $m->file->name]) }}" alt="">@elseif($m->file)<x-icon name="video" :size="20" />@else<x-icon name="image" :size="20" />@endif</span>
+                    <span class="material-thumb material-thumb-lic">@if($m->file && $m->file->file->isImage())<img src="{{ route('files.show', [$m->file, $m->file->name]) }}" alt="">@elseif($m->file)<x-icon name="video" :size="20" />@else<x-icon name="image" :size="20" />@endif
+                        <x-license-ring :material="$m" :size="44" /></span>
                     <span class="material-body">
                         <strong>{{ $m->description }}</strong>
-                        @if($m->licenseExpired())<span class="pill pill-pink">{{ __('inf.license_expired') }}</span>@elseif($m->licenseExpiringSoon())<span class="pill pill-needs_decision">{{ __('inf.license_soon') }}</span>@endif
+                        <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach <a href="{{ route('licenses.index') }}#m{{ $m->id }}">{{ __('lic.manage') }} →</a></small>
                         <span class="material-fields">
                             <label class="check"><input type="checkbox" name="is_received" value="1" @checked($m->is_received)> {{ __('inf.received') }}</label>
                             <select name="publication_id"><option value="">{{ __('inf.link_publication') }}</option>
                                 @foreach($publications as $p)<option value="{{ $p->id }}" @selected($m->publication_id === $p->id)>{{ $p->scheduled_at->format('d.m') }} · {{ $p->platform->label() }} · {{ \Illuminate\Support\Str::limit($p->content->title, 30) }}</option>@endforeach</select>
-                            <input type="date" name="license_until" value="{{ $m->license_until?->toDateString() }}" title="{{ __('inf.license_until') }}">
+                            <input type="date" name="license_from" value="{{ $m->license_from?->toDateString() }}" title="{{ __('lic.from') }}" aria-label="{{ __('lic.from') }}">
+                            <input type="date" name="license_until" value="{{ $m->license_until?->toDateString() }}" title="{{ __('inf.license_until') }}" aria-label="{{ __('inf.license_until') }}">
                         </span>
                         @include('tickets._uploader', ['noSend' => true])
                     </span>
@@ -108,6 +110,10 @@
                 <x-field name="license_from" type="date" :label="__('inf.license_from')" :value="$c->license_from?->toDateString()" />
                 <x-field name="license_to" type="date" :label="__('inf.license_to')" :value="$c->license_to?->toDateString()" />
             </div>
+            <input type="hidden" name="lic_form" value="1">
+            <small class="muted">{{ __('lic.collab_defaults') }}</small>
+            @include('licenses._channels', ['selected' => $c->license_channels])
+            <label class="check"><input type="checkbox" name="requires_takedown" value="1" @checked($c->requires_takedown)> {{ __('lic.requires_takedown') }}</label>
             <label class="check"><input type="checkbox" name="needs_shipment" value="1" @checked($c->needs_shipment)> {{ __('inf.needs_shipment') }}</label>
             <h3>{{ __('inf.sales') }}</h3>
             <x-field name="tracking_link" type="url" :label="__('inf.tracking_link')" :value="$c->tracking_link" />

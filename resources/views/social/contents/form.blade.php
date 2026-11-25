@@ -52,6 +52,13 @@
     </section>
 
     <section class="card stack">
+        <h2><x-icon name="shield" /> {{ __('lic.materials') }}</h2>
+        <p class="muted small">{{ __('lic.materials_hint') }}</p>
+        @include('licenses._issues', ['issues' => $licenseIssues])
+        @include('licenses._picker', ['name' => 'material_ids[]', 'selected' => old('material_ids', $selectedMaterials), 'multiple' => true])
+    </section>
+
+    <section class="card stack">
         <h2><x-icon name="share" /> {{ __('social.publications') }}</h2>
         <p class="muted small">{{ __('social.publications_hint') }}</p>
         <div data-pubs>
@@ -73,7 +80,7 @@
     let n = wrap.querySelectorAll('[data-pub-row]').length;
     // Konta tylko wybranego klienta.
     const client = document.querySelector('[data-client-select]');
-    const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value);
+    const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client], [data-mat-picker] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));
     client.addEventListener('change', filter); filter();
     document.querySelector('[data-add-pub]').addEventListener('click', () => {
         wrap.insertAdjacentHTML('beforeend', tpl.innerHTML.replaceAll('__I__', n++)); filter();
