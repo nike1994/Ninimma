@@ -88,6 +88,31 @@ class SocialDemoSeeder extends Seeder
         foreach (['Opisy produktów — nowa kolekcja', 'Rolka: kulisy pakowania', 'Karuzela: 5 inspiracji'] as $i => $t) {
             Content::create(['client_id' => $clients[$i % 3]->id, 'title' => $t, 'stage' => 'preparing', 'created_by' => $admin->id]);
         }
+        // Kampanie, zadania social i notatki.
+        $cmpData = [
+            [$clients[0], 'Black Friday – Zielony Dom', 'active', 5000, 21000, null],
+            [$clients[1], 'Świąteczna sprzedaż – FitLife', 'draft', 8000, null, null],
+            [$clients[2], 'Zapisy na nowy sezon – Studio Blu', 'review', 3000, null, 187],
+        ];
+        foreach ($cmpData as $k => [$client, $name, $status, $budget, $revenue, $leads]) {
+            $cmp = \App\Models\Campaign::create(['client_id' => $client->id, 'name' => $name, 'status' => $status, 'budget' => $budget,
+                'revenue' => $revenue, 'leads' => $leads, 'starts_on' => $now->copy()->subDays(10)->toDateString(), 'ends_on' => $now->copy()->addDays(20)->toDateString(),
+                'goal' => 'Zwiększyć sprzedaż i rozpoznawalność marki.']);
+            Content::where('client_id', $client->id)->where('stage', 'ready')->limit(3)->update(['campaign_id' => $cmp->id]);
+        }
+        $team = User::where('role', 'admin')->orderBy('id')->get();
+        $tickets = app(\App\Services\TicketService::class);
+        foreach ([['Przygotować treści na grudniową kampanię', 0, 1], ['Zatwierdzenie grafik', 1, 2], ['Harmonogram postów na grudzień', 2, 3], ['Raport miesięczny — wszystkie konta', 0, 5]] as $k => [$title, $ci, $days]) {
+            $t = $tickets->create($admin, ['client_id' => $clients[$ci]->id, 'title' => $title, 'type' => 'social',
+                'due_on' => $now->copy()->addDays($days)->toDateString(), 'assigned_to' => $team[$k % $team->count()]->id], null);
+            if ($k === 0) {
+                $tickets->changeStatus($t, $admin, \App\Enums\TicketStatus::Done);
+            }
+        }
+        foreach (['Start kampanii świątecznej – 1 grudnia', 'Nowa seria rolek FitLife (3 odcinki)', 'Aktualizacja opisów profili', 'Przygotować raport kwartalny'] as $body) {
+            \App\Models\SocialNote::create(['user_id' => $admin->id, 'body' => $body]);
+        }
+
         Publication::where('status', 'planned')->where('visible_to_client', true)->limit(1)->update(['client_status' => 'changes', 'client_comment' => 'Proszę o jaśniejsze zdjęcie.']);
     }
 

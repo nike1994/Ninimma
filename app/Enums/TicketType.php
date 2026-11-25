@@ -10,6 +10,7 @@ enum TicketType: string
     case Campaign = 'campaign';
     case SiteReview = 'site_review';
     case SeoContent = 'seo_content';
+    case Social = 'social';
     case Other = 'other';
 
     public function label(): string

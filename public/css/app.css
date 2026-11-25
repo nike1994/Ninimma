@@ -750,3 +750,44 @@ body.guest .waves-sidebar { position: fixed; left: 0; bottom: 0; width: 100vw; h
 .week-card .week { height: calc(100% - 52px); min-height: 330px; }
 .pub-grid input, .pub-grid select, .form-row input, .form-row select { width: 100%; min-width: 0; }
 .pub-grid > *, .form-row > * { min-width: 0; }
+
+/* Kampanie, zadania i notatki social media */
+.social-row-3 { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.social-row-3 > .card { margin-bottom: 0; }
+.btn-pill-round { border-radius: 99px; }
+.campaign-row { display: grid; grid-template-columns: auto minmax(0, 1fr) 84px 72px; gap: .9rem; align-items: center; padding: .75rem 0; border-bottom: 1px solid var(--line); color: var(--text); }
+.campaign-row:last-child { border-bottom: 0; }
+.campaign-row:hover { color: var(--text); background: linear-gradient(90deg, transparent, #f6f9fc 20%, #f6f9fc 80%, transparent); }
+.campaign-name strong, .campaign-name small { display: block; } .campaign-name strong { font-weight: 650; line-height: 1.25; margin-bottom: .25rem; }
+.campaign-name .pill { font-size: .72rem; padding: .12rem .55rem; }
+.campaign-num small { display: block; font-size: .72rem; color: var(--muted); }
+.campaign-num strong { font-size: 1.02rem; color: var(--navy); white-space: nowrap; }
+.pill.cmp-active { background: #e3f6e8; color: #1f8a46; } .pill.cmp-review { background: #fff1d9; color: #b86e00; }
+.pill.cmp-draft { background: #e6f1fc; color: var(--blue); } .pill.cmp-finished { background: #eef2f6; color: #5b6d82; }
+.task-form { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-bottom: .8rem; padding: .7rem; border-radius: 14px; background: #f4f8fb; }
+.task-form input[name=title] { grid-column: 1 / -1; }
+.task-form button { grid-column: 1 / -1; justify-content: center; }
+.task-form[hidden] { display: none; }
+.todo-row form { display: contents; }
+button.todo-box { background: #fff; cursor: pointer; display: grid; place-items: center; padding: 0; color: #fff; }
+button.todo-box:hover { border-color: var(--green); }
+.todo-row.done button.todo-box { background: #2fb35d; border-color: #2fb35d; }
+.todo-row.done .todo-text { text-decoration: line-through; color: var(--muted); }
+.todo-row a.todo-text { color: var(--text); }
+.todo-box.auto { border-style: dashed; border-color: var(--teal); color: var(--teal); display: grid; place-items: center; }
+.todo-auto { background: linear-gradient(90deg, #f0fbfa, transparent); border-radius: 10px; padding-left: .4rem; }
+.notes { list-style: none; padding: 0; margin: 0 0 .8rem; }
+.notes li { display: flex; align-items: center; gap: .6rem; padding: .4rem 0; }
+.notes li form { display: contents; }
+.notes li span { flex: 1; }
+.notes li.done span { text-decoration: line-through; color: var(--muted); }
+.note-dot-btn { width: 11px; height: 11px; border-radius: 50%; border: 0; background: var(--green); cursor: pointer; flex-shrink: 0; padding: 0; box-shadow: 0 0 0 3px rgba(54, 180, 92, .18); }
+.notes li.done .note-dot-btn { background: #c5d1dd; box-shadow: none; }
+.note-del { border: 0; background: none; color: #b5c1cd; cursor: pointer; opacity: 0; padding: 2px; }
+.notes li:hover .note-del { opacity: 1; }
+.note-add { display: flex; gap: .4rem; }
+.note-add input { flex: 1; border-radius: 12px; }
+@media (max-width: 1360px) { .social-row-3 { grid-template-columns: 1fr 1fr; } .social-row-3 > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 960px) { .social-row-3 { grid-template-columns: minmax(0, 1fr); } .campaign-row { grid-template-columns: auto minmax(0, 1fr) 84px; } .campaign-row .campaign-num:last-child { display: none; } }
+
+.page-campaigns .campaign-row { grid-template-columns: auto minmax(0, 1fr) auto 100px 90px; }

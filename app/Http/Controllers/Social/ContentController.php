@@ -28,7 +28,8 @@ class ContentController extends Controller
 
     public function create(Request $request)
     {
-        return $this->form(new Content(['client_id' => $request->integer('client') ?: null, 'stage' => $request->query('stage', 'idea')]));
+        return $this->form(new Content(['client_id' => $request->integer('client') ?: null, 'stage' => $request->query('stage', 'idea'),
+            'campaign_id' => $request->integer('campaign') ?: null]));
     }
 
     public function edit(Content $content)
@@ -42,6 +43,7 @@ class ContentController extends Controller
             'content' => $content,
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'accounts' => SocialAccount::where('is_active', true)->orderBy('name')->get(),
+            'campaigns' => \App\Models\Campaign::where('status', '!=', 'finished')->orWhere('id', $content->campaign_id)->orderBy('name')->get(),
         ]);
     }
 
@@ -86,6 +88,7 @@ class ContentController extends Controller
             'type' => ['required', Rule::in(Content::TYPES)],
             'format' => ['required', Rule::in(Content::FORMATS)],
             'stage' => ['required', Rule::in(Content::STAGES)],
+            'campaign_id' => ['nullable', Rule::exists('campaigns', 'id')->where('client_id', $request->input('client_id'))],
         ]);
     }
 

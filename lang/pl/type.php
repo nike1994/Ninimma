@@ -8,4 +8,5 @@ return [
     'site_review' => 'Przegląd strony',
     'seo_content' => 'Treść SEO',
     'other' => 'Inne',
+    'social' => 'Social media',
 ];

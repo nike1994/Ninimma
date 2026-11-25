@@ -27,6 +27,7 @@
                         <a href="{{ route('social.dashboard') }}" @class(['active' => request()->routeIs('social.dashboard')])>{{ __('social.overview') }}</a>
                         <a href="{{ route('social.calendar') }}" @class(['active' => request()->routeIs('social.calendar')])>{{ __('social.calendar') }}</a>
                         <a href="{{ route('social.contents.index') }}" @class(['active' => request()->routeIs('social.contents.*')])>{{ __('social.contents') }}</a>
+                        <a href="{{ route('social.campaigns.index') }}" @class(['active' => request()->routeIs('social.campaigns.*')])>{{ __('social.campaigns_nav') }}</a>
                         <a href="{{ route('social.stats') }}" @class(['active' => request()->routeIs('social.stats')])>{{ __('social.analytics') }}</a>
                         <a href="{{ route('social.accounts') }}" @class(['active' => request()->routeIs('social.accounts')])>{{ __('social.profiles') }}</a>
                     </div>

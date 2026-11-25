@@ -39,8 +39,16 @@ class SocialDashboardController extends Controller
             'platforms' => $stats->platformShares(),
             'totalReach' => $stats->totalReach(),
             'statsQueue' => SocialStats::statsQueue($clientId)->take(5),
-            'preparing' => Content::with('client')->whereIn('stage', ['idea', 'preparing'])
-                ->when($clientId, fn ($q) => $q->where('client_id', $clientId))->latest('updated_at')->limit(5)->get(),
+            'campaigns' => \App\Models\Campaign::with('client')->where('status', '!=', 'finished')
+                ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
+                ->orderByRaw("case status when 'active' then 0 when 'review' then 1 else 2 end")->limit(3)->get(),
+            'tasks' => \App\Models\Ticket::with(['client', 'assignee'])->where('type', 'social')
+                ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
+                ->where(fn ($q) => $q->where('status', '!=', 'done')->orWhere('closed_at', '>=', now()->subDays(2)))
+                ->orderByRaw("case when status = 'done' then 0 else 1 end")->orderByRaw('due_on is null')->orderBy('due_on')->limit(6)->get(),
+            'notes' => \App\Models\SocialNote::orderBy('is_done')->latest()->limit(6)->get(),
+            'team' => \App\Models\User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get(),
+            'clients' => \App\Models\Client::where('is_active', true)->orderBy('name')->get(),
             'awaitingClient' => Publication::with(['content', 'account'])->where('visible_to_client', true)
                 ->when($clientId, fn ($q) => $q->whereHas('account', fn ($a) => $a->where('client_id', $clientId)))
                 ->where('status', 'planned')->where(fn ($q) => $q->whereNull('client_status')->orWhere('client_status', 'changes'))

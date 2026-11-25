@@ -31,6 +31,12 @@
             </div>
         </div>
         <x-field name="title" :label="__('ui.title')" :value="$content->title" required maxlength="200" />
+        <label class="field"><span>{{ __('social.campaign') }}</span>
+            <select name="campaign_id" data-campaign-select>
+                <option value="">—</option>
+                @foreach($campaigns as $cmp)<option value="{{ $cmp->id }}" data-client="{{ $cmp->client_id }}" @selected(old('campaign_id', $content->campaign_id) == $cmp->id)>{{ $cmp->name }}</option>@endforeach
+            </select>
+        </label>
         <x-field name="description" type="textarea" :label="__('ui.description')" :value="$content->description" rows="5" data-paste-target />
         <x-field name="hashtags" :label="__('social.hashtags')" :value="$content->hashtags" placeholder="#marka #produkt" />
         @if($content->exists && $content->files->isNotEmpty())
@@ -67,7 +73,7 @@
     let n = wrap.querySelectorAll('[data-pub-row]').length;
     // Konta tylko wybranego klienta.
     const client = document.querySelector('[data-client-select]');
-    const filter = () => document.querySelectorAll('[data-account-select] option[data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value);
+    const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value);
     client.addEventListener('change', filter); filter();
     document.querySelector('[data-add-pub]').addEventListener('click', () => {
         wrap.insertAdjacentHTML('beforeend', tpl.innerHTML.replaceAll('__I__', n++)); filter();

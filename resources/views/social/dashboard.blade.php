@@ -60,7 +60,7 @@
         <h2>{{ __('ui.quick_actions') }}</h2>
         <div class="quick-tiles">
             <a href="{{ route('social.contents.create', ['stage' => 'preparing']) }}" class="qt qt-green"><span><x-icon name="plus" :size="22" /></span>{{ __('social.new_post') }}</a>
-            <a href="{{ route('social.contents.create', ['stage' => 'idea']) }}" class="qt"><span><x-icon name="pencil" :size="20" /></span>{{ __('social.new_idea') }}</a>
+            <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="qt"><span><x-icon name="layers" :size="20" /></span>{{ __('social.new_campaign') }}</a>
             <a href="{{ route('social.stats') }}" class="qt"><span><x-icon name="bar-chart" :size="20" /></span>{{ __('social.enter_stats') }} @if($statsQueue->count())<em>{{ $statsQueue->count() }}</em>@endif</a>
             <a href="{{ route('social.calendar') }}" class="qt"><span><x-icon name="calendar" :size="20" /></span>{{ __('social.calendar') }}</a>
         </div>
@@ -124,54 +124,92 @@
     </section>
 
     <section class="card">
-        <h2>{{ __('social.by_platform') }}</h2>
-        <div class="platform-split">
-            @include('social._donut')
-            <ul class="platform-list">
-                @forelse($platforms as $p)
-                    <li><x-platform :platform="$p->platform" :size="24" /><span>{{ $p->platform->label() }}</span><strong>{{ $p->share }}%</strong></li>
-                @empty
-                    <li class="muted">{{ __('social.no_data') }}</li>
-                @endforelse
-            </ul>
-        </div>
-    </section>
-
-    <section class="card">
-        <div class="card-head"><h2>{{ __('social.todo') }}</h2>
-            <a href="{{ route('social.contents.create', ['stage' => 'preparing']) }}" class="btn btn-small"><x-icon name="plus" :size="14" /> {{ __('social.new_post') }}</a></div>
-        @foreach($statsQueue as $pub)
-            <a href="{{ route('social.stats') }}" class="todo-row">
-                <span class="todo-box"></span>
-                <span class="todo-text">{{ __('social.enter_stats_for', ['title' => $pub->content->title]) }} <small class="muted">({{ __('social.after_days', ['n' => \App\Models\Publication::CHECK_DAYS[$pub->checks_done]]) }})</small></span>
-                <x-platform :platform="$pub->platform" :size="20" />
-                <span class="todo-date"><x-icon name="calendar" :size="15" />{{ $pub->nextCheckAt()->translatedFormat('j M') }}</span>
-            </a>
-        @endforeach
-        @foreach($preparing as $c)
-            <a href="{{ route('social.contents.edit', $c) }}" class="todo-row">
-                <span class="todo-box"></span>
-                <span class="todo-text">{{ __('social.prepare', ['title' => $c->title]) }} <small class="muted">· {{ $c->client->name }}</small></span>
-                <span class="pill stage-{{ $c->stage }}">{{ __('social.stage_'.$c->stage) }}</span>
-            </a>
-        @endforeach
-        @if($statsQueue->isEmpty() && $preparing->isEmpty())<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
-    </section>
-
-    <section class="card card-notes">
-        <h2>{{ __('social.awaiting_client') }}</h2>
-        @forelse($awaitingClient as $pub)
-            <a href="{{ route('social.contents.edit', $pub->content_id) }}" class="note-row">
-                <span @class(['note-dot', 'changes' => $pub->client_status === 'changes'])></span>
-                <span><strong>{{ $pub->content->title }}</strong>
-                    <small class="muted">{{ $pub->account->name }} · {{ $pub->scheduled_at->translatedFormat('j M, H:i') }}
-                        @if($pub->client_status === 'changes') · <span class="overdue">{{ __('social.changes_requested') }}</span>@endif</small></span>
+        <div class="card-head"><h2>{{ __('social.campaigns') }}</h2>
+            <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="btn btn-small btn-pill-round"><x-icon name="plus" :size="14" /> {{ __('social.new_campaign') }}</a></div>
+        @forelse($campaigns as $cmp)
+            @php($metric = $cmp->headlineMetric())
+            <a href="{{ route('social.campaigns.edit', $cmp) }}" class="campaign-row">
+                <x-avatar :name="$cmp->client->name" :size="40" />
+                <span class="campaign-name"><strong>{{ $cmp->name }}</strong><span class="pill cmp-{{ $cmp->status }}"><i></i>{{ __('social.cmp_'.$cmp->status) }}</span></span>
+                <span class="campaign-num"><small>{{ __('social.budget_short') }}</small><strong>{{ number_format((float) $cmp->budget, 0, ',', ' ') }} zł</strong></span>
+                <span class="campaign-num"><small>{{ $metric['label'] }}</small><strong>{{ $metric['value'] }}</strong></span>
             </a>
         @empty
-            <p class="muted">{{ __('social.nothing_awaiting') }}</p>
+            <p class="muted">{{ __('social.no_campaigns') }}</p>
         @endforelse
-        <x-waves variant="card" />
     </section>
+
+    <div class="social-row-3">
+        <section class="card">
+            <div class="card-head"><h2>{{ __('social.todo') }}</h2>
+                <button type="button" class="btn btn-small btn-pill-round" data-toggle="#task-form"><x-icon name="plus" :size="14" /> {{ __('social.add_task') }}</button></div>
+            <form method="post" action="{{ route('social.tasks.store') }}" id="task-form" class="task-form" hidden>
+                @csrf
+                <input name="title" placeholder="{{ __('social.task_title') }}" required maxlength="200">
+                <select name="client_id" required>@foreach($clients as $c)<option value="{{ $c->id }}" @selected($clientId === $c->id)>{{ $c->name }}</option>@endforeach</select>
+                <input type="date" name="due_on">
+                <select name="assigned_to"><option value="">—</option>@foreach($team as $m)<option value="{{ $m->id }}" @selected($m->id === auth()->id())>{{ $m->name }}</option>@endforeach</select>
+                <button class="btn btn-dark btn-small">{{ __('ui.add') }}</button>
+            </form>
+            @if($statsQueue->isNotEmpty())
+                <a href="{{ route('social.stats') }}" class="todo-row todo-auto">
+                    <span class="todo-box auto"><x-icon name="bar-chart" :size="12" /></span>
+                    <span class="todo-text">{{ trans_choice('social.stats_due', $statsQueue->count(), ['n' => $statsQueue->count()]) }}</span>
+                </a>
+            @endif
+            @if($awaitingClient->isNotEmpty())
+                <a href="{{ route('social.contents.edit', $awaitingClient->first()->content_id) }}" class="todo-row todo-auto">
+                    <span class="todo-box auto"><x-icon name="eye" :size="12" /></span>
+                    <span class="todo-text">{{ trans_choice('social.awaiting_count', $awaitingClient->count(), ['n' => $awaitingClient->count()]) }}
+                        @if($awaitingClient->where('client_status', 'changes')->count()) · <span class="overdue">{{ __('social.changes_requested') }}</span>@endif</span>
+                </a>
+            @endif
+            @foreach($tasks as $t)
+                <div @class(['todo-row', 'done' => $t->status === \App\Enums\TicketStatus::Done])>
+                    <form method="post" action="{{ route('social.tasks.toggle', $t) }}">@csrf @method('patch')
+                        <button class="todo-box" aria-label="{{ __('social.toggle_done') }}">@if($t->status === \App\Enums\TicketStatus::Done)<x-icon name="check" :size="13" />@endif</button></form>
+                    <a href="{{ route('tickets.show', $t) }}" class="todo-text">{{ $t->title }} <small class="muted">· {{ $t->client->name }}</small></a>
+                    @if($t->due_on)<span @class(['todo-date', 'overdue' => $t->isOverdue()])><x-icon name="calendar" :size="14" />{{ $t->due_on->translatedFormat('j M') }}</span>@endif
+                    @if($t->assignee)<x-avatar :name="$t->assignee->name" :size="28" title="{{ $t->assignee->name }}" />@endif
+                </div>
+            @endforeach
+            @if($tasks->isEmpty() && $statsQueue->isEmpty() && $awaitingClient->isEmpty())<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
+        </section>
+
+        <section class="card">
+            <h2>{{ __('social.by_platform') }}</h2>
+            <div class="platform-split">
+                @include('social._donut')
+                <ul class="platform-list">
+                    @forelse($platforms as $p)
+                        <li><x-platform :platform="$p->platform" :size="24" /><span>{{ $p->platform->label() }}</span><strong>{{ $p->share }}%</strong></li>
+                    @empty
+                        <li class="muted">{{ __('social.no_data') }}</li>
+                    @endforelse
+                </ul>
+            </div>
+        </section>
+
+        <section class="card card-notes">
+            <h2>{{ __('social.notes') }}</h2>
+            <ul class="notes">
+                @foreach($notes as $n)
+                    <li @class(['done' => $n->is_done])>
+                        <form method="post" action="{{ route('social.notes.toggle', $n) }}">@csrf @method('patch')<button class="note-dot-btn" aria-label="{{ __('social.toggle_done') }}"></button></form>
+                        <span>{{ $n->body }}</span>
+                        <form method="post" action="{{ route('social.notes.destroy', $n) }}">@csrf @method('delete')<button class="note-del" aria-label="{{ __('social.remove') }}"><x-icon name="x" :size="14" /></button></form>
+                    </li>
+                @endforeach
+            </ul>
+            <form method="post" action="{{ route('social.notes.store') }}" class="note-add">
+                @csrf<input name="body" placeholder="{{ __('social.add_note') }}" maxlength="300" required><button class="icon-btn icon-btn-sm" aria-label="{{ __('ui.add') }}"><x-icon name="plus" :size="16" /></button>
+            </form>
+            <x-waves variant="card" />
+        </section>
+    </div>
 </div>
 @endsection
-@push('scripts')<script src="{{ asset('js/dashboard.js') }}?v=2"></script>@endpush
+@push('scripts')
+<script src="{{ asset('js/dashboard.js') }}?v=3"></script>
+<script>document.querySelectorAll('[data-toggle]').forEach(b => b.addEventListener('click', () => { const t = document.querySelector(b.dataset.toggle); t.hidden = !t.hidden; t.querySelector('input')?.focus(); }));</script>
+@endpush

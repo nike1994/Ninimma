@@ -16,13 +16,18 @@ class Content extends Model
 
     public const STAGES = ['idea', 'preparing', 'ready'];
 
-    protected $fillable = ['client_id', 'title', 'description', 'hashtags', 'type', 'format', 'stage', 'created_by'];
+    protected $fillable = ['client_id', 'campaign_id', 'title', 'description', 'hashtags', 'type', 'format', 'stage', 'created_by'];
 
     protected $attributes = ['type' => 'post', 'format' => 'image', 'stage' => 'idea'];
 
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function campaign(): BelongsTo
+    {
+        return $this->belongsTo(Campaign::class);
     }
 
     public function publications(): HasMany

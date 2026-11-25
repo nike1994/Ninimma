@@ -112,4 +112,39 @@ class SocialTest extends TestCase
         $this->get(route('social.dashboard', ['client' => $acc->client_id, 'period' => '7d']))->assertOk()->assertSee($acc->client->name);
         $this->get(route('social.contents.edit', $content))->assertOk();
     }
+
+    public function test_campaign_metrics_tasks_and_notes(): void
+    {
+        $admin = $this->admin();
+        $acc = SocialAccount::factory()->create();
+        $this->post(route('social.campaigns.store'), [
+            'client_id' => $acc->client_id, 'name' => 'Black Friday', 'budget' => 5000, 'status' => 'active',
+        ])->assertRedirect();
+        $campaign = \App\Models\Campaign::first();
+        $this->assertSame('ROAS', $campaign->update(['revenue' => 21000]) ? $campaign->fresh()->headlineMetric()['label'] : null);
+        $this->assertSame('4,2', $campaign->fresh()->headlineMetric()['value']);
+
+        // Treść przypięta do kampanii innego klienta jest odrzucana.
+        $other = \App\Models\Campaign::create(['client_id' => SocialAccount::factory()->create()->client_id, 'name' => 'Obca']);
+        $this->post(route('social.contents.store'), ['client_id' => $acc->client_id, 'title' => 'X', 'type' => 'post', 'format' => 'image', 'stage' => 'idea', 'campaign_id' => $other->id])
+            ->assertSessionHasErrors('campaign_id');
+
+        // Zadanie = zlecenie typu social; odhaczenie zamyka zlecenie.
+        $this->post(route('social.tasks.store'), ['title' => 'Harmonogram postów', 'client_id' => $acc->client_id, 'assigned_to' => $admin->id])->assertRedirect();
+        $task = \App\Models\Ticket::where('type', 'social')->first();
+        $this->assertNotNull($task);
+        $this->patch(route('social.tasks.toggle', $task))->assertRedirect();
+        $this->assertSame('done', $task->fresh()->status->value);
+
+        $this->post(route('social.notes.store'), ['body' => 'Start kampanii 1 grudnia']);
+        $note = \App\Models\SocialNote::first();
+        $this->patch(route('social.notes.toggle', $note));
+        $this->assertTrue($note->fresh()->is_done);
+        $this->delete(route('social.notes.destroy', $note));
+        $this->assertSame(0, \App\Models\SocialNote::count());
+
+        $this->get(route('social.dashboard'))->assertOk()->assertSee('Black Friday')->assertSee('Harmonogram postów');
+        $this->get(route('social.campaigns.index'))->assertOk();
+        $this->get(route('social.campaigns.edit', $campaign))->assertOk();
+    }
 }

@@ -43,6 +43,8 @@ bez Node, Redisa, WebSocketów i stałych procesów. Pełna specyfikacja: `docs/
 - **Statystyki:** kolejka „do sprawdzenia” po 1, 7 i 30 dniach i jeden ekran do wpisania liczb dla wszystkich zaległych publikacji; każdy pomiar zapisany z datą, bez nadpisywania.
 - **Pulpit social media:** wskaźniki z trendem (posty, zasięg, zaangażowanie, kliknięcia), filtr marek, lejek treści, kalendarz tygodnia z miniaturami, wyniki według marek i platform, trend zaangażowania, zadania i publikacje czekające na klienta.
 - **Kalendarz miesięczny** z filtrem kont.
+- **Kampanie marketingowe** (podstawa etapu 4): klient, cel, budżet, okres, status; treści przypinane do kampanii; wynik jako ROAS (z przychodu), leady albo zasięg publikacji.
+- **Zadania social media** to zlecenia typu „Social media” — szybkie dodawanie i odhaczanie z pulpitu; **notatki / priorytety** zespołu.
 - **Klient:** udostępnione publikacje z podglądem grafik i opisów (bez pól roboczych), akceptacja lub prośba o zmiany z komentarzem; kalendarz udostępnionych postów.
 
 ## Instalacja na hostingu

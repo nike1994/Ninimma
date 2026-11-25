@@ -76,6 +76,12 @@ Route::middleware(['auth', '2fa'])->group(function () {
         Route::resource('contents', \App\Http\Controllers\Social\ContentController::class)->except('show');
         Route::get('/stats', [\App\Http\Controllers\Social\StatsController::class, 'index'])->name('stats');
         Route::post('/stats', [\App\Http\Controllers\Social\StatsController::class, 'store']);
+        Route::resource('campaigns', \App\Http\Controllers\Social\CampaignController::class)->except(['show', 'destroy']);
+        Route::post('/tasks', [\App\Http\Controllers\Social\TaskController::class, 'store'])->name('tasks.store');
+        Route::patch('/tasks/{ticket}/toggle', [\App\Http\Controllers\Social\TaskController::class, 'toggle'])->name('tasks.toggle');
+        Route::post('/notes', [\App\Http\Controllers\Social\NoteController::class, 'store'])->name('notes.store');
+        Route::patch('/notes/{note}', [\App\Http\Controllers\Social\NoteController::class, 'toggle'])->name('notes.toggle');
+        Route::delete('/notes/{note}', [\App\Http\Controllers\Social\NoteController::class, 'destroy'])->name('notes.destroy');
         Route::get('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'index'])->name('accounts');
         Route::post('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'store']);
         Route::patch('/accounts/{account}/toggle', [\App\Http\Controllers\Social\AccountController::class, 'toggle'])->name('accounts.toggle');
