@@ -167,6 +167,21 @@ class BoardService
         ];
     }
 
+    /** Podgląd wersji jako SVG (bez skryptów i zdarzeń — odrzucamy podejrzaną treść). */
+    public function storePreview(BoardVersion $version, User $by, string $svg): void
+    {
+        if (! str_starts_with(ltrim($svg), '<svg') || preg_match('/<script|javascript:|\son\w+\s*=|<foreignObject/i', $svg)) {
+            return;
+        }
+        $tmp = tempnam(sys_get_temp_dir(), 'svg');
+        file_put_contents($tmp, $svg);
+        $file = $this->files->storeLocalFile($tmp, 'image/svg+xml');
+        @unlink($tmp);
+        $usage = FileUsage::create(['file_id' => $file->id, 'usable_type' => 'board_version', 'usable_id' => $version->id,
+            'name' => 'podglad-'.$version->id.'.svg', 'uploaded_by' => $by->id]);
+        $version->update(['preview_usage_id' => $usage->id]);
+    }
+
     /** Obraz wklejony na tablicę (data URL) → magazyn plików. */
     public function storeImage(Board $board, User $by, string $excalidrawId, string $dataUrl): BoardFile
     {

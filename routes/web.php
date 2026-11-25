@@ -35,6 +35,8 @@ Route::middleware('guest')->group(function () {
 
 // Kopie zapasowe pobierane przez homelab (token w nagłówku).
 Route::get('/backup/latest', [BackupController::class, 'latest'])->middleware('throttle:10,1')->name('backup.latest');
+Route::get('/backup/exports', [BackupController::class, 'exports'])->middleware('throttle:10,1')->name('backup.exports');
+Route::get('/backup/exports/{name}', [BackupController::class, 'export'])->middleware('throttle:30,1')->name('backup.export');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [Auth\LoginController::class, 'logout'])->name('logout');
@@ -121,6 +123,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::post('/boards/{board}/session-end', [\App\Http\Controllers\BoardController::class, 'sessionEnd'])->name('boards.session-end');
     Route::get('/boards/{board}/versions/{version}', [\App\Http\Controllers\BoardController::class, 'version'])->name('boards.versions.show');
     Route::post('/boards/{board}/versions/{version}/restore', [\App\Http\Controllers\BoardController::class, 'restore'])->name('boards.versions.restore');
+    Route::post('/boards/{board}/versions/{version}/preview', [\App\Http\Controllers\BoardController::class, 'storePreview'])->name('boards.versions.preview');
     Route::post('/boards/{board}/seen', [\App\Http\Controllers\BoardController::class, 'seen'])->name('boards.seen');
     Route::post('/boards/{board}/files', [\App\Http\Controllers\BoardController::class, 'storeFile'])->name('boards.files.store');
     Route::get('/boards/{board}/files/{fileId}', [\App\Http\Controllers\BoardController::class, 'file'])->name('boards.files.show');
@@ -180,5 +183,25 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::post('/templates/{template}/run', [Admin\TemplateController::class, 'run'])->name('templates.run');
 
         Route::get('/system', [Admin\SystemController::class, 'index'])->name('system');
+
+        // Archiwum, paczki eksportu, przenoszenie offline, usuwanie.
+        Route::get('/archive', [Admin\ArchiveController::class, 'index'])->name('archive');
+        Route::put('/archive/settings', [Admin\ArchiveController::class, 'settings'])->name('archive.settings');
+        Route::post('/archive/ready', [Admin\ArchiveController::class, 'archiveAllReady'])->name('archive.ready');
+        Route::post('/archive/offline', [Admin\ArchiveController::class, 'moveOffline'])->name('archive.offline');
+        Route::post('/archive/restore-package', [Admin\ArchiveController::class, 'restorePackage'])->name('archive.restore-package');
+        Route::post('/tickets/{ticket}/archive', [Admin\ArchiveController::class, 'archiveTicket'])->name('tickets.archive');
+        Route::post('/tickets/{ticket}/restore', [Admin\ArchiveController::class, 'restore'])->name('tickets.restore');
+        Route::get('/tickets/{ticket}/export', [Admin\ArchiveController::class, 'exportTicket'])->name('tickets.export');
+        Route::delete('/tickets/{ticket}', [Admin\ArchiveController::class, 'destroyTicket'])->name('tickets.destroy');
+        Route::get('/clients/{client}/export', [Admin\ArchiveController::class, 'exportClient'])->name('clients.export');
+        Route::get('/packages/{package}', [Admin\ArchiveController::class, 'download'])->name('packages.download');
+        Route::delete('/packages/{package}', [Admin\ArchiveController::class, 'destroyPackage'])->name('packages.destroy');
+
+        // Kartoteka klienta: szyfrowane dostępy i ustalenia.
+        Route::post('/clients/{client}/credentials', [Admin\CredentialController::class, 'store'])->name('credentials.store');
+        Route::get('/credentials/{credential}/reveal', [Admin\CredentialController::class, 'reveal'])->middleware('throttle:30,1')->name('credentials.reveal');
+        Route::delete('/credentials/{credential}', [Admin\CredentialController::class, 'destroy'])->name('credentials.destroy');
+        Route::put('/clients/{client}/arrangements', [Admin\CredentialController::class, 'arrangements'])->name('clients.arrangements');
     });
 });

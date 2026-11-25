@@ -31,7 +31,7 @@ class BoardController extends Controller
 
         return view('boards.show', [
             'board' => $board->load('ticket.client'),
-            'versions' => $board->versions()->with('user')->latest('id')->limit(30)->get(),
+            'versions' => $board->versions()->with(['user', 'preview'])->latest('id')->limit(30)->get(),
             'changes' => $changes,
             'unseen' => $board->hasUnseenVersionFor($user),
             'canEdit' => $user->can('edit', $board),
@@ -75,7 +75,11 @@ class BoardController extends Controller
     public function saveVersion(Request $request, Board $board)
     {
         $this->authorize('edit', $board);
-        $this->boards->saveVersion($board, $request->user(), $request->validate(['description' => ['nullable', 'string', 'max:200']])['description'] ?? null);
+        $data = $request->validate(['description' => ['nullable', 'string', 'max:200'], 'preview' => ['nullable', 'string', 'max:3000000']]);
+        $version = $this->boards->saveVersion($board, $request->user(), $data['description'] ?? null);
+        if ($version && ! empty($data['preview'])) {
+            $this->boards->storePreview($version, $request->user(), $data['preview']);
+        }
 
         return $request->expectsJson() ? response()->json(['ok' => true]) : back()->with('status', __('ui.version_saved'));
     }
@@ -84,7 +88,10 @@ class BoardController extends Controller
     public function sessionEnd(Request $request, Board $board)
     {
         $this->authorize('edit', $board);
-        $this->boards->saveVersion($board, $request->user(), null, true);
+        $version = $this->boards->saveVersion($board, $request->user(), null, true);
+        if ($version && $request->filled('preview')) {
+            $this->boards->storePreview($version, $request->user(), (string) $request->input('preview'));
+        }
 
         return response()->noContent();
     }
@@ -104,6 +111,18 @@ class BoardController extends Controller
         $this->boards->restore($board, $version, $request->user());
 
         return redirect()->route('boards.show', $board)->with('status', __('ui.version_restored'));
+    }
+
+    /** Obraz podglądu wersji (SVG z przeglądarki), jeśli jeszcze go nie ma. */
+    public function storePreview(Request $request, Board $board, BoardVersion $version)
+    {
+        $this->authorize('view', $board);
+        abort_unless($version->board_id === $board->id, 404);
+        if (! $version->preview_usage_id) {
+            $this->boards->storePreview($version, $request->user(), (string) $request->validate(['preview' => ['required', 'string', 'max:3000000']])['preview']);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     public function seen(Request $request, Board $board)

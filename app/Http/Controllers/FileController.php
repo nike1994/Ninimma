@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class FileController extends Controller
 {
-    private const INLINE = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf'];
+    private const INLINE = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf'];
 
     public function index(Request $request)
     {
@@ -25,7 +25,9 @@ class FileController extends Controller
 
         $inline = in_array($file->mime, self::INLINE, true) && ! $request->boolean('download');
 
-        return response()->file($store->absolutePath($file), [
+        $headers = $file->mime === 'image/svg+xml' ? ['Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"] : [];
+
+        return response()->file($store->absolutePath($file), $headers + [
             'Content-Type' => $file->mime,
             'Content-Disposition' => ($inline ? 'inline' : 'attachment').'; filename*=UTF-8\'\''.rawurlencode($usage->name),
             'X-Content-Type-Options' => 'nosniff',

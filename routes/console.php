@@ -38,6 +38,16 @@ Schedule::call(function () {
     }
 })->dailyAt('06:10')->name('site-reviews');
 
+// Archiwizacja rok po zamknięciu i usuwanie po okresie przechowywania.
+Schedule::call(function () {
+    $a = app(\App\Services\ArchiveService::class);
+    $n = $a->archiveDue();
+    $d = $a->purgeExpired();
+    if ($n || $d) {
+        SystemLog::record('archive', "Archived {$n}, deleted {$d} tickets");
+    }
+})->dailyAt('03:10')->name('archive');
+
 // Porzucone wysyłki w kawałkach.
 Schedule::call(function () {
     UploadSession::where('updated_at', '<', now()->subDay())->get()->each(function ($s) {

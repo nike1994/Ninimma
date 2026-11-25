@@ -27,6 +27,9 @@ class FileUsagePolicy
             return $usable->client_id === $user->client_id
                 && $usable->publications()->where('visible_to_client', true)->exists();
         }
+        if ($usable instanceof \App\Models\BoardVersion) {
+            return $usable->board->ticket->client_id === $user->client_id;
+        }
         if ($usable instanceof \App\Models\Board) {
             return $usable->ticket->client_id === $user->client_id;
         }

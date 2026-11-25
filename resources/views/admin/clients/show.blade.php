@@ -73,8 +73,37 @@
                 <dt>{{ __('ui.address') }}</dt><dd>{!! nl2br(e($client->address ?: '—')) !!}</dd>
                 <dt>{{ __('ui.retention_months') }}</dt><dd>{{ $client->retention_months ?: '—' }}</dd>
             </dl>
-            <p class="muted small">{{ __('ui.client_card_later') }}</p>
         </section>
+
+        <section class="card">
+            <div class="card-head"><h2><x-icon name="lock" /> {{ __('arch.credentials') }}</h2></div>
+            <p class="muted small">{{ __('arch.credentials_hint') }}</p>
+            @foreach($client->credentials as $cr)
+                <div class="cred" data-cred>
+                    <div class="cred-head"><strong>{{ $cr->label }}</strong>@if($cr->url)<a href="{{ \Illuminate\Support\Str::startsWith($cr->url, 'http') ? $cr->url : 'https://'.$cr->url }}" target="_blank" rel="noopener" class="small">{{ $cr->url }}</a>@endif</div>
+                    <div class="cred-body" data-cred-body hidden></div>
+                    <div class="btn-row"><button type="button" class="btn btn-small" data-reveal="{{ route('admin.credentials.reveal', $cr) }}"><x-icon name="eye" :size="14" /> {{ __('arch.reveal') }}</button>
+                        <form method="post" action="{{ route('admin.credentials.destroy', $cr) }}" onsubmit="return confirm('{{ __('ui.confirm_delete') }}')">@csrf @method('delete')<button class="btn btn-small">✕</button></form></div>
+                </div>
+            @endforeach
+            <details class="invite"><summary class="btn btn-small"><x-icon name="plus" :size="15" /> {{ __('arch.add_credential') }}</summary>
+                <form method="post" action="{{ route('admin.credentials.store', $client) }}" class="stack">@csrf
+                    <x-field name="label" :label="__('arch.cred_label')" required placeholder="Panel WordPress / FTP / hosting" />
+                    <x-field name="url" :label="__('arch.cred_url')" />
+                    <x-field name="username" :label="__('arch.cred_user')" autocomplete="off" />
+                    <x-field name="secret" type="password" :label="__('arch.cred_secret')" autocomplete="new-password" />
+                    <x-field name="notes" type="textarea" rows="2" :label="__('arch.cred_notes')" />
+                    <button class="btn btn-dark">{{ __('ui.save') }}</button></form>
+            </details>
+        </section>
+
+        <form method="post" action="{{ route('admin.clients.arrangements', $client) }}" class="card stack">
+            @csrf @method('put')
+            <h2><x-icon name="file-text" /> {{ __('arch.arrangements') }}</h2>
+            <textarea name="arrangements" rows="4" placeholder="{{ __('arch.arrangements_hint') }}">{{ $client->arrangements }}</textarea>
+            <div class="btn-row"><button class="btn btn-small">{{ __('ui.save') }}</button>
+                <a href="{{ route('admin.clients.export', $client) }}" class="btn btn-small"><x-icon name="download" :size="14" /> {{ __('arch.export_client') }}</a></div>
+        </form>
 
         <section class="card">
             <div class="card-head"><h2><x-icon name="users" /> {{ __('ui.accounts') }}</h2></div>
@@ -104,3 +133,15 @@
     </aside>
 </div>
 @endsection
+@push('scripts')
+<script>
+document.querySelectorAll('[data-reveal]').forEach(b => b.addEventListener('click', async () => {
+    const box = b.closest('[data-cred]').querySelector('[data-cred-body]');
+    if (!box.hidden) { box.hidden = true; box.textContent = ''; return; }
+    const r = await (await fetch(b.dataset.reveal, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })).json();
+    box.textContent = '';
+    [['👤', r.username], ['🔑', r.secret], ['📝', r.notes]].filter(x => x[1]).forEach(([i, v]) => { const d = document.createElement('div'); d.textContent = i + ' ' + v; box.appendChild(d); });
+    box.hidden = false; setTimeout(() => { box.hidden = true; box.textContent = ''; }, 30000);
+}));
+</script>
+@endpush

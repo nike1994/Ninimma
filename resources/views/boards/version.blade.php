@@ -14,6 +14,7 @@
     $boardConfig = [
         'lib' => asset('vendor/excalidraw/board.js'),
         'snapshot' => $version->elements,
+        'previewUrl' => $version->preview_usage_id ? null : route('boards.versions.preview', [$board, $version]),
         'sync' => route('boards.poll', $board),
         'side' => auth()->user()->isAdmin() ? 'admin' : 'client',
         'canEdit' => false,

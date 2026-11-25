@@ -39,7 +39,7 @@
             <h3>{{ __('ui.versions') }}</h3>
             @forelse($versions as $v)
                 <a href="{{ route('boards.versions.show', [$board, $v]) }}" class="version-row">
-                    <x-avatar :name="$v->user?->name ?? '?'" :size="26" />
+                    @if($v->preview)<img src="{{ route('files.show', [$v->preview, $v->preview->name]) }}" alt="" class="version-thumb" loading="lazy">@else<x-avatar :name="$v->user?->name ?? '?'" :size="26" />@endif
                     <span><strong>{{ $v->description ?: ($v->is_auto ? __('ui.auto_version') : __('ui.version')) }}</strong>
                         <small class="muted">{{ $v->user?->name }} · {{ $v->created_at->format('d.m H:i') }}</small></span>
                 </a>

@@ -95,7 +95,14 @@ if (cfg.snapshot) {
     initial = data.elements.map(e => { sent[e.id] = e.version; return lockForeign(e); });
     setTimeout(() => loadFiles(data.files), 300);
 }
-if (cfg.snapshot) { request(cfg.sync + '?since=0').then(d => setTimeout(() => loadFiles(d.files), 300)); }
+if (cfg.snapshot) {
+    request(cfg.sync + '?since=0').then(d => setTimeout(() => loadFiles(d.files), 300));
+    // Wersja bez obrazu podglądu: generujemy go przy pierwszym obejrzeniu.
+    if (cfg.previewUrl) setTimeout(async () => {
+        const svg = await previewSvg(cfg.snapshot);
+        if (svg) request(cfg.previewUrl, { method: 'POST', body: JSON.stringify({ preview: svg }) }).catch(() => {});
+    }, 2500);
+}
 
 lib.mount(el, {
     excalidrawAPI: (a) => { api = a; },
@@ -119,16 +126,28 @@ if (!cfg.snapshot) {
     window.addEventListener('pagehide', () => {
         if (!editable) return;
         const fd = new FormData(); fd.append('_token', csrf);
+        if (lastPreview && lastPreview.length < 55000) fd.append('preview', lastPreview);
         navigator.sendBeacon(cfg.sessionEnd, fd);
     });
 }
+
+// Podgląd SVG bieżącej sceny (dla wersji i archiwum).
+async function previewSvg(elements) {
+    try {
+        const svg = await lib.exportToSvg({ elements: elements ?? api.getSceneElements(), appState: { exportBackground: true, viewBackgroundColor: '#ffffff' },
+            files: api?.getFiles() ?? {}, skipInliningFonts: true });
+        return svg.outerHTML;
+    } catch (e) { return null; }
+}
+let lastPreview = null;
+if (!cfg.snapshot) setInterval(async () => { if (api && editable && document.visibilityState === 'visible') lastPreview = await previewSvg(); }, 20000);
 
 // Zapis świadomej wersji.
 document.querySelector('[data-save-version]')?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     await push();
     const form = ev.target;
-    await request(cfg.versions, { method: 'POST', body: JSON.stringify({ description: form.description.value }) });
+    await request(cfg.versions, { method: 'POST', body: JSON.stringify({ description: form.description.value, preview: await previewSvg() }) });
     location.reload();
 });
 // Panel wersji i zmian.

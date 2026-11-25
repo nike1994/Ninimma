@@ -11,7 +11,7 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'company_name', 'tax_id', 'address', 'contact_email', 'contact_phone', 'retention_months', 'is_active',
+        'name', 'company_name', 'tax_id', 'address', 'contact_email', 'contact_phone', 'retention_months', 'is_active', 'arrangements',
     ];
 
     protected function casts(): array
@@ -27,6 +27,11 @@ class Client extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function credentials(): HasMany
+    {
+        return $this->hasMany(ClientCredential::class)->orderBy('label');
     }
 
     public function sites(): HasMany

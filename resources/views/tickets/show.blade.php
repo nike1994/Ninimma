@@ -250,6 +250,26 @@
         </section>
         @endif
 
+        @if($me->isAdmin())
+        <section class="card">
+            <h3><x-icon name="download" /> {{ __('arch.title') }}</h3>
+            @if($ticket->archive_state === 'offline')<p class="small muted">📦 {{ __('arch.in_package', ['package' => $ticket->offline_package]) }}</p>@endif
+            <div class="btn-row">
+                <a href="{{ route('admin.tickets.export', $ticket) }}" class="btn btn-small"><x-icon name="download" :size="14" /> ZIP</a>
+                @if($ticket->archive_state === 'active' && $ticket->status === \App\Enums\TicketStatus::Done)
+                    <form method="post" action="{{ route('admin.tickets.archive', $ticket) }}">@csrf<button class="btn btn-small">{{ __('arch.archive') }}</button></form>
+                @elseif($ticket->archive_state === 'archived')
+                    <form method="post" action="{{ route('admin.tickets.restore', $ticket) }}">@csrf<button class="btn btn-small">{{ __('arch.restore') }}</button></form>
+                @endif
+            </div>
+            <details class="danger-zone"><summary class="small muted">{{ __('arch.delete_on_request') }}</summary>
+                <form method="post" action="{{ route('admin.tickets.destroy', $ticket) }}" class="stack">@csrf @method('delete')
+                    <p class="small">{{ __('arch.delete_confirm', ['id' => $ticket->id]) }}</p>
+                    <input name="confirm" placeholder="{{ $ticket->id }}" required><button class="btn btn-small danger">{{ __('arch.delete') }}</button></form>
+            </details>
+        </section>
+        @endif
+
         @if($me->isAdmin() && $clientReads->isNotEmpty())
         <section class="card">
             <h3><x-icon name="eye" /> {{ __('ui.client_reads') }}</h3>

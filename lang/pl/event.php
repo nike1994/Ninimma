@@ -19,4 +19,8 @@ return [
     'limit_warning' => 'Wykorzystano :pct% limitu z wyceny v:v',
     'handover_requested' => 'Poproszono o odbiór',
     'handover_accepted' => 'Klient potwierdził odbiór',
+    'archived' => 'Zlecenie zarchiwizowane',
+    'restored' => 'Przywrócono z archiwum',
+    'moved_offline' => 'Przeniesiono offline (paczka :package)',
+    'restored_from_package' => 'Przywrócono z paczki offline',
 ];

@@ -109,6 +109,7 @@
                             <a href="{{ route('admin.terms.edit') }}"><x-icon name="file-text" :size="16" />{{ __('ui.terms') }}</a>
                             <a href="{{ route('admin.templates.index') }}"><x-icon name="repeat" :size="16" />{{ __('ui.templates') }}</a>
                             <a href="{{ route('admin.team') }}"><x-icon name="shield" :size="16" />{{ __('ui.team') }}</a>
+                            <a href="{{ route('admin.archive') }}"><x-icon name="download" :size="16" />{{ __('arch.title') }}</a>
                             <a href="{{ route('admin.system') }}"><x-icon name="activity" :size="16" />{{ __('ui.system_log') }}</a>
                         @endif
                         <form method="post" action="{{ route('logout') }}">@csrf<button><x-icon name="logout" :size="16" />{{ __('ui.logout') }}</button></form>

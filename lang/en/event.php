@@ -19,4 +19,8 @@ return [
     'limit_warning' => ':pct% of quote v:v limit used',
     'handover_requested' => 'Sign-off requested',
     'handover_accepted' => 'Client confirmed completion',
+    'archived' => 'Ticket archived',
+    'restored' => 'Restored from archive',
+    'moved_offline' => 'Moved offline (package :package)',
+    'restored_from_package' => 'Restored from offline package',
 ];

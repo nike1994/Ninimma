@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
             'collaboration' => \App\Models\Collaboration::class,
             'material' => \App\Models\Material::class,
             'site' => \App\Models\Site::class,
+            'board_version' => \App\Models\BoardVersion::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.

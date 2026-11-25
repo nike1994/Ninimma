@@ -9,7 +9,7 @@ class BoardVersion extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['board_id', 'user_id', 'elements', 'description', 'is_auto', 'revision'];
+    protected $fillable = ['board_id', 'user_id', 'elements', 'description', 'is_auto', 'revision', 'preview_usage_id'];
 
     protected function casts(): array
     {
@@ -19,6 +19,11 @@ class BoardVersion extends Model
     public function board(): BelongsTo
     {
         return $this->belongsTo(Board::class);
+    }
+
+    public function preview(): BelongsTo
+    {
+        return $this->belongsTo(FileUsage::class, 'preview_usage_id');
     }
 
     public function user(): BelongsTo
