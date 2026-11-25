@@ -97,7 +97,7 @@
             @endforelse
         </section>
 
-        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount)
+        @if($reminders->isNotEmpty() || $licenses->isNotEmpty() || $statsQueueCount || $siteDeadlines->isNotEmpty())
         <section class="card">
             <h2><x-icon name="bell" /> {{ __('ui.today_reminders') }}</h2>
             @foreach($reminders as $r)
@@ -107,6 +107,10 @@
             @foreach($licenses as $m)
                 <a href="{{ route('collaborations.show', $m->collaboration) }}" class="prio-item"><span class="prio-circle prio-urgent"></span>
                     <span><strong>{{ __('ui.license_ends', ['what' => $m->description]) }}</strong><small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->license_until->format('d.m') }}</small></span></a>
+            @endforeach
+            @foreach($siteDeadlines as $d)
+                <a href="{{ route('sites.show', $d->site) }}" class="prio-item"><span class="prio-circle {{ $d->daysLeft() <= 14 ? 'prio-urgent' : 'prio-high' }}"></span>
+                    <span><strong>{{ __('site.kind_'.$d->kind) }}: {{ $d->name }}</strong><small class="muted">{{ $d->site->domain }} · {{ $d->due_on->format('d.m') }} · {{ trans_choice('site.days_left', $d->daysLeft(), ['n' => $d->daysLeft()]) }}</small></span></a>
             @endforeach
             @if($statsQueueCount)
                 <a href="{{ route('social.stats') }}" class="prio-item"><span class="prio-circle"></span><span><strong>{{ trans_choice('social.stats_due', $statsQueueCount, ['n' => $statsQueueCount]) }}</strong></span></a>

@@ -66,6 +66,35 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::get('/reports', [\App\Http\Controllers\Influencers\MaterialController::class, 'clientReports'])->name('reports.index');
     Route::get('/reports/campaigns/{campaign}', [\App\Http\Controllers\Influencers\MaterialController::class, 'report'])->name('reports.campaign');
 
+    // Strony i SEO — klient: raport miesięczny.
+    Route::get('/my-sites', \App\Http\Controllers\Sites\ClientSiteController::class)->name('client.sites');
+
+    // Strony, administracja i SEO (administrator).
+    Route::middleware('admin')->group(function () {
+        $s = \App\Http\Controllers\Sites\SiteController::class;
+        $seo = \App\Http\Controllers\Sites\SeoController::class;
+        Route::get('/calendar', \App\Http\Controllers\Sites\JointCalendarController::class)->name('calendar');
+        Route::resource('sites', $s)->except('destroy');
+        Route::post('/sites/{site}/deadlines', [$s, 'storeDeadline'])->name('sites.deadlines.store');
+        Route::post('/deadlines/{deadline}/renew', [$s, 'renewDeadline'])->name('deadlines.renew');
+        Route::post('/sites/{site}/logs', [$s, 'storeLog'])->name('sites.logs.store');
+        Route::post('/sites/{site}/reviews', [$s, 'startReview'])->name('sites.reviews.store');
+        Route::get('/reviews/{review}', [$s, 'review'])->name('sites.reviews.show');
+        Route::put('/reviews/{review}', [$s, 'updateReview'])->name('sites.reviews.update');
+        Route::post('/reviews/{review}/problem', [$s, 'problem'])->name('sites.reviews.problem');
+        Route::post('/sites/{site}/phrases', [$seo, 'storePhrase'])->name('sites.phrases.store');
+        Route::post('/sites/{site}/positions', [$seo, 'storePositions'])->name('sites.positions.store');
+        Route::post('/sites/{site}/positions/import', [$seo, 'import'])->name('sites.positions.import');
+        Route::post('/sites/{site}/seo-contents', [$seo, 'storeContent'])->name('sites.seo-contents.store');
+        Route::post('/sites/{site}/seo-tasks', [$seo, 'storeTask'])->name('sites.seo-tasks.store');
+        Route::patch('/seo-tasks/{task}', [$seo, 'updateTask'])->name('seo-tasks.update');
+        Route::post('/sites/{site}/backlinks', [$seo, 'storeBacklink'])->name('sites.backlinks.store');
+        Route::patch('/backlinks/{backlink}', [$seo, 'toggleBacklink'])->name('backlinks.toggle');
+        Route::get('/checklists', [\App\Http\Controllers\Sites\ChecklistController::class, 'index'])->name('checklists.index');
+        Route::post('/checklists', [\App\Http\Controllers\Sites\ChecklistController::class, 'store'])->name('checklists.store');
+        Route::put('/checklists/{checklist}', [\App\Http\Controllers\Sites\ChecklistController::class, 'update'])->name('checklists.update');
+    });
+
     // Influencerzy (administrator).
     Route::middleware('admin')->group(function () {
         Route::resource('influencers', \App\Http\Controllers\Influencers\InfluencerController::class)->except('destroy');

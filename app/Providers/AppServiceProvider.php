@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
             'influencer' => \App\Models\Influencer::class,
             'collaboration' => \App\Models\Collaboration::class,
             'material' => \App\Models\Material::class,
+            'site' => \App\Models\Site::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.

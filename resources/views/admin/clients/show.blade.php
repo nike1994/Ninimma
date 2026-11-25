@@ -58,6 +58,15 @@
         </section>
 
         <section class="card">
+            <div class="card-head"><h2><x-icon name="layers" /> {{ __('site.sites') }}</h2><a href="{{ route('sites.create', ['client' => $client->id]) }}" class="btn btn-small"><x-icon name="plus" :size="14" /></a></div>
+            @forelse($client->sites as $site)
+                <a href="{{ route('sites.show', $site) }}" class="side-file"><x-icon name="code" :size="16" /><span>{{ $site->domain }}</span><small class="muted">{{ __('site.platform_'.$site->platform) }}</small></a>
+            @empty
+                <p class="muted small">{{ __('ui.nothing_here') }}</p>
+            @endforelse
+        </section>
+
+        <section class="card">
             <div class="card-head"><h2><x-icon name="building" /> {{ __('ui.client_card') }}</h2></div>
             <dl class="dl">
                 <dt>{{ __('ui.tax_id') }}</dt><dd>{{ $client->tax_id ?: '—' }}</dd>

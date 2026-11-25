@@ -30,6 +30,14 @@ Schedule::call(function () {
     }
 })->dailyAt('06:00')->name('recurring-tickets');
 
+// Przeglądy stron tworzą się same jako zlecenia z listą kontrolną.
+Schedule::call(function () {
+    $n = app(\App\Services\SiteService::class)->runDueReviews();
+    if ($n) {
+        SystemLog::record('site_reviews', "Created {$n} site reviews");
+    }
+})->dailyAt('06:10')->name('site-reviews');
+
 // Porzucone wysyłki w kawałkach.
 Schedule::call(function () {
     UploadSession::where('updated_at', '<', now()->subDay())->get()->each(function ($s) {

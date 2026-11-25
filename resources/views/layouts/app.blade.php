@@ -33,11 +33,19 @@
                     </div>
                 </div>
                 <a href="{{ route('influencers.index') }}" @class(['active' => request()->routeIs('influencers.*', 'collaborations.*', 'materials.*')])><x-icon name="users" />{{ __('ui.influencers') }}</a>
-                <span class="nav-soon" title="{{ __('ui.stage', ['n' => 5]) }}"><x-icon name="layers" />{{ __('ui.sites_seo') }}</span>
+                <div @class(['nav-group', 'open' => request()->routeIs('sites.*', 'calendar', 'checklists.*')])>
+                    <a href="{{ route('sites.index') }}" @class(['nav-group-head', 'active-soft' => request()->routeIs('sites.*', 'calendar', 'checklists.*')])><x-icon name="layers" />{{ __('ui.sites_seo') }}<x-icon name="chevron-down" :size="16" class="nav-caret" /></a>
+                    <div class="nav-sub">
+                        <a href="{{ route('sites.index') }}" @class(['active' => request()->routeIs('sites.index', 'sites.show', 'sites.edit', 'sites.create')])>{{ __('site.sites') }}</a>
+                        <a href="{{ route('calendar') }}" @class(['active' => request()->routeIs('calendar')])>{{ __('site.joint_calendar') }}</a>
+                        <a href="{{ route('checklists.index') }}" @class(['active' => request()->routeIs('checklists.*')])>{{ __('site.checklists') }}</a>
+                    </div>
+                </div>
                 <a href="{{ route('admin.clients.index') }}" @class(['active' => request()->routeIs('admin.clients.*')])><x-icon name="building" />{{ __('ui.clients') }}</a>
             @else
                 <a href="{{ route('files.index') }}" @class(['active' => request()->routeIs('files.index')])><x-icon name="file" />{{ __('ui.files') }}</a>
                 <a href="{{ route('publications.index') }}" @class(['active' => request()->routeIs('publications.*')])><x-icon name="megaphone" />{{ __('ui.publications') }}</a>
+                <a href="{{ route('client.sites') }}" @class(['active' => request()->routeIs('client.sites')])><x-icon name="layers" />{{ __('ui.sites_seo') }}</a>
                 <a href="{{ route('materials.index') }}" @class(['active' => request()->routeIs('materials.*')])><x-icon name="image" />{{ __('inf.ready_materials') }}</a>
                 <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.*')])><x-icon name="bar-chart" />{{ __('inf.reports') }}</a>
                 <a href="{{ route('billing.index') }}" @class(['active' => request()->routeIs('billing.*')])><x-icon name="grid" />{{ __('ui.billing') }}</a>
@@ -45,7 +53,7 @@
             @endif
         </nav>
 
-        @if($me->isAdmin() && ! request()->routeIs('social.*', 'influencers.*', 'collaborations.*'))
+        @if($me->isAdmin() && ! request()->routeIs('social.*', 'influencers.*', 'collaborations.*', 'sites.*', 'calendar', 'checklists.*'))
             <div class="sidebar-divider"></div>
             <div class="sidebar-label">{{ __('ui.ticket_list') }}</div>
             <div class="mini-list">

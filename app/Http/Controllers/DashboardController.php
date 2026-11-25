@@ -42,6 +42,7 @@ class DashboardController extends Controller
                 'reminders' => \App\Models\Reminder::with('remindable')->where('is_done', false)->whereDate('due_on', '<=', today())->orderBy('due_on')->limit(6)->get(),
                 'licenses' => \App\Models\Material::with('collaboration.influencer')->whereNotNull('license_until')
                     ->whereDate('license_until', '<=', today()->addDays(14))->whereDate('license_until', '>=', today()->subDays(7))->orderBy('license_until')->limit(5)->get(),
+                'siteDeadlines' => \App\Models\SiteDeadline::with('site')->whereNull('renewed_at')->whereDate('due_on', '<=', today()->addDays(30))->orderBy('due_on')->limit(5)->get(),
                 'statsQueueCount' => \App\Services\SocialStats::statsQueue()->count(),
                 'team' => User::where('role', 'admin')->where('is_active', true)->orderBy('name')->get(),
                 'lastCron' => Cache::get('agency:last_cron'),

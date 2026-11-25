@@ -18,7 +18,7 @@ class Ticket extends Model
 
     protected $attributes = ['priority' => 'normal', 'archive_state' => 'active', 'reminders_sent' => 0];
 
-    protected $fillable = ['client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by', 'priority', 'due_on', 'assigned_to'];
+    protected $fillable = ['site_id', 'campaign_id', 'client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by', 'priority', 'due_on', 'assigned_to'];
 
     protected function casts(): array
     {
@@ -57,6 +57,11 @@ class Ticket extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
     }
 
     public function boards(): HasMany

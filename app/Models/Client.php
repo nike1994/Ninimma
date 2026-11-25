@@ -29,6 +29,11 @@ class Client extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    public function sites(): HasMany
+    {
+        return $this->hasMany(Site::class);
+    }
+
     public function invitations(): HasMany
     {
         return $this->hasMany(Invitation::class);

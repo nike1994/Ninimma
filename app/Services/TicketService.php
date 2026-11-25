@@ -32,6 +32,8 @@ class TicketService
                 'priority' => $author->isAdmin() ? ($data['priority'] ?? 'normal') : 'normal',
                 'due_on' => $author->isAdmin() ? ($data['due_on'] ?? null) : null,
                 'assigned_to' => $author->isAdmin() ? ($data['assigned_to'] ?? null) : null,
+                'site_id' => $data['site_id'] ?? null,
+                'campaign_id' => $data['campaign_id'] ?? null,
             ]);
             $ticket->forceFill(['last_activity_at' => now()])->save();
             $this->event($ticket, $author, 'created');
@@ -105,6 +107,12 @@ class TicketService
 
         if ($status->waitsForClient()) {
             $this->notifyClient($ticket, new TicketNeedsClient($ticket, 0));
+        }
+        // Dziennik strony: wpisy powstają także z zakończonych zleceń (poza przeglądami, które logują się same).
+        if ($status === TicketStatus::Done && $ticket->site_id && $ticket->type->value !== 'site_review') {
+            \App\Models\SiteLog::create(['site_id' => $ticket->site_id, 'ticket_id' => $ticket->id, 'user_id' => $by->id,
+                'logged_on' => today(), 'kind' => $ticket->type->value === 'bug' ? 'incident' : 'update',
+                'description' => '#'.$ticket->id.' '.$ticket->title]);
         }
     }
 
