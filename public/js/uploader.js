@@ -107,6 +107,8 @@
                 }
                 item.appendChild(hidden);
                 item.classList.add('done');
+                // Dla podglądu posta: plik z przeglądarki (bez ponownego pobierania).
+                form.dispatchEvent(new CustomEvent('upload-done', { detail: { file, usageId: res.usage_id, mime: res.mime } }));
             } catch (e) {
                 item.classList.add('error');
                 item.querySelector('progress')?.replaceWith(Object.assign(document.createElement('small'), { textContent: e.message }));

@@ -52,6 +52,12 @@ hashtagów i akceptacja klienta ustawiane raz; przeciągnięte grafiki/filmy sta
 „+” dokłada pliki do karuzeli), „Rozłóż daty” przydziela kolejne wybrane dni tygodnia. Ustawienia zapamiętują się jako
 domyślne klienta i podpowiadają się też w zwykłym formularzu posta. Każdą treść można zduplikować.
 
+**Podgląd posta i limity.** W formularzu treści obok pól jest podgląd na żywo dla kont wybranych w publikacjach
+(Instagram, Facebook, TikTok, LinkedIn): kadr (Instagram/Facebook przycinają do 4:5–1.91:1, film jako rolka 9:16),
+ucięcie opisu na „…więcej” / „Wyświetl więcej”, hashtagi. Liczniki znaków i hashtagów pokazują najostrzejszy limit
+z wybranych platform (Instagram i TikTok 2200 znaków, Instagram 30 hashtagów, LinkedIn 3000, Pinterest 500);
+przekroczenie blokuje zapis tej publikacji z podpowiedzią (np. krótszy opis pod platformę).
+
 **Planowanie w kalendarzu.** Przeciąganie postów na inny dzień (kalendarz miesięczny) albo dzień i godzinę (tydzień
 na pulpicie social media) — z tymi samymi zasadami co formularz (licencje, okres promocji przesuwa się razem z postem,
 automatyczna publikacja dostaje nową szansę). „+” w dniu i dwuklik w godzinę tygodnia zakładają post z tym terminem

@@ -244,6 +244,12 @@ class ContentController extends Controller
                 $pub->forceFill(['api_status' => null, 'api_error' => null, 'api_attempts' => 0, 'api_next_attempt_at' => null, 'api_container' => null]);
             }
             $this->checkLicense($pub, $materials, $i, $licenseErrors);
+            // Limity platformy (znaki, hashtagi) — inaczej publikacja i tak by się nie udała.
+            if ($status !== 'cancelled' && ($pub->isDirty() || ! $pub->exists || $content->wasChanged(['description', 'hashtags']))) {
+                foreach (\App\Support\PlatformLimits::check($account->platform, \App\Support\PlatformLimits::textFor($pub->caption, $content->description, $content->hashtags)) as $msg) {
+                    $licenseErrors['pubs.'.$i.'.caption'][] = $msg;
+                }
+            }
             $pub->save();
             app(\App\Services\AdService::class)->syncFromPublication($pub);
         }

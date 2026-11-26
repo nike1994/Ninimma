@@ -94,4 +94,33 @@ class PlanningTest extends TestCase
         $this->actingAs($client)->get(route('publications.calendar', ['month' => $p->scheduled_at->format('Y-m')]))->assertOk()
             ->assertSee('data-peek', false)->assertDontSee('draggable="true"', false)->assertDontSee('month-add', false);
     }
+
+    public function test_platform_limits_block_too_long_text_and_too_many_hashtags(): void
+    {
+        $ig = SocialAccount::factory()->create(['client_id' => $this->acc->client_id, 'platform' => 'instagram']);
+        $fb = SocialAccount::factory()->create(['client_id' => $this->acc->client_id, 'platform' => 'facebook']);
+        $tags = implode(' ', array_map(fn ($i) => '#tag'.$i, range(1, 31)));
+        $base = ['client_id' => $this->acc->client_id, 'title' => 'Post', 'type' => 'post', 'format' => 'image', 'stage' => 'ready'];
+        $at = today()->addDays(2)->format('Y-m-d').' 12:00';
+
+        // 31 hashtagów: Instagram nie, Facebook tak (bez limitu) — ten sam tekst, różne platformy.
+        $this->post(route('social.contents.store'), $base + ['description' => 'Opis', 'hashtags' => $tags,
+            'pubs' => [['social_account_id' => $ig->id, 'scheduled_at' => $at], ['social_account_id' => $fb->id, 'scheduled_at' => $at]]])
+            ->assertSessionHasErrors('pubs.0.caption')->assertSessionDoesntHaveErrors('pubs.1.caption');
+        $this->assertSame(0, Content::count());
+
+        // Własny, krótszy opis pod Instagram rozwiązuje problem.
+        $this->post(route('social.contents.store'), $base + ['description' => 'Opis', 'hashtags' => $tags,
+            'pubs' => [['social_account_id' => $ig->id, 'scheduled_at' => $at, 'caption' => 'Krótko #jeden #dwa'], ['social_account_id' => $fb->id, 'scheduled_at' => $at]]])
+            ->assertSessionHasNoErrors();
+
+        // 2201 znaków (emoji liczone jako znak) — za długo na Instagram.
+        $long = str_repeat('a', 2200).'🌿';
+        $this->assertSame(2201, \App\Support\PlatformLimits::count($long)['chars']);
+        $this->post(route('social.contents.store'), $base + ['description' => $long,
+            'pubs' => [['social_account_id' => $ig->id, 'scheduled_at' => $at]]])->assertSessionHasErrors('pubs.0.caption');
+
+        $this->get(route('social.contents.edit', Content::first()))->assertOk()->assertSee('data-preview', false)->assertSee('post-preview.js', false)
+            ->assertSee('&quot;instagram&quot;:{&quot;chars&quot;:2200,&quot;tags&quot;:30', false);
+    }
 }

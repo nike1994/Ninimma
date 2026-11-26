@@ -98,6 +98,6 @@
 @endif
 @endsection
 @push('scripts')
-<script src="{{ asset('js/uploader.js') }}?v=4"></script>
+<script src="{{ asset('js/uploader.js') }}?v=5"></script>
 <script src="{{ asset('js/batch.js') }}?v=2"></script>
 @endpush

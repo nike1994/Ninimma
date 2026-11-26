@@ -167,4 +167,7 @@ return [
     'duplicate' => 'Duplicate',
     'duplicated' => 'Copy created — change what you need and add publications.',
     'copy_suffix' => '(copy)',
+    'preview' => 'Post preview',
+    'limit_chars' => ':platform: the text has :n characters, the limit is :max.',
+    'limit_tags' => ':platform: :n hashtags, the limit is :max.',
 ];

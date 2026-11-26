@@ -10,7 +10,15 @@
         </div>
     @endif
 </div>
-<form method="post" action="{{ $content->exists ? route('social.contents.update', $content) : route('social.contents.store') }}" class="content-form" data-message-form>
+@php
+    $previewAccounts = $accounts->mapWithKeys(fn ($a) => [$a->id => ['name' => $a->name, 'handle' => ltrim((string) ($a->handle ?: $a->name), '@'), 'platform' => $a->platform->value, 'label' => $a->platform->label()]]);
+    $previewFiles = $content->exists ? $content->files->filter(fn ($f) => $f->file)->map(fn ($f) => [
+        'url' => $f->file->isImage() ? route('files.show', [$f, $f->name]) : ($f->file->poster_id ? route('files.poster', $f) : null),
+        'video' => $f->file->isVideo(),
+    ])->values() : collect();
+@endphp
+<form method="post" action="{{ $content->exists ? route('social.contents.update', $content) : route('social.contents.store') }}" class="content-form" data-message-form
+      data-preview-accounts="{{ json_encode($previewAccounts) }}" data-limits="{{ json_encode(\App\Support\PlatformLimits::LIMITS) }}" data-files="{{ json_encode($previewFiles) }}">
     @csrf @if($content->exists) @method('put') @endif
     <section class="card stack">
         <h2><x-icon name="file-text" /> {{ __('social.content') }}</h2>
@@ -40,7 +48,8 @@
                 @foreach($campaigns as $cmp)<option value="{{ $cmp->id }}" data-client="{{ $cmp->client_id }}" @selected(old('campaign_id', $content->campaign_id) == $cmp->id)>{{ $cmp->name }}</option>@endforeach
             </select>
         </label>
-        <x-field name="description" type="textarea" :label="__('ui.description')" :value="$content->description" rows="5" data-paste-target />
+        <x-field name="description" type="textarea" :label="__('ui.description')" :value="$content->description" rows="5" data-paste-target data-desc />
+        <div class="text-counter" data-counter="main" aria-live="polite"></div>
         <x-field name="hashtags" :label="__('social.hashtags')" :value="$content->hashtags" placeholder="#marka #produkt" data-hashtags />
         @if($hashtagSets->isNotEmpty())
             <div class="tag-sets" data-tag-sets>
@@ -93,10 +102,18 @@
         <button type="button" class="btn btn-small" data-add-pub><x-icon name="plus" :size="14" /> {{ __('social.add_publication') }}</button>
     </section>
     <button class="btn btn-send btn-block"><x-icon name="check" :size="18" />{{ __('ui.save') }}</button>
+
+    <aside class="card post-preview" data-preview aria-label="{{ __('social.preview') }}">
+        <h2><x-icon name="eye" /> {{ __('social.preview') }}</h2>
+        <div class="preview-tabs" data-preview-tabs role="tablist"></div>
+        <div class="preview-stage" data-preview-stage></div>
+        <p class="muted small" data-preview-note></p>
+    </aside>
 </form>
 @endsection
 @push('scripts')
-<script src="{{ asset('js/uploader.js') }}?v=4"></script>
+<script src="{{ asset('js/uploader.js') }}?v=5"></script>
+<script src="{{ asset('js/post-preview.js') }}?v=2"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');

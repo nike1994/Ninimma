@@ -24,7 +24,8 @@
     </div>
     <details class="pub-more" @if($v('caption', $p?->caption) || $on('promoted', $p?->promoted)) open @endif>
         <summary class="muted small">{{ __('social.more_options') }}</summary>
-        <label class="field"><span>{{ __('social.caption_override') }}</span><textarea name="pubs[{{ $i }}][caption]" rows="2">{{ $v('caption', $p?->caption) }}</textarea></label>
+        <label class="field"><span>{{ __('social.caption_override') }}</span><textarea name="pubs[{{ $i }}][caption]" rows="2" data-pub-caption>{{ $v('caption', $p?->caption) }}</textarea></label>
+        <div class="text-counter" data-counter="pub"></div>
         <div class="pub-grid">
             <label class="check"><input type="checkbox" name="pubs[{{ $i }}][promoted]" value="1" @checked($on('promoted', $p?->promoted))> {{ __('social.promoted') }}</label>
             <label class="field"><span>{{ __('social.budget') }}</span><input type="number" step="0.01" min="0" name="pubs[{{ $i }}][promo_budget]" value="{{ $v('promo_budget', $p?->promo_budget) }}"></label>

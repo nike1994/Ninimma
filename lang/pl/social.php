@@ -167,4 +167,7 @@ return [
     'duplicate' => 'Duplikuj',
     'duplicated' => 'Utworzono kopię — zmień, co trzeba, i dodaj publikacje.',
     'copy_suffix' => '(kopia)',
+    'preview' => 'Podgląd posta',
+    'limit_chars' => ':platform: tekst ma :n znaków, limit to :max.',
+    'limit_tags' => ':platform: :n hashtagów, limit to :max.',
 ];
