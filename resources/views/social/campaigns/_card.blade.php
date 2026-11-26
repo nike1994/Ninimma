@@ -10,6 +10,10 @@
         <span class="mk-status mk-{{ $c->status }}">{{ __('mkt.status_'.$c->status) }}</span>
         <small class="mk-card-meta"><x-icon name="calendar" :size="13" /> @if($c->starts_on){{ $c->starts_on->translatedFormat('j M') }}@if($c->ends_on) – {{ $c->ends_on->translatedFormat('j M') }}@endif @else — @endif
             <span>{{ number_format((float) $c->budget, 2, ',', ' ') }} zł</span></small>
+        @php($g = $goals[$c->id])
+        @php($pc = $pacing[$c->id])
+        @if($g->pct !== null || ($pc && $pc->state !== 'ok'))<small class="mk-card-flags">@if($g->pct !== null)<span @class(['mk-goal-pct', 'done' => $g->pct >= 100])>{{ __('mkt.goal_short', ['n' => $g->pct]) }}</span>@endif
+            @if($pc && $pc->state !== 'ok')<span class="mk-pace-flag mk-pace-{{ $pc->state }}" title="{{ __('mkt.pace_'.$pc->state) }}">⚠ {{ __('mkt.pace_short_'.$pc->state) }}</span>@endif</small>@endif
         @if($used !== null)<i class="mk-card-bar"><i style="width: {{ $used }}%"></i></i>@endif
     </span>
 </a>

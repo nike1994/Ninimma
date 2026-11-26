@@ -60,4 +60,8 @@ return [
     'retry' => 'Spróbuj ponownie',
     'auto_badge' => 'auto',
     'stats_api' => 'z API',
+    'meta_ads' => 'Meta Ads — wyniki reklam i odbiorcy',
+    'meta_ads_token' => 'Token dostępu (użytkownik systemowy, ads_read)',
+    'howto_meta_ads' => 'W Business Managerze: Ustawienia firmy → Użytkownicy systemowi → dodaj użytkownika, przypisz mu konta reklamowe klientów (wyświetlanie wyników) i wygeneruj token z uprawnieniem ads_read. Następnie przy reklamie wpisz ID kampanii z menedżera reklam — codziennie rano pobiorą się wydatki, zasięg, kliknięcia, wejścia na stronę, koszyk, zakupy, leady oraz odbiorcy (wiek, płeć, województwa, kraje).',
+    'meta_ads_linked' => 'Reklam z ID Meta: :n',
 ];

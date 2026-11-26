@@ -48,6 +48,13 @@ lejek (zasięg → wejścia na stronę → dodania do koszyka → zakup/lead; da
 najlepsze kreacje według CTR, lokalizacje (top miasta na mapie Polski / top kraje) i ranking najskuteczniejszych
 kampanii (ROAS, konwersje). Struktura odbiorców wpisywana ręcznie albo importowana z CSV menedżera reklam
 (kolumny wiek/płeć/region/kraj + zasięg lub wyświetlenia).
+Każda kampania ma rodzaj celu (sprzedaż, leady, ruch, zasięg, zaangażowanie) i opcjonalny cel liczbowy — od niego
+zależą wskaźniki (np. koszt leada, koszt zakupu, CPM, częstotliwość), lejek, pasek realizacji celu i ranking.
+Tempo budżetu: wydatki na reklamy porównywane z upływem czasu kampanii; przy zbyt szybkim lub zbyt wolnym tempie
+ostrzeżenie na karcie i e-mail do administratorów (cron 07:45, ten sam alert najwyżej raz w tygodniu).
+**Meta Ads (Administracja → Integracje):** token użytkownika systemowego z `ads_read` + ID kampanii z menedżera reklam
+przy reklamie → codziennie o 05:40 (i przyciskiem „Pobierz z Meta Ads”) pobierają się wydatki, zasięg, kliknięcia,
+wejścia na stronę, koszyk, zakupy z przychodem, leady oraz odbiorcy (wiek, płeć, województwa, kraje).
 
 **Marketing płatny (reklamy i promocje).** Promowane posty (budżet i okres przy publikacji tworzą wpis reklamy)
 oraz samodzielne kampanie reklamowe (Meta, Google, TikTok, LinkedIn, Pinterest, YouTube) z celem, budżetem planowanym

@@ -31,6 +31,8 @@ class CampaignController extends Controller
         // Wyniki każdej kampanii (karty, ranking, wskaźniki).
         $insights = $all->mapWithKeys(fn ($c) => [$c->id => new CampaignInsights($c)]);
         $totals = $insights->map(fn ($i) => $i->totals());
+        $goals = $insights->map(fn ($i, $id) => $i->goal($totals[$id]));
+        $pacing = $insights->map(fn ($i, $id) => $i->pacing($totals[$id]));
         $sum = fn ($k, $ids = null) => ($ids ?? $list->pluck('id'))->sum(fn ($id) => $totals[$id][$k] ?? 0);
         $ids = $list->pluck('id');
         $spend = $sum('spend');
@@ -49,7 +51,8 @@ class CampaignController extends Controller
 
         return view('social.campaigns.index', [
             'list' => $list, 'counts' => $counts, 'status' => $status, 'clientId' => $clientId, 'view' => $request->query('view') === 'grid' ? 'grid' : 'list',
-            'totals' => $totals, 'insights' => $insights,
+            'totals' => $totals, 'insights' => $insights, 'goals' => $goals, 'pacing' => $pacing,
+            'metaAds' => \App\Services\Social\MetaAdsSync::enabled(),
             'kpi' => [
                 'active' => $all->where('status', 'active')->count(),
                 'reach' => $sum('reach'), 'reach_trend' => $pct(0),
@@ -61,7 +64,8 @@ class CampaignController extends Controller
             'accountsCount' => $accounts->count(),
             'selected' => $selected, 'sel' => $sel, 'tab' => $tab,
             'selTotals' => $selected ? $totals[$selected->id] : null,
-            'ranking' => $list->sortByDesc(fn ($c) => [$totals[$c->id]['roas'] ?? 0, $totals[$c->id]['conversions']])->values(),
+            // Ranking: realizacja celu (%), potem ROAS i konwersje.
+            'ranking' => $list->sortByDesc(fn ($c) => [$goals[$c->id]->pct ?? -1, $totals[$c->id]['roas'] ?? 0, $totals[$c->id]['conversions']])->values(),
         ]);
     }
 
@@ -89,7 +93,7 @@ class CampaignController extends Controller
                 $rows[] = [$dim, $label, $share];
             }
         }
-        $this->saveAudience($campaign, $rows);
+        $campaign->saveAudience($rows);
 
         return back()->with('status', __('ui.saved'));
     }
@@ -102,12 +106,29 @@ class CampaignController extends Controller
         if (! $rows) {
             return back()->withErrors(['csv' => __('mkt.import_empty')]);
         }
-        $this->saveAudience($campaign, $rows, array_unique(array_column($rows, 0)));
+        $campaign->saveAudience($rows, array_unique(array_column($rows, 0)), 'import');
 
         return back()->with('status', __('mkt.import_done', ['n' => count($rows)]));
     }
 
     /** „Warszawa: 18,4” / „Warszawa 18.4%” w kolejnych liniach → [label => %]. */
+    /** Pobranie wyników reklam i odbiorców z Meta Ads dla jednej kampanii (przycisk). */
+    public function sync(Campaign $campaign, \App\Services\Social\MetaAdsSync $sync)
+    {
+        if (! \App\Services\Social\MetaAdsSync::enabled()) {
+            return back()->with('error', __('mkt.meta_off'));
+        }
+        $r = $sync->syncCampaign($campaign);
+        if ($r['ads'] === 0) {
+            return back()->with('error', __('mkt.meta_no_ids'));
+        }
+        if ($r['ok'] === 0) {
+            return back()->with('error', __('mkt.meta_failed', ['msg' => $r['errors'][0] ?? '—']));
+        }
+
+        return back()->with('status', __('mkt.meta_done', ['n' => $r['ok']]).($r['audience'] ? ' '.__('mkt.meta_audience_done') : ''));
+    }
+
     public static function parseShares(string $text): array
     {
         $out = [];
@@ -120,15 +141,6 @@ class CampaignController extends Controller
         return array_slice($out, 0, 20, true);
     }
 
-    private function saveAudience(Campaign $campaign, array $rows, ?array $onlyDims = null): void
-    {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($campaign, $rows, $onlyDims) {
-            $campaign->audiences()->when($onlyDims, fn ($q) => $q->whereIn('dimension', $onlyDims))->delete();
-            foreach ($rows as [$dim, $label, $share]) {
-                $campaign->audiences()->updateOrCreate(['dimension' => $dim, 'label' => $label], ['share' => round($share, 2)]);
-            }
-        });
-    }
 
     public function create(Request $request)
     {
@@ -171,6 +183,8 @@ class CampaignController extends Controller
             'status' => ['required', Rule::in(Campaign::STATUSES)],
             'revenue' => ['nullable', 'numeric', 'min:0'],
             'leads' => ['nullable', 'integer', 'min:0'],
+            'objective' => ['nullable', Rule::in(Campaign::OBJECTIVES)],
+            'target_value' => ['nullable', 'numeric', 'min:0'],
         ]);
     }
 }

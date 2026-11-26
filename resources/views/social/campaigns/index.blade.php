@@ -7,6 +7,14 @@
     $zl = fn ($v) => number_format((float) $v, 2, ',', ' ').' zł';
     // Nazwa kampanii często zawiera już klienta — nie powtarzamy go
     $withClient = fn ($c) => \Illuminate\Support\Str::contains(mb_strtolower($c->name), mb_strtolower($c->client->name)) ? null : $c->client->name;
+    // Formatowanie wartości wskaźnika wg typu (liczba, zł, %, ×, częstotliwość).
+    $fmt = fn ($v, $f) => $v === null ? '—' : match ($f) {
+        'money' => $v >= 100000 ? \App\Support\Num::short((int) $v).' zł' : number_format((float) $v, $v >= 1000 ? 0 : 2, ',', ' ').' zł',
+        'pct' => str_replace('.', ',', (string) round($v, 2)).'%',
+        'x' => str_replace('.', ',', (string) $v).' ×',
+        'freq' => str_replace('.', ',', (string) round($v, 1)),
+        default => $v >= 100000 ? \App\Support\Num::short((int) $v) : number_format((float) $v, 0, ',', ' '),
+    };
     $pct = fn ($v) => $v === null ? '—' : str_replace('.', ',', $v > 0 && $v < 1 ? number_format($v, 2) : (string) round($v, 1));
     $trend = fn ($v) => $v === null ? '' : '<span class="trend-pill'.($v < 0 ? ' down' : '').'">'.($v < 0 ? '↓ ' : '↑ +').abs($v).'%</span>';
 @endphp
@@ -83,12 +91,12 @@
                 <div class="mk-cover">@if($cover)<img src="{{ route('files.show', [$cover, $cover->name]) }}" alt="">@endif
                     <span class="mk-cover-text"><small>{{ $selected->client->name }}</small><strong>{{ $selected->name }}</strong></span></div>
                 <div class="mk-results">
-                    <h3>{{ __('mkt.results') }}</h3>
+                    <h3>{{ __('mkt.results') }} <span class="mk-obj">{{ __('mkt.obj_'.$sel->objective()) }}</span></h3>
                     <div class="mk-metrics">
-                        <div><small>{{ __('mkt.reach') }}</small><strong>{{ $short($t['reach']) }}</strong>{!! $trend($tr['reach']) !!}</div>
-                        <div><small>{{ __('mkt.engagement') }}</small><strong>{{ $short($t['engagement']) }}</strong>{!! $trend($tr['engagement']) !!}</div>
-                        <div><small>{{ __('mkt.clicks') }}</small><strong>{{ number_format($t['clicks'], 0, ',', ' ') }}</strong>{!! $trend($tr['clicks']) !!}</div>
-                        <div><small>CTR</small><strong>{{ $t['ctr'] !== null ? str_replace('.', ',', $t['ctr']).'%' : '—' }}</strong></div>
+                        @foreach($sel->metrics($t) as $mt)
+                            <div><small>{{ __('mkt.m_'.$mt->key) }}@if(\Illuminate\Support\Facades\Lang::has('mkt.m_'.$mt->key.'_hint')) <span class="mk-info" title="{{ __('mkt.m_'.$mt->key.'_hint') }}">ⓘ</span>@endif</small>
+                                <strong>{{ $fmt($mt->value, $mt->format) }}</strong>{!! isset($tr[$mt->key]) ? $trend($tr[$mt->key]) : '' !!}</div>
+                        @endforeach
                     </div>
                     <div class="mk-chart-head"><h3>{{ __('mkt.over_time') }}</h3><span class="mk-legend"><i class="r"></i>{{ __('mkt.reach') }} <i class="c"></i>{{ __('mkt.clicks') }}</span></div>
                     @include('social.campaigns._chart', ['s' => $sel->series()])
@@ -103,6 +111,14 @@
                     @php($pctUsed = (float) $selected->budget > 0 ? (int) round($t['spend'] / (float) $selected->budget * 100) : null)
                     <i class="mk-bar"><i style="width: {{ min(100, $pctUsed ?? 0) }}%" @class(['over' => ($pctUsed ?? 0) > 100])></i></i>
                     <small class="muted">{{ __('mkt.spent') }}: {{ $zl($t['spend']) }}@if($pctUsed !== null) ({{ $pctUsed }}%)@endif</small>
+                    @if($pc = $pacing[$selected->id])
+                        <div @class(['mk-pace', 'mk-pace-'.$pc->state])>
+                            <span class="mk-pace-title">{{ __('mkt.pace_'.$pc->state) }}</span>
+                            <i class="mk-bar mk-pace-bar"><i style="width: {{ min(100, $pc->spend_pct) }}%"></i><b style="left: {{ $pc->time_pct }}%" title="{{ __('mkt.pace_time', ['n' => $pc->time_pct]) }}"></b></i>
+                            <small>{{ __('mkt.pace_line', ['spent' => $zl($pc->spent), 'budget' => $zl($pc->budget), 'sp' => $pc->spend_pct, 'tp' => $pc->time_pct]) }}</small>
+                            @if($pc->state !== 'ok')<small>{{ __('mkt.pace_projected', ['sum' => $zl($pc->projected), 'days' => $pc->days_left]) }}</small>@endif
+                        </div>
+                    @endif
                 </div>
                 <div class="mk-box">
                     <h3><x-icon name="share" :size="18" /> {{ __('mkt.platforms') }}</h3>
@@ -113,8 +129,15 @@
                 </div>
                 <div class="mk-box">
                     <h3><x-icon name="flag" :size="18" /> {{ __('mkt.goal') }}</h3>
+                    @php($g = $goals[$selected->id])
+                    <div class="mk-goalbox">
+                        <span class="mk-obj">{{ __('mkt.obj_'.$g->objective) }}</span>
+                        <div class="mk-goal-num"><strong>{{ $fmt($g->value, $g->format) }}</strong><small class="muted d-block">@if($g->target){{ __('mkt.goal_of', ['target' => $fmt($g->target, $g->format)]) }} · @endif{{ mb_strtolower(__('mkt.m_'.$g->metric)) }}</small></div>
+                        @if($g->pct !== null)<i class="mk-bar"><i style="width: {{ min(100, $g->pct) }}%" @class(['done' => $g->pct >= 100])></i></i><small @class(['mk-goal-pct', 'done' => $g->pct >= 100])>{{ __('mkt.goal_pct', ['n' => $g->pct]) }}</small>
+                        @else<small class="muted">{{ __('mkt.no_target') }} <a href="{{ route('social.campaigns.edit', $selected) }}">{{ __('mkt.set_target') }} →</a></small>@endif
+                    </div>
                     @if($selected->goal)<p class="mk-goal"><x-icon name="check-circle" :size="18" /> {{ $selected->goal }}</p>
-                    @else<p class="muted small">{{ __('mkt.no_goal') }} <a href="{{ route('social.campaigns.edit', $selected) }}">{{ __('mkt.edit') }} →</a></p>@endif
+                    @endif
                 </div>
             </div>
 
@@ -124,6 +147,7 @@
                 <dt>{{ __('mkt.status') }}</dt><dd>{{ __('mkt.status_'.$selected->status) }}</dd>
                 <dt>{{ __('mkt.dates') }}</dt><dd>{{ $selected->starts_on?->format('d.m.Y') ?? '—' }} – {{ $selected->ends_on?->format('d.m.Y') ?? '—' }}</dd>
                 <dt>{{ __('mkt.budget') }}</dt><dd>{{ $zl($selected->budget) }}</dd>
+                <dt>{{ __('mkt.objective') }}</dt><dd>{{ __('mkt.obj_'.$sel->objective()) }}@if($selected->target_value) · {{ __('mkt.target') }}: {{ $fmt($selected->target_value, $goals[$selected->id]->format) }}@endif</dd>
                 <dt>{{ __('mkt.goal') }}</dt><dd>{{ $selected->goal ?: '—' }}</dd>
                 <dt>{{ __('mkt.utm') }}</dt><dd>{{ $selected->utmLinks()->count() }}</dd>
             </dl>
@@ -143,7 +167,13 @@
 
         @elseif($tab === 'audience')
             @php($aud = $sel->audience())
-            <p class="muted small">{{ __('mkt.audience_hint') }}</p>
+            @php($src = $selected->audiences->first()?->source)
+            <div class="mk-aud-head">
+                <p class="muted small">{{ __('mkt.audience_hint') }}@if($src) <b>{{ __('mkt.source_'.$src) }}, {{ $selected->audiences->max('updated_at')?->format('d.m.Y H:i') }}</b>@endif</p>
+                @if($metaAds)
+                    <form method="post" action="{{ route('social.campaigns.sync', $selected) }}">@csrf<button class="btn btn-small btn-dark"><x-icon name="repeat" :size="14" /> {{ __('mkt.meta_sync') }}</button></form>
+                @else<span class="muted small">{{ __('mkt.meta_hint') }}</span>@endif
+            </div>
             <form method="post" action="{{ route('social.campaigns.audience', $selected) }}" class="mk-aud-form">
                 @csrf @method('put')
                 <fieldset><legend>{{ __('mkt.gender') }} (%)</legend>
@@ -187,19 +217,24 @@
 @if($selected)
 @php($t = $selTotals)
 @php($aud = $sel->audience())
-<div class="mk-row3">
+@php($fun = $sel->funnel($t))
+@php($hasDemo = $aud['gender'] || $aud['age'])
+@php($hasLoc = $aud['city'] || $aud['country'])
+<div @class(['mk-row3', 'mk-row3-'.(1 + ($fun->isNotEmpty() ? 1 : 0) + ($hasDemo ? 1 : 0))])>
+    @if($fun->isNotEmpty())
     <section class="card">
         <h2><x-icon name="filter" /> {{ __('mkt.funnel') }} <span class="mk-info" title="{{ __('mkt.funnel_hint') }}">ⓘ</span></h2>
-        @php($fun = $sel->funnel($t))
-        @if($fun->count() >= 2)
+        @if(true)
             <div class="mk-funnel">
                 <div class="mk-funnel-steps">@foreach($fun as $i => $st)
                     <div class="mk-step s{{ $i }}" style="--w: {{ 100 - $i * 12 }}%"><strong>{{ __('mkt.step_'.$st->key) }}</strong><span>{{ $short($st->value) }} <small>({{ $pct($st->of_total) }}%)</small></span></div>
                 @endforeach</div>
                 <div class="mk-funnel-rates"><small class="muted">{{ __('mkt.conv_rate') }}</small>@foreach($fun->skip(1) as $st)<span>↓ {{ str_replace('.', ',', $st->step_rate) }}%</span>@endforeach</div>
             </div>
-        @else<p class="muted small">{{ __('mkt.funnel_empty') }}</p>@endif
+        @endif
     </section>
+    @endif
+    @if($hasDemo)
     <section class="card">
         <h2><x-icon name="users" /> {{ __('mkt.demography') }} <span class="mk-info" title="{{ __('mkt.audience_hint') }}">ⓘ</span></h2>
         @if($aud['gender'] || $aud['age'])
@@ -212,8 +247,9 @@
             @foreach($aud['age'] as $label => $v)
                 <div class="mk-age"><span>{{ $label }}</span><i><i style="width: {{ $v / $maxAge * 100 }}%"></i></i><b>{{ round($v) }}%</b></div>
             @endforeach
-        @else<p class="muted small">{{ __('mkt.audience_empty') }} <a href="{{ route('social.campaigns.index', $q(['tab' => 'audience'])) }}#detail">{{ __('mkt.tab_audience') }} →</a></p>@endif
+        @endif
     </section>
+    @endif
     <section class="card">
         <h2><x-icon name="zap" /> {{ __('mkt.best_creatives') }} <span class="mk-info" title="{{ __('mkt.creatives_hint') }}">ⓘ</span></h2>
         @forelse($sel->creatives(3) as $cr)
@@ -223,7 +259,11 @@
     </section>
 </div>
 
-<div class="mk-row2">
+@if(! $hasDemo && ! $hasLoc)
+    <p class="mk-aud-missing muted small"><x-icon name="users" :size="16" /> {{ $metaAds ? __('mkt.audience_empty_meta') : __('mkt.audience_empty') }} <a href="{{ route('social.campaigns.index', $q(['tab' => 'audience'])) }}#detail">{{ __('mkt.tab_audience') }} →</a></p>
+@endif
+<div @class(['mk-row2', 'mk-row2-1' => ! $hasLoc])>
+    @if($hasLoc)
     <section class="card mk-loc">
         <h2><x-icon name="flag" /> {{ __('mkt.locations') }}</h2>
         <div class="mk-loc-body">
@@ -239,18 +279,20 @@
             @include('social.campaigns._map', ['cities' => $aud['city']])
         </div>
     </section>
+    @endif
     <section class="card">
         <div class="card-head"><h2><x-icon name="bar-chart" /> {{ __('mkt.top_campaigns') }} <span class="mk-info" title="{{ __('mkt.top_hint') }}">ⓘ</span></h2></div>
         <div class="table-scroll"><table class="table mk-rank">
-            <thead><tr><th>#</th><th>{{ __('mkt.campaign') }}</th><th>{{ __('mkt.channel') }}</th><th>{{ __('mkt.budget') }}</th><th>{{ __('mkt.clicks') }}</th><th>{{ __('mkt.conversions') }}</th><th>ROAS</th><th>{{ __('mkt.status') }}</th></tr></thead>
+            <thead><tr><th>#</th><th>{{ __('mkt.campaign') }}</th><th>{{ __('mkt.channel') }}</th><th>{{ __('mkt.budget') }}</th><th>{{ __('mkt.result') }}</th><th>{{ __('mkt.goal_col') }}</th><th>{{ __('mkt.status') }}</th></tr></thead>
             <tbody>@foreach($ranking->take(8) as $n => $c)
                 @php($rt = $totals[$c->id])
                 @php($cv = $insights[$c->id]->cover())
                 <tr><td>{{ $n + 1 }}</td>
                     <td><a href="{{ route('social.campaigns.index', $q(['c' => $c->id])) }}#detail" class="mk-rank-name">@if($cv)<img src="{{ route('files.show', [$cv, $cv->name]) }}" alt="">@else<span class="mk-creative-empty sm"><x-icon name="layers" :size="14" /></span>@endif<span>{{ $c->name }}@if($withClient($c))<small class="muted">– {{ $c->client->name }}</small>@endif</span></a></td>
                     <td><span class="mk-card-icons">@foreach($insights[$c->id]->platformKeys()->take(3) as $pk)<x-platform :platform="$pk" :size="18" />@endforeach</span></td>
-                    <td class="nowrap">{{ number_format((float) $c->budget, 0, ",", " ") }} zł</td><td>{{ number_format($rt['clicks'], 0, ',', ' ') }}</td><td>{{ number_format($rt['conversions'], 0, ',', ' ') }}</td>
-                    <td>{{ $rt['roas'] !== null ? str_replace('.', ',', $rt['roas']).' ×' : '—' }}</td>
+                    <td class="nowrap">{{ number_format((float) $c->budget, 0, ",", " ") }} zł</td>@php($rg = $goals[$c->id])
+                    <td class="nowrap">{{ $fmt($rg->value, $rg->format) }}<small class="muted d-block">{{ __('mkt.m_'.$rg->metric) }}</small></td>
+                    <td class="nowrap">@if($rg->pct !== null)<span @class(['mk-goal-pct', 'done' => $rg->pct >= 100])>{{ $rg->pct }}%</span>@else<span class="muted">—</span>@endif</td>
                     <td><span class="mk-status mk-{{ $c->status }}">{{ __('mkt.status_'.$c->status) }}</span></td></tr>
             @endforeach</tbody>
         </table></div>

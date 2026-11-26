@@ -24,6 +24,11 @@ class IntegrationController extends Controller
                 'redirect' => Integrations::redirectUri($p),
                 'accounts' => SocialAccount::whereIn('platform', $p === 'meta' ? ['facebook', 'instagram'] : ['tiktok'])->whereNotNull('connected_at')->count(),
             ]]),
+            'metaAds' => [
+                'enabled' => (bool) Setting::get('int_meta_ads_enabled', false), 'ready' => Integrations::metaAdsEnabled(),
+                'has_token' => filled(Integrations::metaAdsToken()),
+                'ads' => \App\Models\AdCampaign::where('platform', 'meta')->whereNotNull('external_id')->count(),
+            ],
             'autoStats' => Integrations::autoStats(),
             'tiktokPrivacy' => Integrations::tiktokPrivacy(),
             'recent' => Publication::with(['content', 'account'])->whereNotNull('api_status')->latest('updated_at')->limit(12)->get(),
@@ -42,6 +47,14 @@ class IntegrationController extends Controller
         if ($data['provider'] === 'tiktok' && ! empty($data['tiktok_privacy'])) {
             Setting::put('int_tiktok_privacy', $data['tiktok_privacy']);
         }
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function metaAds(Request $request)
+    {
+        $data = $request->validate(['token' => ['nullable', 'string', 'max:1000']]);
+        Integrations::saveMetaAds($request->boolean('enabled'), $data['token'] ?? null);
 
         return back()->with('status', __('ui.saved'));
     }

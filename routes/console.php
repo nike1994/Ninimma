@@ -71,6 +71,22 @@ Schedule::call(function () {
     }
 })->dailyAt('07:40')->name('license-alerts');
 
+// Meta Ads: wyniki reklam i odbiorcy kampanii (gdy integracja włączona) — przed alertami budżetu.
+Schedule::call(function () {
+    $n = app(\App\Services\Social\MetaAdsSync::class)->run();
+    if ($n) {
+        SystemLog::record('meta-ads', "Meta Ads synced {$n} ads");
+    }
+})->dailyAt('05:40')->name('meta-ads-sync')->withoutOverlapping(30)->when(fn () => \App\Services\Social\MetaAdsSync::enabled());
+
+// Tempo budżetu aktywnych kampanii: e-mail, gdy reklamy wydają za szybko albo za wolno.
+Schedule::call(function () {
+    $n = app(\App\Services\CampaignAlerts::class)->sendPacingAlerts();
+    if ($n) {
+        SystemLog::record('campaigns', "Budget pacing alerts for {$n} campaigns");
+    }
+})->dailyAt('07:45')->name('campaign-pacing');
+
 // Archiwizacja rok po zamknięciu i usuwanie po okresie przechowywania.
 Schedule::call(function () {
     $a = app(\App\Services\ArchiveService::class);

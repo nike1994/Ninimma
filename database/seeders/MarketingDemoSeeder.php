@@ -64,6 +64,27 @@ class MarketingDemoSeeder extends Seeder
             $r->update(['landing_views' => $lv, 'add_to_cart' => $r->conversions > 0 ? max($r->conversions, (int) round($lv * (mt_rand(14, 22) / 100))) : 0]);
         }
 
+        // Rodzaj celu i wartość docelowa (wskaźniki, lejek i ranking zależą od celu).
+        $targets = [
+            'Black Friday – Zielony Dom' => ['sales', 90000], 'Świąteczna sprzedaż – FitLife' => ['sales', 40000],
+            'Zapisy na nowy sezon – Studio Blu' => ['leads', 120], 'Jesienne aranżacje – Zielony Dom' => ['awareness', 150000],
+            'Rekrutacja instruktorów – Studio Blu' => ['leads', 40], 'Nowa kolekcja – FitLife' => ['traffic', 5000],
+        ];
+        foreach ($targets as $name => [$objective, $target]) {
+            Campaign::where('name', $name)->update(['objective' => $objective, 'target_value' => $target]);
+        }
+
+        // Świąteczna sprzedaż: reklama konwersji wydająca budżet za szybko (pokaz alertu tempa).
+        $xmas = Campaign::where('name', 'Świąteczna sprzedaż – FitLife')->first();
+        if ($xmas) {
+            $ad = AdCampaign::create(['client_id' => $xmas->client_id, 'campaign_id' => $xmas->id, 'platform' => 'meta', 'name' => 'Zestawy prezentowe — konwersje',
+                'objective' => 'conversions', 'budget' => 3000, 'starts_on' => $xmas->starts_on, 'ends_on' => $xmas->ends_on, 'status' => 'active']);
+            foreach ([[3, 640, 52000, 24000, 610, 380, 70, 14], [7, 1420, 118000, 51000, 1390, 880, 160, 33], [10, 2600, 171000, 69000, 2010, 1290, 236, 49]] as [$d, $sp, $im, $re, $cl, $lv, $atc, $cv]) {
+                $ad->results()->create(['measured_on' => $xmas->starts_on->copy()->addDays($d), 'spend' => $sp, 'impressions' => $im, 'reach' => $re, 'clicks' => $cl,
+                    'landing_views' => $lv, 'add_to_cart' => $atc, 'conversions' => $cv, 'revenue' => $cv * 159]);
+            }
+        }
+
         // Odbiorcy kampanii.
         $cities = ['Warszawa' => 18.4, 'Kraków' => 10.8, 'Wrocław' => 7.9, 'Poznań' => 6.3, 'Gdańsk' => 5.4, 'Łódź' => 4.6, 'Katowice' => 3.9, 'Lublin' => 2.8];
         foreach (Campaign::all() as $c) {

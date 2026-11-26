@@ -1635,7 +1635,7 @@ a.kpi { color: var(--text); }
 .mk-results { border: 1px solid var(--line); border-radius: 18px; padding: .9rem 1rem; min-width: 0; }
 .mk-results h3 { margin: 0 0 .5rem; font-size: .95rem; }
 .mk-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; margin-bottom: .8rem; }
-.mk-metrics > div { display: flex; flex-direction: column; gap: .15rem; } .mk-metrics small { color: var(--muted); font-size: .75rem; } .mk-metrics strong { font-size: 1.15rem; color: var(--navy); }
+.mk-metrics > div { display: flex; flex-direction: column; gap: .15rem; } .mk-metrics small { color: var(--muted); font-size: .75rem; } .mk-metrics strong { font-size: clamp(.95rem, 1.2vw, 1.15rem); color: var(--navy); white-space: nowrap; }
 .mk-metrics .trend-pill { width: max-content; font-size: .7rem; padding: .05rem .45rem; }
 .mk-chart-head { display: flex; justify-content: space-between; align-items: center; }
 .mk-legend { font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
@@ -1690,9 +1690,27 @@ a.kpi { color: var(--text); }
 .mk-rank td { vertical-align: middle; }
 .mk-rank-name { display: flex; align-items: center; gap: .5rem; color: var(--text); font-weight: 600; font-size: .85rem; }
 .mk-rank-name img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; } .mk-rank-name span { display: flex; flex-direction: column; line-height: 1.2; } .mk-rank-name small { font-weight: 500; }
-@media (max-width: 1200px) { .mk-layout { grid-template-columns: minmax(0, 1fr); } .mk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); } .mk-row3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mk-row2 { grid-template-columns: minmax(0, 1fr); } }
+.mk-row3-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mk-row3-1 { grid-template-columns: minmax(0, 1fr); }
+.mk-row2-1 { grid-template-columns: minmax(0, 1fr); }
+.mk-obj { display: inline-block; padding: .12rem .5rem; border-radius: 999px; background: #e6f6f8; color: var(--blue); font-size: .72rem; font-weight: 700; vertical-align: middle; margin-left: .3rem; }
+.mk-goalbox { display: grid; gap: .25rem; margin-bottom: .6rem; } .mk-goalbox .mk-obj { justify-self: start; margin: 0; }
+.mk-goal-num strong { font-size: 1.35rem; color: var(--navy); } .mk-goal-num span { font-size: .82rem; }
+.mk-bar i.done { background: linear-gradient(90deg, var(--teal), var(--green)); }
+.mk-goal-pct { font-weight: 700; color: var(--blue); font-size: .8rem; } .mk-goal-pct.done { color: #1d8a45; }
+.mk-pace { margin-top: .7rem; padding: .55rem .7rem; border-radius: 12px; background: #eef8f1; display: grid; gap: .15rem; font-size: .78rem; }
+.mk-pace-title { font-weight: 700; color: #1d6b3a; }
+.mk-pace-over { background: #fdeceb; } .mk-pace-over .mk-pace-title { color: var(--red); }
+.mk-pace-under { background: #fff6e0; } .mk-pace-under .mk-pace-title { color: #a26a00; }
+.mk-pace-bar { position: relative; overflow: visible; margin: .35rem 0 .2rem; background: #fff; }
+.mk-pace-bar i { border-radius: 6px; } .mk-pace-over .mk-pace-bar i { background: var(--pink); } .mk-pace-under .mk-pace-bar i { background: #f2b53c; }
+.mk-pace-bar b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--navy); border-radius: 2px; }
+.mk-card-flags { display: flex; gap: .4rem; flex-wrap: wrap; font-size: .72rem; }
+.mk-pace-flag { font-weight: 700; padding: 0 .4rem; border-radius: 6px; } .mk-pace-flag.mk-pace-over { color: var(--red); } .mk-pace-flag.mk-pace-under { color: #a26a00; }
+.mk-aud-head { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; } .mk-aud-head p { margin: 0; flex: 1 1 300px; }
+.mk-aud-missing { display: flex; align-items: center; gap: .4rem; margin: 1rem 0 0; padding: .7rem 1rem; border: 1px dashed var(--line); border-radius: 14px; background: #fff; }
+@media (max-width: 1200px) { .mk-layout { grid-template-columns: minmax(0, 1fr); } .mk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); } .mk-row3:not(.mk-row3-1) { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mk-row2 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) {
-    .mk-sum, .mk-trio, .mk-row3, .mk-aud-form, .mk-loc-body { grid-template-columns: minmax(0, 1fr); }
+    .mk-sum, .mk-trio, .mk-row3, .mk-row3:not(.mk-row3-1), .mk-aud-form, .mk-loc-body { grid-template-columns: minmax(0, 1fr); }
     .mk-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .mk-settings { grid-template-columns: 1fr; }
 }

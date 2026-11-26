@@ -10,13 +10,16 @@ class Campaign extends Model
 {
     public const STATUSES = ['draft', 'review', 'active', 'finished'];
 
-    protected $fillable = ['client_id', 'name', 'goal', 'budget', 'starts_on', 'ends_on', 'status', 'revenue', 'leads'];
+    /** Rodzaj celu kampanii — od niego zależą wskaźniki, lejek i wartość docelowa. */
+    public const OBJECTIVES = ['sales', 'leads', 'traffic', 'awareness', 'engagement'];
+
+    protected $fillable = ['client_id', 'name', 'goal', 'objective', 'target_value', 'budget', 'starts_on', 'ends_on', 'status', 'revenue', 'leads'];
 
     protected $attributes = ['status' => 'draft', 'budget' => 0];
 
     protected function casts(): array
     {
-        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2', 'revenue' => 'decimal:2'];
+        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2', 'revenue' => 'decimal:2', 'target_value' => 'float'];
     }
 
     public function client(): BelongsTo
@@ -32,6 +35,33 @@ class Campaign extends Model
     public function audiences(): HasMany
     {
         return $this->hasMany(CampaignAudience::class);
+    }
+
+    /** Cel kampanii: zapisany albo wywnioskowany z danych (przychód → sprzedaż, leady → leady, inaczej zasięg). */
+    public function objectiveKey(): string
+    {
+        if (in_array($this->objective, self::OBJECTIVES, true)) {
+            return $this->objective;
+        }
+        if ((float) $this->revenue > 0) {
+            return 'sales';
+        }
+
+        return $this->leads ? 'leads' : 'awareness';
+    }
+
+    /**
+     * Zapisuje strukturę odbiorców: wiersze [wymiar, etykieta, udział %]. Podane wymiary są zastępowane w całości
+     * (np. import samego wieku i płci nie kasuje miast).
+     */
+    public function saveAudience(array $rows, ?array $onlyDims = null, string $source = 'manual'): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($rows, $onlyDims, $source) {
+            $this->audiences()->when($onlyDims, fn ($q) => $q->whereIn('dimension', $onlyDims))->delete();
+            foreach ($rows as [$dim, $label, $share]) {
+                $this->audiences()->updateOrCreate(['dimension' => $dim, 'label' => mb_substr($label, 0, 80)], ['share' => round(min(100, $share), 2), 'source' => $source]);
+            }
+        });
     }
 
     public function utmLinks(): HasMany

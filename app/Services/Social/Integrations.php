@@ -64,6 +64,30 @@ class Integrations
         }
     }
 
+    /** Meta Ads (Marketing API): token użytkownika systemowego z uprawnieniem ads_read. */
+    public static function metaAdsToken(): ?string
+    {
+        $v = Setting::get('int_meta_ads_token');
+        try {
+            return $v ? Crypt::decryptString($v) : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    public static function metaAdsEnabled(): bool
+    {
+        return (bool) Setting::get('int_meta_ads_enabled', false) && filled(self::metaAdsToken());
+    }
+
+    public static function saveMetaAds(bool $enabled, ?string $token): void
+    {
+        Setting::put('int_meta_ads_enabled', $enabled ? '1' : '0');
+        if (filled($token)) {
+            Setting::put('int_meta_ads_token', Crypt::encryptString(trim($token)));
+        }
+    }
+
     /** Automatyczne pobieranie statystyk opublikowanych postów (osobny włącznik). */
     public static function autoStats(): bool
     {

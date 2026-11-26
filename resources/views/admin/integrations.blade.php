@@ -30,6 +30,21 @@
                 <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button></div>
         </form>
     @endforeach
+    <form method="post" action="{{ route('admin.integrations.meta-ads') }}" class="card stack int-card">
+        @csrf @method('put')
+        <div class="int-head">
+            <span class="int-logos"><x-platform platform="facebook" :size="30" /></span>
+            <h2>{{ __('api.meta_ads') }}</h2>
+            <span @class(['pill', 'pill-done' => $metaAds['ready'], 'pill-needs_decision' => $metaAds['enabled'] && ! $metaAds['ready']])>
+                {{ $metaAds['ready'] ? __('api.ready') : ($metaAds['enabled'] ? __('api.not_ready') : __('api.disabled')) }}</span>
+        </div>
+        <label class="switch"><input type="checkbox" name="enabled" value="1" @checked($metaAds['enabled'])><span></span> {{ __('api.enabled') }}</label>
+        <label class="field"><span>{{ __('api.meta_ads_token') }}</span>
+            <input type="password" name="token" autocomplete="new-password" placeholder="{{ $metaAds['has_token'] ? '•••••••• '.__('api.secret_saved') : '' }}"></label>
+        <p class="muted small">{{ __('api.howto_meta_ads') }}</p>
+        <div class="int-foot"><span class="muted small">{{ __('api.meta_ads_linked', ['n' => $metaAds['ads']]) }}</span>
+            <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button></div>
+    </form>
 </div>
 <form method="post" action="{{ route('admin.integrations.stats') }}" class="card inline-form" style="margin: 1rem 0">
     @csrf @method('put')

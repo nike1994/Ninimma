@@ -16,6 +16,13 @@
             <x-field name="budget" type="number" step="0.01" min="0" :label="__('social.budget_pln')" :value="$campaign->budget" required />
         </div>
         <x-field name="name" :label="__('social.campaign_name')" :value="$campaign->name" required />
+        <div class="form-row">
+            <label class="field"><span>{{ __('mkt.objective') }}</span>
+                <select name="objective"><option value="">{{ __('mkt.objective_auto') }}</option>@foreach(\App\Models\Campaign::OBJECTIVES as $o)<option value="{{ $o }}" @selected(old('objective', $campaign->objective) === $o)>{{ __('mkt.obj_'.$o) }}</option>@endforeach</select></label>
+            <x-field name="target_value" type="number" step="0.01" min="0" :label="__('mkt.target_label')" :value="$campaign->target_value" />
+            <div></div>
+        </div>
+        <p class="muted small">{{ __('mkt.target_form_hint') }}</p>
         <x-field name="goal" type="textarea" :label="__('social.goal')" :value="$campaign->goal" rows="3" />
         <div class="form-row">
             <x-field name="starts_on" type="date" :label="__('social.starts_on')" :value="$campaign->starts_on?->toDateString()" />
@@ -59,12 +66,15 @@
     <aside>
         <section class="card card-dark">
             <x-waves variant="card" />
-            @php($metric = $campaign->headlineMetric())
+            @php($ins = new \App\Services\CampaignInsights($campaign))
+            @php($tt = $ins->totals())
+            @php($g = $ins->goal($tt))
             <h2>{{ __('social.results') }}</h2>
             <dl class="dark-dl">
                 <dt>{{ __('social.budget_short') }}</dt><dd>{{ number_format((float) $campaign->budget, 0, ',', ' ') }} zł</dd>
-                <dt>{{ __('social.kpi_reach') }}</dt><dd>{{ \App\Support\Num::short($campaign->reach()) }}</dd>
-                <dt>{{ $metric['label'] }}</dt><dd>{{ $metric['value'] }}</dd>
+                <dt>{{ __('mkt.reach') }}</dt><dd>{{ \App\Support\Num::short((int) $tt['reach']) }}</dd>
+                @if($g->metric !== 'reach')<dt>{{ __('mkt.m_'.$g->metric) }}</dt><dd>{{ $g->format === 'money' ? number_format($g->value, 0, ',', ' ').' zł' : \App\Support\Num::short((int) $g->value) }}</dd>@endif
+                @if($g->pct !== null)<dt>{{ __('mkt.goal_col') }}</dt><dd>{{ $g->pct }}%</dd>@endif
             </dl>
         </section>
         <section class="card">

@@ -52,6 +52,9 @@
             <h2><x-icon name="sliders" /> {{ __('ads.settings') }}</h2>
             <x-field name="name" :label="__('ui.name')" :value="$ad->name" required />
             <x-field name="external_name" :label="__('ads.external_name')" :value="$ad->external_name" :placeholder="__('ads.external_hint')" />
+            <x-field name="external_id" :label="__('ads.external_id')" :value="$ad->external_id" :placeholder="__('ads.external_id_hint')" inputmode="numeric" />
+            @if($ad->sync_error)<p class="small" style="color: var(--red)">{{ __('ads.sync_error') }}: {{ $ad->sync_error }}</p>
+            @elseif($ad->synced_at)<p class="muted small">{{ __('ads.synced_at', ['at' => $ad->synced_at->format('d.m.Y H:i')]) }}</p>@endif
             <div class="form-row form-row-2">
                 <label class="field"><span>{{ __('ui.client') }}</span><select name="client_id" required data-client-select>@foreach($clients as $c)<option value="{{ $c->id }}" @selected(old('client_id', $ad->client_id) == $c->id)>{{ $c->name }}</option>@endforeach</select></label>
                 <label class="field"><span>{{ __('social.campaign') }}</span><select name="campaign_id" data-campaign-select><option value="">—</option>@foreach($campaigns as $c)<option value="{{ $c->id }}" data-client="{{ $c->client_id }}" @selected(old('campaign_id', $ad->campaign_id) == $c->id)>{{ $c->name }}</option>@endforeach</select></label>

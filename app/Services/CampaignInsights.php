@@ -57,6 +57,8 @@ class CampaignInsights
             'ctr' => $impressions > 0 ? round($clicks / $impressions * 100, 2) : null,
             'impressions' => $impressions, 'spend' => $spent, 'ad_spend' => (float) $paid['spend'],
             'conversions' => $paid['conversions'] + $paid['leads'] + (int) ($this->campaign->leads ?? 0),
+            'purchases' => (int) $paid['conversions'], 'leads' => (int) $paid['leads'] + (int) ($this->campaign->leads ?? 0),
+            'paid_reach' => (int) $paid['reach'], 'paid_impressions' => (int) $paid['impressions'], 'paid_clicks' => (int) $paid['clicks'],
             'landing_views' => $funnel['landing_views'], 'add_to_cart' => $funnel['add_to_cart'],
             'revenue' => $revenue, 'roas' => $spent > 0 && $revenue > 0 ? round($revenue / $spent, 1) : null,
         ];
@@ -164,25 +166,104 @@ class CampaignInsights
         return collect($rows)->map(fn ($r) => (object) ($r + ['platform' => Platform::tryFrom($r['key'])]))->sortByDesc('reach')->values();
     }
 
-    /** Lejek: zasięg → wejścia na stronę → koszyk → zakup/lead (etapy bez danych pomijamy). */
+    public function objective(): string
+    {
+        return $this->campaign->objectiveKey();
+    }
+
+    /** Główny wynik wg celu kampanii i postęp względem wartości docelowej. */
+    public function goal(array $t): object
+    {
+        $key = $this->objective();
+        [$metric, $value, $format] = match ($key) {
+            'sales' => ['revenue', (float) $t['revenue'], 'money'],
+            'leads' => ['leads', $t['leads'] ?: $t['conversions'], 'num'],
+            'traffic' => ['visits', $t['landing_views'] ?: $t['clicks'], 'num'],
+            'engagement' => ['engagement', $t['engagement'], 'num'],
+            default => ['reach', $t['reach'], 'num'],
+        };
+        $target = (float) ($this->campaign->target_value ?? 0);
+
+        return (object) ['objective' => $key, 'metric' => $metric, 'value' => $value, 'format' => $format,
+            'target' => $target > 0 ? $target : null, 'pct' => $target > 0 ? (int) round($value / $target * 100) : null];
+    }
+
+    /** Cztery wskaźniki panelu „Wyniki kampanii” dobrane do celu: [klucz, wartość, format]. */
+    public function metrics(array $t): array
+    {
+        $div = fn ($a, $b, $m = 1) => $b > 0 ? round($a / $b * $m, 2) : null;
+        $leads = $t['leads'] ?: $t['conversions'];
+        $visits = $t['landing_views'] ?: $t['clicks'];
+        $rows = match ($this->objective()) {
+            'sales' => [['revenue', $t['revenue'], 'money'], ['roas', $t['roas'], 'x'], ['purchases', $t['purchases'] ?: $t['conversions'], 'num'],
+                ['cost_per_purchase', $div($t['spend'], $t['purchases'] ?: $t['conversions']), 'money']],
+            'leads' => [['leads', $leads, 'num'], ['cpl', $div($t['spend'], $leads), 'money'], ['clicks', $t['clicks'], 'num'],
+                ['lead_rate', $div($leads, $visits, 100), 'pct']],
+            'traffic' => [['visits', $visits, 'num'], ['cpc', $div($t['ad_spend'], $t['paid_clicks']), 'money'], ['ctr', $t['ctr'], 'pct'], ['reach', $t['reach'], 'num']],
+            'engagement' => [['engagement', $t['engagement'], 'num'], ['cpe', $div($t['spend'], $t['engagement']), 'money'], ['reach', $t['reach'], 'num'],
+                ['eng_rate', $div($t['engagement'], $t['reach'], 100), 'pct']],
+            default => [['reach', $t['reach'], 'num'], ['frequency', $div($t['paid_impressions'], $t['paid_reach']), 'freq'],
+                ['cpm', $div($t['ad_spend'], $t['paid_impressions'], 1000), 'money'], ['engagement', $t['engagement'], 'num']],
+        };
+
+        return array_map(fn ($r) => (object) ['key' => $r[0], 'value' => $r[1], 'format' => $r[2]], $rows);
+    }
+
+    /** Lejek wg celu (sprzedaż: koszyk i zakup; leady: lead; ruch: kliknięcia i wejścia). Zasięg/zaangażowanie — brak lejka. */
     public function funnel(array $t): Collection
     {
-        $steps = collect([
-            ['key' => 'reach', 'value' => $t['reach']],
-            ['key' => 'visits', 'value' => $t['landing_views'] ?: $t['clicks']],
-            ['key' => 'cart', 'value' => $t['add_to_cart']],
-            ['key' => 'result', 'value' => $t['conversions']],
-        ])->filter(fn ($s) => $s['value'] > 0)->values();
-        $first = $steps->first()['value'] ?? 0;
+        $keys = match ($this->objective()) {
+            'sales' => ['reach' => $t['reach'], 'visits' => $t['landing_views'] ?: $t['clicks'], 'cart' => $t['add_to_cart'], 'purchase' => $t['purchases'] ?: $t['conversions']],
+            'leads' => ['reach' => $t['reach'], 'visits' => $t['landing_views'] ?: $t['clicks'], 'lead' => $t['leads'] ?: $t['conversions']],
+            'traffic' => ['reach' => $t['reach'], 'clicks' => $t['clicks'], 'visits' => $t['landing_views']],
+            default => [],
+        };
+        $steps = collect($keys)->map(fn ($v, $k) => ['key' => $k, 'value' => (int) $v])->filter(fn ($s) => $s['value'] > 0)->values();
+        if ($steps->count() < 2) {
+            return collect();
+        }
+        $first = $steps->first()['value'];
 
         return $steps->map(function ($s, $i) use ($steps, $first) {
             $prev = $i > 0 ? $steps[$i - 1]['value'] : null;
 
             return (object) ($s + [
-                'of_total' => $first ? round($s['value'] / $first * 100, 2) : null,
+                'of_total' => round($s['value'] / $first * 100, 2),
                 'step_rate' => $prev ? round($s['value'] / $prev * 100, 1) : null,
             ]);
         });
+    }
+
+    /**
+     * Tempo wydawania budżetu reklam względem upływu czasu kampanii. Liczymy na reklamach (opłaty dla
+     * influencerów są zwykle jednorazowe na starcie i zafałszowałyby tempo).
+     * state: over (za szybko — budżet skończy się przed końcem), under (za wolno), ok.
+     */
+    public function pacing(array $t): ?object
+    {
+        $c = $this->campaign;
+        if ($c->status !== 'active' || ! $c->starts_on || ! $c->ends_on || $this->ads()->isEmpty() || today()->lt($c->starts_on)) {
+            return null;
+        }
+        $adBudget = (float) $this->ads()->sum('budget') ?: max(0, (float) $c->budget - ($t['spend'] - $t['ad_spend']));
+        if ($adBudget <= 0) {
+            return null;
+        }
+        $total = (int) $c->starts_on->diffInDays($c->ends_on) + 1;
+        $elapsed = min($total, (int) $c->starts_on->diffInDays(today()) + 1);
+        $spent = (float) $t['ad_spend'];
+        $timePct = $elapsed / $total * 100;
+        $spendPct = $spent / $adBudget * 100;
+        $projected = $elapsed > 0 ? $spent / $elapsed * $total : 0;
+        $state = match (true) {
+            $spendPct >= 100 && $elapsed < $total => 'over',
+            $elapsed >= 3 && $spendPct > $timePct + 15 && $projected > $adBudget * 1.1 => 'over',
+            $timePct >= 40 && $spendPct < $timePct * 0.6 => 'under',
+            default => 'ok',
+        };
+
+        return (object) ['state' => $state, 'budget' => $adBudget, 'spent' => $spent, 'time_pct' => (int) round($timePct),
+            'spend_pct' => (int) round($spendPct), 'projected' => round($projected, 2), 'days_left' => $total - $elapsed];
     }
 
     /** Najlepsze kreacje: posty i reklamy wg CTR (kliknięcia / wyświetlenia), potem kliknięcia. */

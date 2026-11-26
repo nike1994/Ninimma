@@ -156,6 +156,7 @@ class AdController extends Controller
             'platform' => ['required', Rule::in(AdCampaign::PLATFORMS)],
             'name' => ['required', 'string', 'max:200'],
             'external_name' => ['nullable', 'string', 'max:200'],
+            'external_id' => ['nullable', 'string', 'max:40', 'regex:/^[0-9_]+$/'],
             'objective' => ['required', Rule::in(AdCampaign::OBJECTIVES)],
             'budget' => ['required', 'numeric', 'min:0'],
             'starts_on' => ['nullable', 'date'],

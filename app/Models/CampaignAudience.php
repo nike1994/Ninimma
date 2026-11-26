@@ -11,7 +11,7 @@ class CampaignAudience extends Model
 
     public const AGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 
-    protected $fillable = ['campaign_id', 'dimension', 'label', 'share'];
+    protected $fillable = ['campaign_id', 'dimension', 'label', 'share', 'source'];
 
     protected function casts(): array
     {

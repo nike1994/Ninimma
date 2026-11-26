@@ -92,4 +92,8 @@ return [
     'copy' => 'Kopiuj',
     'landing_views' => 'Wejścia na stronę',
     'add_to_cart' => 'Dodania do koszyka',
+    'external_id' => 'ID kampanii w menedżerze reklam Meta',
+    'external_id_hint' => 'np. 120210000000000000 — wyniki i odbiorcy pobiorą się automatycznie',
+    'sync_error' => 'Błąd pobierania z Meta',
+    'synced_at' => 'Ostatnie pobranie z Meta: :at',
 ];

@@ -159,6 +159,19 @@ class MetaClient
             'comments' => $vals['comments'] ?? null, 'shares' => $vals['shares'] ?? null, 'clicks' => null, 'views' => $vals['views'] ?? null];
     }
 
+    // ---------------------------------------------------------------- reklamy (Marketing API)
+
+    /** Statystyki kampanii/zestawu/reklamy z menedżera reklam za cały okres (opcjonalnie z podziałem). */
+    public function adInsights(string $objectId, string $token, ?string $breakdowns = null): array
+    {
+        $q = ['fields' => 'spend,impressions,reach,clicks,inline_link_clicks,actions,action_values', 'date_preset' => 'maximum', 'limit' => 500];
+        if ($breakdowns) {
+            $q = ['fields' => 'impressions,reach', 'breakdowns' => $breakdowns, 'date_preset' => 'maximum', 'limit' => 500];
+        }
+
+        return $this->get($objectId.'/insights', $q, $token)['data'] ?? [];
+    }
+
     // ----------------------------------------------------------------
 
     private function get(string $path, array $query, string $token): array

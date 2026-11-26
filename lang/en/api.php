@@ -60,4 +60,8 @@ return [
     'retry' => 'Retry',
     'auto_badge' => 'auto',
     'stats_api' => 'from API',
+    'meta_ads' => 'Meta Ads — ad results and audiences',
+    'meta_ads_token' => 'Access token (system user, ads_read)',
+    'howto_meta_ads' => 'In Business Manager: Business settings → System users → add a user, assign the clients' ad accounts (view performance) and generate a token with ads_read. Then enter the Ads Manager campaign ID on an ad — every morning spend, reach, clicks, landing page views, add to cart, purchases, leads and audiences (age, gender, regions, countries) are fetched.',
+    'meta_ads_linked' => 'Ads with a Meta ID: :n',
 ];

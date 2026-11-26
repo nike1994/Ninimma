@@ -170,6 +170,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::resource('campaigns', \App\Http\Controllers\Social\CampaignController::class)->except(['show', 'destroy']);
         Route::put('/campaigns/{campaign}/audience', [\App\Http\Controllers\Social\CampaignController::class, 'audience'])->name('campaigns.audience');
         Route::post('/campaigns/{campaign}/audience/import', [\App\Http\Controllers\Social\CampaignController::class, 'audienceImport'])->name('campaigns.audience.import');
+        Route::post('/campaigns/{campaign}/sync', [\App\Http\Controllers\Social\CampaignController::class, 'sync'])->name('campaigns.sync');
         $ad = \App\Http\Controllers\Social\AdController::class;
         Route::get('/ads', [$ad, 'index'])->name('ads.index');
         Route::get('/ads/create', [$ad, 'create'])->name('ads.create');
@@ -205,6 +206,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::get('/integrations', [Admin\IntegrationController::class, 'edit'])->name('integrations');
         Route::put('/integrations', [Admin\IntegrationController::class, 'update'])->name('integrations.update');
         Route::put('/integrations/stats', [Admin\IntegrationController::class, 'stats'])->name('integrations.stats');
+        Route::put('/integrations/meta-ads', [Admin\IntegrationController::class, 'metaAds'])->name('integrations.meta-ads');
         Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
         Route::patch('/tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');
         Route::post('/tickets/{ticket}/time', [TicketController::class, 'logTime'])->name('tickets.time');

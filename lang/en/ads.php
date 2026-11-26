@@ -92,4 +92,8 @@ return [
     'copy' => 'Copy',
     'landing_views' => 'Landing page views',
     'add_to_cart' => 'Adds to cart',
+    'external_id' => 'Campaign ID in Meta Ads Manager',
+    'external_id_hint' => 'e.g. 120210000000000000 — results and audience are fetched automatically',
+    'sync_error' => 'Meta fetch error',
+    'synced_at' => 'Last fetched from Meta: :at',
 ];

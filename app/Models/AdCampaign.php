@@ -16,14 +16,14 @@ class AdCampaign extends Model
 
     public const STATUSES = ['planned', 'active', 'paused', 'finished'];
 
-    protected $fillable = ['client_id', 'campaign_id', 'publication_id', 'material_id', 'platform', 'name', 'external_name', 'objective',
+    protected $fillable = ['client_id', 'campaign_id', 'publication_id', 'material_id', 'platform', 'name', 'external_name', 'external_id', 'objective',
         'budget', 'starts_on', 'ends_on', 'status', 'target_url', 'notes'];
 
     protected $attributes = ['status' => 'planned', 'objective' => 'traffic', 'budget' => 0];
 
     protected function casts(): array
     {
-        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2'];
+        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2', 'synced_at' => 'datetime'];
     }
 
     public function client(): BelongsTo { return $this->belongsTo(Client::class); }
