@@ -19,6 +19,10 @@ Schedule::call(fn () => Cache::forever('agency:last_cron', now()->toIso8601Strin
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
     ->everyMinute()->withoutOverlapping()->name('queue');
 
+// Zgłoszenia i odpowiedzi przez e-mail (skrzynka IMAP), gdy skonfigurowane.
+Schedule::command('agency:mail-in --imap')->everyMinute()->withoutOverlapping(5)
+    ->when(fn () => filled(config('agency.inbound.address')) && filled(config('agency.inbound.imap_host')))->name('mail-in');
+
 Schedule::command('agency:stall-check')->hourly()->withoutOverlapping();
 Schedule::command('agency:digests')->dailyAt('07:30');
 Schedule::command('agency:backup')->dailyAt('02:15');

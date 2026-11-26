@@ -106,7 +106,7 @@ Interfejs i e-maile po polsku i angielsku (wybór na użytkownika).
    * * * * * cd ~/panel && php artisan schedule:run >> /dev/null 2>&1
    ```
    Obsługuje: kolejkę e-maili, przypomnienia o zastojach (co godz.), podsumowania (7:30), zlecenia cykliczne (6:00),
-   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), statusy reklam (0:20), alerty licencji (7:40), sprzątanie wysyłek.
+   przeglądy stron (6:10), kopię bazy (2:15), archiwizację i okres przechowywania (3:10), pocztę zgłoszeń (co minutę, gdy skonfigurowana), statusy reklam (0:20), alerty licencji (7:40), sprzątanie wysyłek.
 7. Pierwsze logowanie — konfiguracja 2FA. Potem: Ustawienia → Regulamin współpracy, Archiwum → stawka godzinowa.
 
 ### Homelab (kopie i paczki)
@@ -118,6 +118,23 @@ curl -H "Authorization: Bearer $TOKEN" https://panel.agencja.pl/backup/exports/N
 ```
 Pliki z `storage/app/store` najlepiej synchronizować przez SFTP/rsync. Paczki offline muszą mieć kopię w homelabie —
 z hostingu znikają z nich ciężkie pliki.
+
+### Zgłoszenia przez e-mail
+
+Klient (i zespół) może po prostu odpowiedzieć na powiadomienie — odpowiedź dopisuje się do zlecenia razem
+z załącznikami, bez cytatu i podpisu. Nowy e-mail od klienta na adres zgłoszeń zakłada zlecenie (klient dostaje
+potwierdzenie z numerem). Przyjmowane są tylko wiadomości od aktywnych użytkowników panelu; odpowiedź musi mieć
+podpisany znacznik zlecenia (adres `zgloszenia+t12-…@`, nagłówek wątku albo „Ref:” w stopce) lub `[#12]` w temacie
+zlecenia własnej firmy. Pomijane: automatyczne odpowiedzi, zwroty, listy mailingowe, e-maile z nieudaną weryfikacją
+SPF/DMARC; limit 30 wiadomości na godzinę na nadawcę. Dziennik: Administracja → System.
+
+1. Załóż skrzynkę, np. `zgloszenia@twojadomena.pl` (najlepiej osobną).
+2. W `.env` ustaw `AGENCY_INBOUND_ADDRESS` oraz dane IMAP (`AGENCY_IMAP_HOST`, `…_USER`, `…_PASSWORD`; zwykle port 993, `ssl`).
+   Cron, który już działa, sprawdza skrzynkę co minutę. Przetworzone wiadomości są oznaczane jako przeczytane
+   (albo przenoszone do folderu z `AGENCY_IMAP_DONE_FOLDER`).
+3. Gdy skrzynka nie obsługuje aliasów z „+”, ustaw `AGENCY_INBOUND_PLUS=false` (znacznik pójdzie w wątku i stopce).
+4. Zamiast IMAP można w panelu hostingu (cPanel → Przekierowania → „Przekaż do programu”) przekierować pocztę do:
+   `php /ścieżka/do/panelu/artisan agency:mail-in` — wtedy zostaw puste `AGENCY_IMAP_HOST`.
 
 ### Wtyczka WordPress
 
@@ -144,7 +161,7 @@ Konta demo: `admin@example.com` / `anna@example.com`, hasło `demo-haslo-123`.
 ## Świadomie odłożone (ze specyfikacji)
 
 Edycja tablic w pełni na żywo (WebSocket), automatyczna publikacja i pobieranie statystyk przez API platform,
-własne fakturowanie i integracja z KSeF, zgłoszenia przez odpowiedź na e-mail, role podwykonawców, wiele agencji
+własne fakturowanie i integracja z KSeF, role podwykonawców, wiele agencji
 w jednej instalacji. Architektura zostawia na nie miejsce (np. `public/js/live.js` — jeden moduł transportu).
 
 ## Otwarte decyzje

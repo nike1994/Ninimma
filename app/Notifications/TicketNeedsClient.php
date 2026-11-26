@@ -24,9 +24,9 @@ class TicketNeedsClient extends Notification implements ShouldQueue
     {
         $key = $this->reminder === 0 ? 'mail.needs_client_subject' : 'mail.reminder_subject';
 
-        return (new MailMessage)
+        return \App\Services\InboundMail::decorate((new MailMessage)
             ->subject(__($key, ['id' => $this->ticket->id, 'title' => $this->ticket->title]))
             ->line(__('mail.needs_client_line', ['status' => $this->ticket->status->label()]))
-            ->action(__('mail.open_ticket'), route('tickets.show', $this->ticket));
+            ->action(__('mail.open_ticket'), route('tickets.show', $this->ticket)), $this->ticket);
     }
 }

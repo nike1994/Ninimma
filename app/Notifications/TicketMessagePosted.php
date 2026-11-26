@@ -24,10 +24,10 @@ class TicketMessagePosted extends Notification implements ShouldQueue
     {
         $ticket = $this->message->ticket;
 
-        return (new MailMessage)
+        return \App\Services\InboundMail::decorate((new MailMessage)
             ->subject(__('mail.message_subject', ['id' => $ticket->id, 'title' => $ticket->title]))
             ->line(__('mail.message_intro', ['name' => $this->message->user?->name ?? '—']))
             ->line(Str::limit($this->message->body, 600))
-            ->action(__('mail.open_ticket'), route('tickets.show', $ticket));
+            ->action(__('mail.open_ticket'), route('tickets.show', $ticket)), $ticket);
     }
 }

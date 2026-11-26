@@ -21,4 +21,21 @@ return [
     // Token dla homelabu pobierającego kopie zapasowe (puste = wyłączone).
     'backup_token' => env('AGENCY_BACKUP_TOKEN'),
     'backup_keep' => (int) env('AGENCY_BACKUP_KEEP', 7),
+
+    // Zgłoszenia i odpowiedzi przez e-mail. Adres skrzynki (Reply-To w powiadomieniach); puste = wyłączone.
+    'inbound' => [
+        'address' => env('AGENCY_INBOUND_ADDRESS'),
+        // Adres z plusem (zgloszenia+t12-abc@…), gdy skrzynka obsługuje aliasy z „+”.
+        'plus_addressing' => (bool) env('AGENCY_INBOUND_PLUS', true),
+        // Odbiór: „imap” (cron co minutę) albo „pipe” (przekierowanie poczty do programu na hostingu).
+        'imap_host' => env('AGENCY_IMAP_HOST'),
+        'imap_port' => (int) env('AGENCY_IMAP_PORT', 993),
+        'imap_encryption' => env('AGENCY_IMAP_ENCRYPTION', 'ssl'), // ssl | tls
+        'imap_user' => env('AGENCY_IMAP_USER'),
+        'imap_password' => env('AGENCY_IMAP_PASSWORD'),
+        'imap_folder' => env('AGENCY_IMAP_FOLDER', 'INBOX'),
+        'imap_done_folder' => env('AGENCY_IMAP_DONE_FOLDER'), // np. „Ninimma” — przetworzone; puste = tylko oznacz jako przeczytane
+        'max_per_hour' => (int) env('AGENCY_INBOUND_MAX_PER_HOUR', 30), // na nadawcę
+        'allow_new_tickets' => (bool) env('AGENCY_INBOUND_NEW_TICKETS', true),
+    ],
 ];

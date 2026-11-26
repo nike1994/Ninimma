@@ -22,6 +22,14 @@ class SystemController extends Controller
             'lastCron' => Cache::get('agency:last_cron'),
             'pendingJobs' => DB::table('jobs')->count(),
             'failedJobs' => DB::table('failed_jobs')->count(),
+            'inbound' => [
+                'enabled' => \App\Services\InboundMail::enabled(),
+                'address' => config('agency.inbound.address'),
+                'mode' => filled(config('agency.inbound.imap_host')) ? 'imap' : 'pipe',
+                'last' => Cache::get('agency:last_mail_in'),
+                'error' => Cache::get('agency:mail_in_error'),
+                'recent' => DB::table('inbound_emails')->latest('id')->limit(15)->get(),
+            ],
         ]);
     }
 }
