@@ -52,7 +52,7 @@ return [
     'men' => 'Mężczyźni',
     'age' => 'Wiek',
     'age_of' => 'Wiek odbiorców',
-    'top_cities' => 'Top miasta',
+    'top_cities' => 'Miasta / regiony',
     'top_countries' => 'Top kraje',
     'import_hint' => 'Import z eksportu (CSV):',
     'import_empty' => 'Nie znaleziono kolumn wymiaru (wiek, płeć, region, kraj) i miary (zasięg lub wyświetlenia).',

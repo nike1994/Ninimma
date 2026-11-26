@@ -52,7 +52,7 @@ return [
     'men' => 'Men',
     'age' => 'Age',
     'age_of' => 'Audience age',
-    'top_cities' => 'Top cities',
+    'top_cities' => 'Cities / regions',
     'top_countries' => 'Top countries',
     'import_hint' => 'Import from export (CSV):',
     'import_empty' => 'No dimension columns (age, gender, region, country) and metric (reach or impressions) found.',
