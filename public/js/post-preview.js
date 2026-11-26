@@ -72,6 +72,23 @@
         ttSave: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M19 21 12 16l-7 5V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1Z" fill="#fff"/></svg>',
         ttShare: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M13 4v4C7 9 4 13 3 19c2.5-3.3 5.6-4.8 10-4.8V18l8-7Z" fill="#fff"/></svg>',
     };
+    // Ikony ekranu TikTok (białe, wypełnione — jak w aplikacji).
+    const W = (p, w = 30) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" aria-hidden="true">${p}</svg>`;
+    const TT = {
+        heart: W('<path d="M16.8 3.5c-1.9 0-3.6 1-4.8 2.6C10.8 4.5 9.1 3.5 7.2 3.5A5.2 5.2 0 0 0 2 8.8c0 5.5 10 11.7 10 11.7s10-6.2 10-11.7a5.2 5.2 0 0 0-5.2-5.3Z" fill="#fff"/>', 34),
+        comment: W('<path d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.6 3.4 6.1L4.6 21l4.3-2.3c1 .2 2 .3 3.1.3 5.5 0 10-3.6 10-8S17.5 3 12 3Z" fill="#fff"/><circle cx="7.5" cy="11" r="1.4" fill="#333"/><circle cx="12" cy="11" r="1.4" fill="#333"/><circle cx="16.5" cy="11" r="1.4" fill="#333"/>', 32),
+        save: W('<path d="M18.5 21.5 12 17l-6.5 4.5V4a1.5 1.5 0 0 1 1.5-1.5h10A1.5 1.5 0 0 1 18.5 4Z" fill="#fff"/>', 30),
+        share: W('<path d="M13.5 4v4.3C7.2 9 3.8 13.2 3 19.5c2.4-3.4 5.8-5 10.5-5V19l8-7.5Z" fill="#fff"/>', 32),
+        note: W('<path d="M9 18a3 3 0 1 1-2-2.8V5l12-2v12a3 3 0 1 1-2-2.8V7.2L9 8.9Z" fill="#fff"/>', 14),
+        search: W('<circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="m15.5 15.5 5 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>', 24),
+        live: '<span class="pv-tt-live"><i></i>LIVE</span>',
+        signal: W('<rect x="2" y="15" width="3" height="5" rx="1" fill="#fff"/><rect x="7" y="12" width="3" height="8" rx="1" fill="#fff"/><rect x="12" y="9" width="3" height="11" rx="1" fill="#fff"/><rect x="17" y="6" width="3" height="14" rx="1" fill="rgba(255,255,255,.4)"/>', 15),
+        wifi: W('<path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="19.5" r="1.6" fill="#fff"/>', 15),
+        home: W('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" fill="#fff"/>', 24),
+        friends: W('<circle cx="9" cy="8" r="3.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M17.5 14c2.2.3 3.6 2 4 4.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>', 24),
+        inbox: W('<path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-8l-4.5 3.5V17H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10.5h8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>', 24),
+        profile: W('<circle cx="12" cy="8" r="4" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M4 21c.7-4.2 3.9-6.5 8-6.5s7.3 2.3 8 6.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>', 24),
+    };
     // Zdjęcie profilu konta (albo inicjał na gradiencie).
     const avatar = (acc, cls = '') => acc.avatar
         ? `<span class="pv-avatar ${cls}"><img src="${esc(acc.avatar)}" alt=""></span>`
@@ -79,11 +96,11 @@
     const L = PL ? {
         likesIg: 'Polubienia: 0', comments: 'Zobacz wszystkie komentarze', addComment: 'Dodaj komentarz…', sponsored: 'Sponsorowane',
         fbLike: 'Lubię to!', fbComment: 'Komentarz', fbShare: 'Udostępnij', fbWrite: 'Napisz komentarz…', fbReact: 'Ty i 0 innych osób',
-        liLike: 'Poleć', liComment: 'Komentarz', liRepost: 'Opublikuj ponownie', liSend: 'Wyślij', followers: 'obserwujących', sound: 'oryginalny dźwięk', ttFollowing: 'Obserwowani', ttForYou: 'Dla Ciebie',
+        liLike: 'Poleć', liComment: 'Komentarz', liRepost: 'Opublikuj ponownie', liSend: 'Wyślij', followers: 'obserwujących', sound: 'oryginalny dźwięk', ttFollowing: 'Obserwowani', ttForYou: 'Dla Ciebie', ttCommunity: 'Społeczność', ttHome: 'Główna', ttFriends: 'Znajomi', ttInbox: 'Przychodzące', ttProfile: 'Profil',
     } : {
         likesIg: '0 likes', comments: 'View all comments', addComment: 'Add a comment…', sponsored: 'Sponsored',
         fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share', fbWrite: 'Write a comment…', fbReact: 'You and 0 others',
-        liLike: 'Like', liComment: 'Comment', liRepost: 'Repost', liSend: 'Send', followers: 'followers', sound: 'original sound', ttFollowing: 'Following', ttForYou: 'For You',
+        liLike: 'Like', liComment: 'Comment', liRepost: 'Repost', liSend: 'Send', followers: 'followers', sound: 'original sound', ttFollowing: 'Following', ttForYou: 'For You', ttCommunity: 'Community', ttHome: 'Home', ttFriends: 'Friends', ttInbox: 'Inbox', ttProfile: 'Profile',
     };
 
     const images = () => media.filter(m => !m.video);
@@ -151,13 +168,26 @@
         async tiktok(acc, text, notes) {
             if (!media.some(m => m.video)) notes.push(T.ttVideo);
             const bg = media[0]?.url ? `<img src="${esc(media[0].url)}" alt="">` : '';
-            return `<div class="pv pv-tt"><div class="pv-tt-frame">${bg}
-                <div class="pv-tt-top"><span>${L.ttFollowing}</span><strong>${L.ttForYou}</strong></div>
-                <div class="pv-tt-side"><span class="pv-tt-av">${avatar(acc)}<i>+</i></span>
-                    <span>${I.ttHeart}<small>0</small></span><span>${I.ttComment}<small>0</small></span><span>${I.ttSave}<small>0</small></span><span>${I.ttShare}<small>0</small></span>
-                    <span class="pv-tt-disc">${avatar(acc)}</span></div>
-                <div class="pv-tt-text"><strong>${esc(acc.handle)}</strong>${caption(text, limits.tiktok.more, T.more)}
-                    <div class="pv-tt-sound">${I.note} ${L.sound} — ${esc(acc.handle)}</div></div></div></div>`;
+            const now = new Date();
+            const clock = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            return `<div class="pv pv-tt"><div class="pv-tt-screen">${bg}
+                <div class="pv-tt-status"><strong>${clock}</strong><span>${TT.signal}${TT.wifi}<i class="pv-tt-batt">80</i></span></div>
+                <div class="pv-tt-top">${TT.live}<span>${L.ttCommunity}</span><span>${L.ttFollowing}</span><strong>${L.ttForYou}</strong>${TT.search}</div>
+                <div class="pv-tt-side">
+                    <span class="pv-tt-av">${avatar(acc)}<i>+</i></span>
+                    <span>${TT.heart}<small>0</small></span>
+                    <span>${TT.comment}<small>0</small></span>
+                    <span>${TT.save}<small>0</small></span>
+                    <span>${TT.share}<small>0</small></span>
+                    <span class="pv-tt-disc">${avatar(acc)}</span>
+                </div>
+                <div class="pv-tt-text"><strong>${esc(acc.name)}</strong>${caption(text, limits.tiktok.more, T.more)}
+                    <div class="pv-tt-sound">${TT.note}<span>${L.sound} - ${esc(acc.name)}</span></div></div>
+                <nav class="pv-tt-nav">
+                    <span>${TT.home}<small>${L.ttHome}</small></span><span>${TT.friends}<small>${L.ttFriends}</small></span>
+                    <span class="pv-tt-plus"><i>+</i></span>
+                    <span>${TT.inbox}<small>${L.ttInbox}</small></span><span>${TT.profile}<small>${L.ttProfile}</small></span>
+                </nav></div></div>`;
         },
         async linkedin(acc, text, notes) {
             return `<div class="pv pv-fb pv-li">

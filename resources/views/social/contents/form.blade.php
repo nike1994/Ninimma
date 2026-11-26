@@ -114,7 +114,7 @@
 @endsection
 @push('scripts')
 <script src="{{ asset('js/uploader.js') }}?v=5"></script>
-<script src="{{ asset('js/post-preview.js') }}?v=4"></script>
+<script src="{{ asset('js/post-preview.js') }}?v=5"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');

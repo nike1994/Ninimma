@@ -1386,3 +1386,49 @@ a.kpi { color: var(--text); }
 .pv-tt-text { right: 60px; padding: 12px; }
 .pv-tt-text > strong { font-size: 15px; }
 .pv-tt-sound { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 6px; white-space: nowrap; overflow: hidden; }
+
+/* TikTok — pełny ekran telefonu jak w aplikacji */
+.pv-tt { max-width: 320px; border: 0; background: transparent; }
+.pv-tt-screen { position: relative; aspect-ratio: 9 / 19.5; border-radius: 28px; overflow: hidden; background: #161616; color: #fff;
+    font: 14px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; box-shadow: 0 0 0 6px #111, 0 18px 40px rgba(0,0,0,.25); }
+.pv-tt-screen > img { position: absolute; inset: 0 0 52px 0; width: 100%; height: calc(100% - 52px); object-fit: cover; }
+.pv-tt-screen::after { content: ""; position: absolute; inset: 0 0 52px; pointer-events: none;
+    background: linear-gradient(rgba(0,0,0,.28), transparent 18%, transparent 62%, rgba(0,0,0,.55)); }
+.pv-tt-screen > *:not(img) { z-index: 1; }
+.pv-tt-status { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 10px 22px 0 26px; font-size: 13px; }
+.pv-tt-status span { display: flex; align-items: center; gap: 4px; }
+.pv-tt-batt { font-style: normal; font-size: 9px; font-weight: 700; color: #111; background: #fff; border-radius: 4px; padding: 0 4px; line-height: 13px; position: relative; }
+.pv-tt-batt::after { content: ""; position: absolute; right: -3px; top: 4px; width: 2px; height: 5px; background: rgba(255,255,255,.6); border-radius: 0 1px 1px 0; }
+.pv-tt-top { position: absolute; top: 34px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; gap: 6px;
+    font-size: 13.5px; font-weight: 600; color: rgba(255,255,255,.72); text-shadow: 0 1px 2px rgba(0,0,0,.35); white-space: nowrap; }
+.pv-tt-top strong { color: #fff; position: relative; padding-bottom: 6px; margin-bottom: -6px; }
+.pv-tt-top strong::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 28px; height: 2.5px; border-radius: 2px; background: #fff; transform: translateX(-50%); }
+.pv-tt-live { display: inline-flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; border: 1.6px solid #fff; border-radius: 4px; padding: 3px 3px 2px; position: relative; letter-spacing: .3px; }
+.pv-tt-live i { position: absolute; top: -5px; left: 50%; width: 8px; height: 5px; border: 1.5px solid #fff; border-bottom: 0; border-radius: 4px 4px 0 0; transform: translateX(-50%); }
+.pv-tt-side { position: absolute; right: 6px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 13px; }
+.pv-tt-side > span { display: flex; flex-direction: column; align-items: center; gap: 2px; filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.35)); }
+.pv-tt-side small { font-size: 11.5px; font-weight: 600; color: #fff; }
+.pv-tt-av { position: relative; margin-bottom: 10px; }
+.pv-tt-av .pv-avatar { width: 46px !important; height: 46px !important; box-shadow: 0 0 0 1.5px #fff; }
+.pv-tt-av i { position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: #fe2c55; color: #fff;
+    font-style: normal; font-weight: 700; font-size: 15px; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 1.5px #fff; }
+.pv-tt-disc { margin-top: 6px; animation: pv-spin 6s linear infinite; }
+.pv-tt-disc .pv-avatar { width: 30px !important; height: 30px !important; box-shadow: 0 0 0 8px #2a2a2a, 0 0 0 9px #444; margin: 9px; }
+@keyframes pv-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .pv-tt-disc { animation: none; } }
+.pv-tt-text { position: absolute; left: 0; right: 64px; bottom: 60px; padding: 0 12px; background: none; }
+.pv-tt-text > strong { font-size: 15px; font-weight: 700; display: block; margin-bottom: 3px; }
+.pv-tt .pv-caption { padding: 0; font-size: 13.5px; color: rgba(255,255,255,.92); }
+.pv-tt .pv-tag { color: #fff; font-weight: 600; } .pv-tt .pv-more { color: #fff; font-weight: 700; }
+.pv-tt-sound { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-top: 8px; white-space: nowrap; overflow: hidden; }
+.pv-tt-sound span { overflow: hidden; text-overflow: ellipsis; }
+.pv-tt-nav { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; background: #000; display: flex; justify-content: space-around; align-items: center; padding-bottom: 4px; }
+.pv-tt-nav > span { display: flex; flex-direction: column; align-items: center; gap: 1px; color: #fff; }
+.pv-tt-nav small { font-size: 9.5px; color: rgba(255,255,255,.9); }
+.pv-tt-nav > span:first-child small { color: #fff; font-weight: 600; }
+.pv-tt-plus i { display: grid; place-items: center; width: 42px; height: 28px; border-radius: 8px; background: #fff; color: #111; font-style: normal; font-weight: 800; font-size: 20px;
+    box-shadow: -3px 0 0 #25f4ee, 3px 0 0 #fe2c55; }
+.pv-tt-top { font-size: 12.5px; padding: 0 10px; }
+.pv-tt-top strong { border-bottom: 0 !important; padding-bottom: 7px; }
+.pv-tt-top svg { flex-shrink: 0; width: 21px; height: 21px; }
+.pv-tt-top .pv-tt-live { flex-shrink: 0; }
