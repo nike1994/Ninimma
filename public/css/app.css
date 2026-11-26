@@ -1584,3 +1584,7 @@ a.kpi { color: var(--text); }
 .pv-pin-actions { gap: 10px; padding-right: 2px; }
 .pv-pin-visit, .pv-pin-save { padding: 9px 12px; font-size: 13px; }
 .pv-pin-actions .pv-spacer { min-width: 0; }
+.pv-pin-visit.off { opacity: .45; }
+.pv-pin-domain { padding: 0 6px 4px; font-size: 12px; color: #cfcfcf; font-weight: 600; }
+.pv-pin-domain::before { content: "↗ "; }
+[data-pin-link][hidden] { display: none; }

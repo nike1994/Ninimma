@@ -17,7 +17,7 @@ class Publication extends Model
 
     protected $fillable = [
         'content_id', 'social_account_id', 'platform', 'scheduled_at', 'published_at', 'status', 'url', 'caption',
-        'promoted', 'promo_budget', 'promo_from', 'promo_to', 'visible_to_client', 'auto_publish',
+        'promoted', 'promo_budget', 'promo_from', 'promo_to', 'visible_to_client', 'auto_publish', 'link',
     ];
 
     protected $attributes = ['status' => 'planned', 'checks_done' => 0, 'promoted' => false, 'visible_to_client' => false, 'auto_publish' => false, 'api_attempts' => 0];

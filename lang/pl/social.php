@@ -173,4 +173,7 @@ return [
     'avatar_invalid' => 'To nie jest obraz, który da się odczytać.',
     'avatar_saved' => 'Zapisano zdjęcie profilu.',
     'avatar_change' => 'Zmień zdjęcie profilu (używane w podglądzie postów)',
+    'pin_link' => 'Link docelowy pinu (przycisk „Odwiedź”)',
+    'pin_link_hint' => 'Strona, na którą trafi osoba po kliknięciu pinu — np. produkt albo wpis na blogu. Warto dodać UTM z kampanii.',
+    'post_url' => 'Link do posta (po publikacji)',
 ];

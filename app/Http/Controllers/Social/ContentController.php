@@ -199,6 +199,7 @@ class ContentController extends Controller
             'pubs.*.promo_to' => ['nullable', 'date'],
             'pubs.*.visible_to_client' => ['nullable', 'boolean'],
             'pubs.*.auto_publish' => ['nullable', 'boolean'],
+            'pubs.*.link' => ['nullable', 'url:http,https', 'max:500'],
         ])['pubs'] ?? [];
 
         $materials = $content->materials()->get();
@@ -229,6 +230,8 @@ class ContentController extends Controller
                 'visible_to_client' => ! empty($row['visible_to_client']),
                 // Automatyczna publikacja tylko dla kont połączonych z API (inaczej zawsze ręcznie).
                 'auto_publish' => ! empty($row['auto_publish']) && $account->isConnected(),
+                // Link docelowy ma sens tylko na Pintereście.
+                'link' => $account->platform === \App\Enums\Platform::Pinterest ? ($row['link'] ?? null) : null,
             ];
             $pub ??= new Publication(['content_id' => $content->id]);
             $pub->content_id = $content->id;

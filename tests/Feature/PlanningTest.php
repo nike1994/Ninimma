@@ -86,7 +86,7 @@ class PlanningTest extends TestCase
         $date = today()->addDays(6)->toDateString();
         $this->get(route('social.contents.create', ['date' => $date, 'time' => '17:45', 'account' => $this->acc->id]))->assertOk()
             ->assertSee('value="'.$date.'T17:45"', false)
-            ->assertSee('value="'.$this->acc->id.'" data-client="'.$this->acc->client_id.'" data-api="0" selected', false);
+            ->assertSee('value="'.$this->acc->id.'" data-client="'.$this->acc->client_id.'" data-api="0" data-platform="'.$this->acc->platform->value.'" selected', false);
 
         // Klient widzi podgląd swoich publikacji, ale nie może przenosić ani dodawać.
         $p->update(['visible_to_client' => true]);
@@ -122,5 +122,24 @@ class PlanningTest extends TestCase
 
         $this->get(route('social.contents.edit', Content::first()))->assertOk()->assertSee('data-preview', false)->assertSee('post-preview.js', false)
             ->assertSee('&quot;instagram&quot;:{&quot;chars&quot;:2200,&quot;tags&quot;:30', false);
+    }
+
+    public function test_pinterest_publication_keeps_destination_link_other_platforms_ignore_it(): void
+    {
+        $pin = SocialAccount::factory()->create(['client_id' => $this->acc->client_id, 'platform' => 'pinterest']);
+        $ig = SocialAccount::factory()->create(['client_id' => $this->acc->client_id, 'platform' => 'instagram']);
+        $base = ['client_id' => $this->acc->client_id, 'title' => 'Monstera zimą', 'description' => 'Opis', 'type' => 'post', 'format' => 'image', 'stage' => 'ready'];
+        $at = today()->addDays(2)->format('Y-m-d').' 12:00';
+        $url = 'https://zielonydom.pl/monstera?utm_source=pinterest';
+
+        $this->post(route('social.contents.store'), $base + ['pubs' => [['social_account_id' => $pin->id, 'scheduled_at' => $at, 'link' => 'javascript:alert(1)']]])
+            ->assertSessionHasErrors('pubs.0.link');
+        $this->post(route('social.contents.store'), $base + ['pubs' => [
+            ['social_account_id' => $pin->id, 'scheduled_at' => $at, 'link' => $url],
+            ['social_account_id' => $ig->id, 'scheduled_at' => $at, 'link' => $url],
+        ]])->assertSessionHasNoErrors();
+        $this->assertSame($url, Publication::where('social_account_id', $pin->id)->value('link'));
+        $this->assertNull(Publication::where('social_account_id', $ig->id)->value('link'));
+        $this->get(route('social.contents.edit', Content::first()))->assertOk()->assertSee('value="'.$url.'"', false)->assertSee('data-pin-link', false);
     }
 }

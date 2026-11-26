@@ -114,7 +114,7 @@
 @endsection
 @push('scripts')
 <script src="{{ asset('js/uploader.js') }}?v=5"></script>
-<script src="{{ asset('js/post-preview.js') }}?v=9"></script>
+<script src="{{ asset('js/post-preview.js') }}?v=10"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');
@@ -136,6 +136,9 @@
         const sel = row.querySelector('[data-account-select]'), box = row.querySelector('[data-pub-auto]');
         if (!sel || !box) return;
         box.hidden = sel.selectedOptions[0]?.dataset.api !== '1';
+        // Link docelowy tylko dla Pinteresta.
+        const pin = row.querySelector('[data-pin-link]');
+        if (pin) pin.hidden = sel.selectedOptions[0]?.dataset.platform !== 'pinterest';
     };
     wrap.addEventListener('change', e => { if (e.target.matches('[data-account-select]')) autoToggle(e.target.closest('[data-pub-row]')); });
     wrap.querySelectorAll('[data-pub-row]').forEach(autoToggle);

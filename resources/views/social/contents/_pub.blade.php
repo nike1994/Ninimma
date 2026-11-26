@@ -13,17 +13,19 @@
         <label class="field"><span>{{ __('social.account') }}</span>
             <select name="pubs[{{ $i }}][social_account_id]" data-account-select>
                 <option value="">—</option>
-                @foreach($accounts as $a)<option value="{{ $a->id }}" data-client="{{ $a->client_id }}" data-api="{{ $a->isConnected() ? 1 : 0 }}" @selected((string) $v('social_account_id', $p?->social_account_id) === (string) $a->id)>{{ $a->name }} · {{ $a->platform->label() }}</option>@endforeach
+                @foreach($accounts as $a)<option value="{{ $a->id }}" data-client="{{ $a->client_id }}" data-api="{{ $a->isConnected() ? 1 : 0 }}" data-platform="{{ $a->platform->value }}" @selected((string) $v('social_account_id', $p?->social_account_id) === (string) $a->id)>{{ $a->name }} · {{ $a->platform->label() }}</option>@endforeach
             </select>
         </label>
         <label class="field"><span>{{ __('social.date_time') }}</span><input type="datetime-local" name="pubs[{{ $i }}][scheduled_at]" value="{{ $v('scheduled_at', $p?->scheduled_at?->format('Y-m-d\TH:i')) }}"></label>
         <label class="field"><span>{{ __('social.status') }}</span>
             <select name="pubs[{{ $i }}][status]">@foreach(['planned', 'published', 'cancelled'] as $s)<option value="{{ $s }}" @selected(($v('status', $p?->status) ?? 'planned') === $s)>{{ __('social.pub_'.$s) }}</option>@endforeach</select>
         </label>
-        <label class="field"><span>{{ __('social.link') }}</span><input type="url" name="pubs[{{ $i }}][url]" value="{{ $v('url', $p?->url) }}" placeholder="https://"></label>
+        <label class="field"><span>{{ __('social.post_url') }}</span><input type="url" name="pubs[{{ $i }}][url]" value="{{ $v('url', $p?->url) }}" placeholder="https://"></label>
     </div>
-    <details class="pub-more" @if($v('caption', $p?->caption) || $on('promoted', $p?->promoted)) open @endif>
+    <details class="pub-more" @if($v('caption', $p?->caption) || $on('promoted', $p?->promoted) || $v('link', $p?->link)) open @endif>
         <summary class="muted small">{{ __('social.more_options') }}</summary>
+        <label class="field" data-pin-link><span>{{ __('social.pin_link') }}</span><input type="url" name="pubs[{{ $i }}][link]" value="{{ $v('link', $p?->link) }}" placeholder="https://twojsklep.pl/produkt" maxlength="500">
+            <small class="muted">{{ __('social.pin_link_hint') }}</small></label>
         <label class="field"><span>{{ __('social.caption_override') }}</span><textarea name="pubs[{{ $i }}][caption]" rows="2" data-pub-caption>{{ $v('caption', $p?->caption) }}</textarea></label>
         <div class="text-counter" data-counter="pub"></div>
         <div class="pub-grid">

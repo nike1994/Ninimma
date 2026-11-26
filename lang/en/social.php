@@ -173,4 +173,7 @@ return [
     'avatar_invalid' => 'This image could not be read.',
     'avatar_saved' => 'Profile picture saved.',
     'avatar_change' => 'Change profile picture (used in post previews)',
+    'pin_link' => 'Pin destination link (“Visit” button)',
+    'pin_link_hint' => 'The page people land on after clicking the pin — e.g. a product or blog post. Consider adding campaign UTM.',
+    'post_url' => 'Post link (after publishing)',
 ];

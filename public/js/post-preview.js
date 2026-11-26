@@ -16,14 +16,14 @@
         cutIg: n => `Instagram pokazuje ok. ${n} pierwszych znaków — reszta po „…więcej”.`,
         cutFb: 'Długi tekst Facebook zwija po kilku linijkach („Wyświetl więcej”).',
         crop: (p, r) => `${p} przytnie zdjęcie do proporcji ${r}.`, reel: 'Film pokaże się jako rolka 9:16.',
-        noMedia: 'Instagram wymaga zdjęcia albo filmu.', igReel: 'Rolka: pełny ekran 9:16 — ważne elementy trzymaj z dala od dolnej części (opis i przyciski).', igStory: 'Relacja: pełny ekran 9:16, bez opisu — tekst umieść na grafice. Znika po 24 h.', fbStory: 'Relacja na Facebooku: pełny ekran 9:16, bez opisu. Znika po 24 h.', pinTitle: n => `Tytuł pinu ma ${n} znaków — Pinterest pokaże najwyżej 100.`, pinMedia: 'Pin wymaga zdjęcia albo filmu.', pinRatio: 'Pinterest najlepiej wyświetla piny w proporcji 2:3 (np. 1000×1500 px). Tytuł pinu to pole „Tytuł”.', fbReel: 'Po kliknięciu film otwiera się na pełnym ekranie — opis skraca się do jednej linijki.', ttVideo: 'TikTok publikuje tylko film — dodaj plik wideo.', strictest: 'najostrzejszy limit',
+        noMedia: 'Instagram wymaga zdjęcia albo filmu.', igReel: 'Rolka: pełny ekran 9:16 — ważne elementy trzymaj z dala od dolnej części (opis i przyciski).', igStory: 'Relacja: pełny ekran 9:16, bez opisu — tekst umieść na grafice. Znika po 24 h.', fbStory: 'Relacja na Facebooku: pełny ekran 9:16, bez opisu. Znika po 24 h.', pinTitle: n => `Tytuł pinu ma ${n} znaków — Pinterest pokaże najwyżej 100.`, pinMedia: 'Pin wymaga zdjęcia albo filmu.', pinNoLink: 'Dodaj link docelowy w „Więcej” przy publikacji — bez niego „Odwiedź” nigdzie nie prowadzi.', pinRatio: 'Pinterest najlepiej wyświetla piny w proporcji 2:3 (np. 1000×1500 px). Tytuł pinu to pole „Tytuł”.', fbReel: 'Po kliknięciu film otwiera się na pełnym ekranie — opis skraca się do jednej linijki.', ttVideo: 'TikTok publikuje tylko film — dodaj plik wideo.', strictest: 'najostrzejszy limit',
         follow: 'Obserwuj', fbLike: 'Lubię to', fbComment: 'Komentarz', fbShare: 'Udostępnij',
     } : {
         more: 'more', fbMore: 'See more', now: 'Just now', likes: 'Likes', chars: 'characters', tags: 'hashtags',
         cutIg: n => `Instagram shows about the first ${n} characters — the rest after “…more”.`,
         cutFb: 'Facebook folds long text after a few lines (“See more”).',
         crop: (p, r) => `${p} will crop the image to ${r}.`, reel: 'The video will show as a 9:16 reel.',
-        noMedia: 'Instagram requires a photo or video.', igReel: 'Reel: full screen 9:16 — keep key elements away from the bottom (caption and buttons).', igStory: 'Story: full screen 9:16, no caption — put text on the image. Disappears after 24 h.', fbStory: 'Facebook story: full screen 9:16, no caption. Disappears after 24 h.', pinTitle: n => `The pin title has ${n} characters — Pinterest shows at most 100.`, pinMedia: 'A pin needs a photo or video.', pinRatio: 'Pinterest shows pins best at 2:3 (e.g. 1000×1500 px). The pin title is the “Title” field.', fbReel: 'When tapped, the video opens full screen — the caption shrinks to one line.', ttVideo: 'TikTok publishes video only — add a video file.', strictest: 'strictest limit', follow: 'Follow', fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share',
+        noMedia: 'Instagram requires a photo or video.', igReel: 'Reel: full screen 9:16 — keep key elements away from the bottom (caption and buttons).', igStory: 'Story: full screen 9:16, no caption — put text on the image. Disappears after 24 h.', fbStory: 'Facebook story: full screen 9:16, no caption. Disappears after 24 h.', pinTitle: n => `The pin title has ${n} characters — Pinterest shows at most 100.`, pinMedia: 'A pin needs a photo or video.', pinNoLink: 'Add a destination link under “More” in the publication — without it “Visit” leads nowhere.', pinRatio: 'Pinterest shows pins best at 2:3 (e.g. 1000×1500 px). The pin title is the “Title” field.', fbReel: 'When tapped, the video opens full screen — the caption shrinks to one line.', ttVideo: 'TikTok publishes video only — add a video file.', strictest: 'strictest limit', follow: 'Follow', fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share',
     };
     const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const count = text => ({ chars: [...text].length, tags: (text.match(/(^|[^\p{L}\p{N}_])#[\p{L}\p{N}_]+/gu) || []).length });
@@ -50,7 +50,7 @@
     const selected = () => [...form.querySelectorAll('[data-pub-row]')].map(row => {
         const acc = accounts[row.querySelector('[data-account-select]')?.value];
         if (!acc || row.querySelector('input[name$="[remove]"]')?.checked) return null;
-        return { ...acc, row, caption: row.querySelector('[data-pub-caption]')?.value || '', promoted: !!row.querySelector('input[name$="[promoted]"]')?.checked };
+        return { ...acc, row, link: row.querySelector('input[name$="[link]"]')?.value || '', caption: row.querySelector('[data-pub-caption]')?.value || '', promoted: !!row.querySelector('input[name$="[promoted]"]')?.checked };
     }).filter(Boolean);
 
     let active = null;
@@ -118,6 +118,7 @@
         chevron: O('<path d="m6 9 6 6 6-6"/>', 24),
         globe: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 8h13M8 1.4c1.8 1.9 2.6 4.1 2.6 6.6S9.8 12.7 8 14.6M8 1.4C6.2 3.3 5.4 5.5 5.4 8s.8 4.7 2.6 6.6" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
     };
+    const domainOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
     const PIN = { upload: O('<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>') };
     let fbChoice = null;
     const fbMode = () => fbChoice || ({ reel: 'reel', story: 'story' }[form.querySelector('select[name=type]')?.value] || 'post');
@@ -136,11 +137,11 @@
         ? `<span class="pv-avatar ${cls}"><img src="${esc(acc.avatar)}" alt=""></span>`
         : `<span class="pv-avatar ${cls}">${esc((acc.name || acc.handle || '?').trim().slice(0, 1).toUpperCase())}</span>`;
     const L = PL ? {
-        likesIg: 'Polubienia: 0', comments: 'Zobacz wszystkie komentarze', igFollow: 'Obserwuj', igSound: 'Oryginalny dźwięk', igNow: 'Teraz', igReels: 'Reels', igFriends: 'Znajomi', igSendMsg: 'Wyślij wiadomość…', igAgo: '1 min', igOpenReel: 'Kliknij, aby otworzyć jako rolkę', fbAgo: '1 min', fbAgoFeed: 'Teraz', fbMoreFeed: 'Zobacz więcej', fbMoreShort: 'więcej', fbAddComment: 'Dodaj komentarz', fbOpenReel: 'Kliknij, aby otworzyć film', fbModes: { post: 'Post', reel: 'Film / rolka', story: 'Relacja' }, pinVisit: 'Odwiedź', pinSave: 'Zapisz', pinNoTitle: 'Tytuł pinu (pole „Tytuł”)', igModes: { post: 'Post', reel: 'Rolka', story: 'Relacja' }, addComment: 'Dodaj komentarz…', sponsored: 'Sponsorowane',
+        likesIg: 'Polubienia: 0', comments: 'Zobacz wszystkie komentarze', igFollow: 'Obserwuj', igSound: 'Oryginalny dźwięk', igNow: 'Teraz', igReels: 'Reels', igFriends: 'Znajomi', igSendMsg: 'Wyślij wiadomość…', igAgo: '1 min', igOpenReel: 'Kliknij, aby otworzyć jako rolkę', fbAgo: '1 min', fbAgoFeed: 'Teraz', fbMoreFeed: 'Zobacz więcej', fbMoreShort: 'więcej', fbAddComment: 'Dodaj komentarz', fbOpenReel: 'Kliknij, aby otworzyć film', fbModes: { post: 'Post', reel: 'Film / rolka', story: 'Relacja' }, pinVisit: 'Odwiedź', pinSave: 'Zapisz', pinNoTitle: 'Tytuł pinu (pole „Tytuł”)', pinNoLink: 'Brak linku docelowego', igModes: { post: 'Post', reel: 'Rolka', story: 'Relacja' }, addComment: 'Dodaj komentarz…', sponsored: 'Sponsorowane',
         fbLike: 'Lubię to!', fbComment: 'Komentarz', fbShare: 'Udostępnij', fbWrite: 'Napisz komentarz…', fbReact: 'Ty i 0 innych osób',
         liLike: 'Poleć', liComment: 'Komentarz', liRepost: 'Opublikuj ponownie', liSend: 'Wyślij', followers: 'obserwujących', sound: 'oryginalny dźwięk', ttFollowing: 'Obserwowani', ttForYou: 'Dla Ciebie', ttCommunity: 'Społeczność', ttHome: 'Główna', ttFriends: 'Znajomi', ttInbox: 'Przychodzące', ttProfile: 'Profil',
     } : {
-        likesIg: '0 likes', comments: 'View all comments', igFollow: 'Follow', igSound: 'Original audio', igNow: 'Just now', igReels: 'Reels', igFriends: 'Friends', igSendMsg: 'Send message…', igAgo: '1m', igOpenReel: 'Click to open as a reel', fbAgo: '1m', fbAgoFeed: 'Just now', fbMoreFeed: 'See more', fbMoreShort: 'more', fbAddComment: 'Add a comment', fbOpenReel: 'Click to open the video', fbModes: { post: 'Post', reel: 'Video / reel', story: 'Story' }, pinVisit: 'Visit', pinSave: 'Save', pinNoTitle: 'Pin title (the “Title” field)', igModes: { post: 'Post', reel: 'Reel', story: 'Story' }, addComment: 'Add a comment…', sponsored: 'Sponsored',
+        likesIg: '0 likes', comments: 'View all comments', igFollow: 'Follow', igSound: 'Original audio', igNow: 'Just now', igReels: 'Reels', igFriends: 'Friends', igSendMsg: 'Send message…', igAgo: '1m', igOpenReel: 'Click to open as a reel', fbAgo: '1m', fbAgoFeed: 'Just now', fbMoreFeed: 'See more', fbMoreShort: 'more', fbAddComment: 'Add a comment', fbOpenReel: 'Click to open the video', fbModes: { post: 'Post', reel: 'Video / reel', story: 'Story' }, pinVisit: 'Visit', pinSave: 'Save', pinNoTitle: 'Pin title (the “Title” field)', pinNoLink: 'No destination link', igModes: { post: 'Post', reel: 'Reel', story: 'Story' }, addComment: 'Add a comment…', sponsored: 'Sponsored',
         fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share', fbWrite: 'Write a comment…', fbReact: 'You and 0 others',
         liLike: 'Like', liComment: 'Comment', liRepost: 'Repost', liSend: 'Send', followers: 'followers', sound: 'original sound', ttFollowing: 'Following', ttForYou: 'For You', ttCommunity: 'Community', ttHome: 'Home', ttFriends: 'Friends', ttInbox: 'Inbox', ttProfile: 'Profile',
     };
@@ -322,6 +323,7 @@
             const title = (form.querySelector('input[name=title]')?.value || '').trim();
             if ([...title].length > 100) notes.push(T.pinTitle([...title].length));
             if (!media.length) notes.push(T.pinMedia);
+            if (!acc.link) notes.push(T.pinNoLink);
             notes.push(T.pinRatio);
             const r = first?.url && !first.video ? await ratioOf(first.url) : 2 / 3;
             // Pinterest najlepiej wyświetla 2:3; bardzo wysokie piny przycina.
@@ -332,7 +334,8 @@
                     <div class="pv-pin-card" style="aspect-ratio:${shown.toFixed(3)}">${pin}${first?.video ? `<span class="pv-play">${I.play}</span>` : ''}
                         <span class="pv-pin-btn left">${IG.back}</span><span class="pv-pin-btn right">${FB.dots}</span></div>
                     <div class="pv-pin-actions"><span>${IG.heart}<b>0</b></span><span>${IG.comment}<b>0</b></span><span>${PIN.upload}</span>
-                        <span class="pv-spacer"></span><span class="pv-pin-visit">${L.pinVisit}</span><span class="pv-pin-save">${L.pinSave}</span></div>
+                        <span class="pv-spacer"></span><span class="pv-pin-visit${acc.link ? '' : ' off'}" title="${esc(acc.link || L.pinNoLink)}">${L.pinVisit}</span><span class="pv-pin-save">${L.pinSave}</span></div>
+                    ${acc.link ? `<div class="pv-pin-domain">${IG.link || ''}${esc(domainOf(acc.link))}</div>` : ''}
                     <div class="pv-pin-user">${avatar(acc, 'pv-xs')}<span>${esc(acc.name)}</span></div>
                     <div class="pv-pin-title"><strong>${esc(title || L.pinNoTitle)}</strong><span class="pv-pin-chev">${FB.chevron}</span></div>
                     ${caption(text, 120, L.fbMoreShort)}
