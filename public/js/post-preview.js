@@ -16,14 +16,14 @@
         cutIg: n => `Instagram pokazuje ok. ${n} pierwszych znaków — reszta po „…więcej”.`,
         cutFb: 'Długi tekst Facebook zwija po kilku linijkach („Wyświetl więcej”).',
         crop: (p, r) => `${p} przytnie zdjęcie do proporcji ${r}.`, reel: 'Film pokaże się jako rolka 9:16.',
-        noMedia: 'Instagram wymaga zdjęcia albo filmu.', igReel: 'Rolka: pełny ekran 9:16 — ważne elementy trzymaj z dala od dolnej części (opis i przyciski).', igStory: 'Relacja: pełny ekran 9:16, bez opisu — tekst umieść na grafice. Znika po 24 h.', ttVideo: 'TikTok publikuje tylko film — dodaj plik wideo.', strictest: 'najostrzejszy limit',
+        noMedia: 'Instagram wymaga zdjęcia albo filmu.', igReel: 'Rolka: pełny ekran 9:16 — ważne elementy trzymaj z dala od dolnej części (opis i przyciski).', igStory: 'Relacja: pełny ekran 9:16, bez opisu — tekst umieść na grafice. Znika po 24 h.', fbStory: 'Relacja na Facebooku: pełny ekran 9:16, bez opisu. Znika po 24 h.', fbReel: 'Po kliknięciu film otwiera się na pełnym ekranie — opis skraca się do jednej linijki.', ttVideo: 'TikTok publikuje tylko film — dodaj plik wideo.', strictest: 'najostrzejszy limit',
         follow: 'Obserwuj', fbLike: 'Lubię to', fbComment: 'Komentarz', fbShare: 'Udostępnij',
     } : {
         more: 'more', fbMore: 'See more', now: 'Just now', likes: 'Likes', chars: 'characters', tags: 'hashtags',
         cutIg: n => `Instagram shows about the first ${n} characters — the rest after “…more”.`,
         cutFb: 'Facebook folds long text after a few lines (“See more”).',
         crop: (p, r) => `${p} will crop the image to ${r}.`, reel: 'The video will show as a 9:16 reel.',
-        noMedia: 'Instagram requires a photo or video.', igReel: 'Reel: full screen 9:16 — keep key elements away from the bottom (caption and buttons).', igStory: 'Story: full screen 9:16, no caption — put text on the image. Disappears after 24 h.', ttVideo: 'TikTok publishes video only — add a video file.', strictest: 'strictest limit', follow: 'Follow', fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share',
+        noMedia: 'Instagram requires a photo or video.', igReel: 'Reel: full screen 9:16 — keep key elements away from the bottom (caption and buttons).', igStory: 'Story: full screen 9:16, no caption — put text on the image. Disappears after 24 h.', fbStory: 'Facebook story: full screen 9:16, no caption. Disappears after 24 h.', fbReel: 'When tapped, the video opens full screen — the caption shrinks to one line.', ttVideo: 'TikTok publishes video only — add a video file.', strictest: 'strictest limit', follow: 'Follow', fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share',
     };
     const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const count = text => ({ chars: [...text].length, tags: (text.match(/(^|[^\p{L}\p{N}_])#[\p{L}\p{N}_]+/gu) || []).length });
@@ -107,6 +107,20 @@
         reels: O('<rect x="3" y="3" width="18" height="18" rx="5"/><path d="m10 8.5 5.5 3.5-5.5 3.5Z"/>', 24),
         search: O('<circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5.5 5.5"/>', 24),
     };
+    // Ikony Facebooka (nowy układ: liczniki przy ikonach).
+    const FB = {
+        like: O('<path d="M7 11v9.5H4V11Zm0 0 4.3-7.3c.9-1.5 3.2-.8 3.1 1L14 9h5.5a2 2 0 0 1 2 2.4l-1.4 7.4a2 2 0 0 1-2 1.7H7"/>'),
+        likeSolid: '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M7 11v9.5H4V11Zm0 0 4.3-7.3c.9-1.5 3.2-.8 3.1 1L14 9h5.5a2 2 0 0 1 2 2.4l-1.4 7.4a2 2 0 0 1-2 1.7H7" fill="#fff"/></svg>',
+        repost: O('<path d="M7 3v4h4"/><path d="M4 7h11a4 4 0 0 1 4 4v1"/><path d="M17 21v-4h-4"/><path d="M20 17H9a4 4 0 0 1-4-4v-1"/>'),
+        share: O('<path d="M14 5V2l7 7-7 7v-3.1C8 12.9 4.6 15 3 20c.5-7 4.6-13.6 11-15Z"/>'),
+        shareSolid: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M14 5V2l7 7-7 7v-3.1C8 12.9 4.6 15 3 20c.5-7 4.6-13.6 11-15Z" fill="currentColor"/></svg>',
+        dots: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg>',
+        chevron: O('<path d="m6 9 6 6 6-6"/>', 24),
+        globe: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 8h13M8 1.4c1.8 1.9 2.6 4.1 2.6 6.6S9.8 12.7 8 14.6M8 1.4C6.2 3.3 5.4 5.5 5.4 8s.8 4.7 2.6 6.6" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+    };
+    let fbChoice = null;
+    const fbMode = () => fbChoice || ({ reel: 'reel', story: 'story' }[form.querySelector('select[name=type]')?.value] || 'post');
+
     // Pasek stanu telefonu (godzina, zasięg, Wi-Fi, bateria).
     const statusBar = () => {
         const d = new Date();
@@ -121,11 +135,11 @@
         ? `<span class="pv-avatar ${cls}"><img src="${esc(acc.avatar)}" alt=""></span>`
         : `<span class="pv-avatar ${cls}">${esc((acc.name || acc.handle || '?').trim().slice(0, 1).toUpperCase())}</span>`;
     const L = PL ? {
-        likesIg: 'Polubienia: 0', comments: 'Zobacz wszystkie komentarze', igFollow: 'Obserwuj', igSound: 'Oryginalny dźwięk', igNow: 'Teraz', igReels: 'Reels', igFriends: 'Znajomi', igSendMsg: 'Wyślij wiadomość…', igAgo: '1 min', igOpenReel: 'Kliknij, aby otworzyć jako rolkę', igModes: { post: 'Post', reel: 'Rolka', story: 'Relacja' }, addComment: 'Dodaj komentarz…', sponsored: 'Sponsorowane',
+        likesIg: 'Polubienia: 0', comments: 'Zobacz wszystkie komentarze', igFollow: 'Obserwuj', igSound: 'Oryginalny dźwięk', igNow: 'Teraz', igReels: 'Reels', igFriends: 'Znajomi', igSendMsg: 'Wyślij wiadomość…', igAgo: '1 min', igOpenReel: 'Kliknij, aby otworzyć jako rolkę', fbAgo: '1 min', fbAgoFeed: 'Teraz', fbMoreFeed: 'Zobacz więcej', fbMoreShort: 'więcej', fbAddComment: 'Dodaj komentarz', fbOpenReel: 'Kliknij, aby otworzyć film', fbModes: { post: 'Post', reel: 'Film / rolka', story: 'Relacja' }, igModes: { post: 'Post', reel: 'Rolka', story: 'Relacja' }, addComment: 'Dodaj komentarz…', sponsored: 'Sponsorowane',
         fbLike: 'Lubię to!', fbComment: 'Komentarz', fbShare: 'Udostępnij', fbWrite: 'Napisz komentarz…', fbReact: 'Ty i 0 innych osób',
         liLike: 'Poleć', liComment: 'Komentarz', liRepost: 'Opublikuj ponownie', liSend: 'Wyślij', followers: 'obserwujących', sound: 'oryginalny dźwięk', ttFollowing: 'Obserwowani', ttForYou: 'Dla Ciebie', ttCommunity: 'Społeczność', ttHome: 'Główna', ttFriends: 'Znajomi', ttInbox: 'Przychodzące', ttProfile: 'Profil',
     } : {
-        likesIg: '0 likes', comments: 'View all comments', igFollow: 'Follow', igSound: 'Original audio', igNow: 'Just now', igReels: 'Reels', igFriends: 'Friends', igSendMsg: 'Send message…', igAgo: '1m', igOpenReel: 'Click to open as a reel', igModes: { post: 'Post', reel: 'Reel', story: 'Story' }, addComment: 'Add a comment…', sponsored: 'Sponsored',
+        likesIg: '0 likes', comments: 'View all comments', igFollow: 'Follow', igSound: 'Original audio', igNow: 'Just now', igReels: 'Reels', igFriends: 'Friends', igSendMsg: 'Send message…', igAgo: '1m', igOpenReel: 'Click to open as a reel', fbAgo: '1m', fbAgoFeed: 'Just now', fbMoreFeed: 'See more', fbMoreShort: 'more', fbAddComment: 'Add a comment', fbOpenReel: 'Click to open the video', fbModes: { post: 'Post', reel: 'Video / reel', story: 'Story' }, igModes: { post: 'Post', reel: 'Reel', story: 'Story' }, addComment: 'Add a comment…', sponsored: 'Sponsored',
         fbLike: 'Like', fbComment: 'Comment', fbShare: 'Share', fbWrite: 'Write a comment…', fbReact: 'You and 0 others',
         liLike: 'Like', liComment: 'Comment', liRepost: 'Repost', liSend: 'Send', followers: 'followers', sound: 'original sound', ttFollowing: 'Following', ttForYou: 'For You', ttCommunity: 'Community', ttHome: 'Home', ttFriends: 'Friends', ttInbox: 'Inbox', ttProfile: 'Profile',
     };
@@ -225,15 +239,57 @@
                 <nav class="pv-ig-nav"><span class="on">${IG.home}</span><span>${IG.reels}</span><span>${IG.send}</span><span>${IG.search}</span><span>${avatar(acc, 'pv-xs')}</span></nav>
             </div></div>`;
         },
+        // Facebook: post w kanale (jasny), film po kliknięciu (ciemny, pełny ekran) albo relacja — wg typu treści.
         async facebook(acc, text, notes) {
-            if (cut(text, limits.facebook.more)) notes.push(T.cutFb);
-            return `<div class="pv pv-fb">
-                <div class="pv-head">${avatar(acc)}<span class="pv-who"><strong>${esc(acc.name)}</strong><small>${acc.promoted ? L.sponsored : T.now} · ${I.globe}</small></span><span class="pv-menu">${I.more}</span><span class="pv-x">✕</span></div>
-                <div class="pv-fb-text">${caption(text, limits.facebook.more, T.fbMore)}</div>
-                ${media.length ? await mediaBox('Facebook', notes) : ''}
-                <div class="pv-fb-stats"><span class="pv-reacts"><i class="r-like">👍</i><i class="r-love">❤️</i></span><span>${L.fbReact}</span></div>
-                <div class="pv-fb-actions"><span>${I.fbLike} ${L.fbLike}</span><span>${I.fbComment} ${L.fbComment}</span><span>${I.fbShare} ${L.fbShare}</span></div>
-                <div class="pv-fb-write">${avatar(acc, 'pv-xs')}<span>${L.fbWrite}</span></div></div>`;
+            const mode = fbMode();
+            const first = media[0];
+            const bg = first?.url ? `<img class="pv-bg" src="${esc(first.url)}" alt="">` : '<span class="pv-bg pv-bg-empty"></span>';
+            const status = statusBar();
+            const reacts = `<span class="pv-fb-reacts"><i class="r-like">${FB.likeSolid}</i><i class="r-love">❤</i></span>`;
+
+            if (mode === 'story') {
+                notes.push(T.fbStory);
+                return `<div class="pv pv-phone pv-fb-story"><div class="pv-screen">${status}
+                    <div class="pv-story-media">${bg}
+                        <div class="pv-story-bars">${(images().length > 1 ? images().slice(0, 6) : [1]).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>
+                        <div class="pv-story-head pv-fb-story-head">${avatar(acc, 'pv-md')}<span class="pv-who"><strong>${esc(acc.name)} <small>${L.fbAgo}</small></strong></span><span class="pv-spacer"></span>${FB.chevron}${FB.dots}${IG.close}</div>
+                        ${first?.video ? `<span class="pv-fb-mute">${IG.mute}</span><span class="pv-play">${I.play}</span>` : ''}
+                    </div>
+                    <div class="pv-fb-story-foot"><span class="pv-fb-sq">${FB.repost}</span><span class="pv-fb-share-pill">${FB.shareSolid} ${L.fbShare}</span>
+                        <i class="pv-fb-bubble love">❤</i><i class="pv-fb-bubble like">${FB.likeSolid}</i><i class="pv-fb-bubble haha">😆</i></div>
+                </div></div>`;
+            }
+
+            if (mode === 'reel') {
+                notes.push(T.fbReel);
+                return `<div class="pv pv-phone pv-fb-reel"><div class="pv-screen">${bg}<span class="pv-shade"></span>${status}
+                    <div class="pv-fb-reel-top">${IG.back}<span class="pv-spacer"></span>${IG.search}<span class="pv-fb-circle">${FB.dots}</span></div>
+                    <div class="pv-reel-side pv-fb-reel-side">
+                        <span>${FB.like}<small>0</small></span><span>${IG.comment}<small>0</small></span><span>${FB.repost}</span>
+                        <span>${FB.share}<small>0</small></span><span>${IG.save}</span>
+                    </div>
+                    <div class="pv-reel-info pv-fb-reel-info">
+                        <div class="pv-reel-user">${avatar(acc, 'pv-md pv-fb-ring')}<strong>${esc(acc.name)}</strong>${FB.globe}<span class="pv-follow">${L.igFollow}</span></div>
+                        ${caption(text, 45, L.fbMoreShort)}
+                    </div>
+                    <span class="pv-fb-reel-dots">${FB.dots}</span>
+                    <div class="pv-reel-comment pv-fb-reel-comment"><span>${L.fbAddComment}<i>☺</i><i class="gif">GIF</i></span></div>
+                </div></div>`;
+            }
+
+            if (cut(text, 60)) notes.push(T.cutFb);
+            const isVideo = !!first?.video;
+            return `<div class="pv pv-phone pv-fb-feed"><div class="pv-screen pv-screen-light">${status}
+                <div class="pv-feed-scroll">
+                    <div class="pv-fb-head">${avatar(acc, 'pv-fb-ring')}
+                        <span class="pv-who"><span class="pv-fb-name"><strong>${esc(acc.name)}</strong> · <b>${L.igFollow}</b></span>
+                        <small>${acc.promoted ? L.sponsored : L.fbAgoFeed} · ${FB.globe}</small></span>${FB.dots}<span class="pv-fb-x">${IG.close}</span></div>
+                    <div class="pv-fb-text1">${caption(text, 60, L.fbMoreFeed)}</div>
+                    ${media.length ? `<div class="pv-ig-media ${isVideo ? 'is-video' : ''}" ${isVideo ? `data-open-fb-reel title="${esc(L.fbOpenReel)}"` : ''}>${await mediaBox('Facebook', notes)}${isVideo ? `<span class="pv-mute pv-fb-mute2">${IG.mute}</span>` : ''}</div>` : ''}
+                    <div class="pv-fb-bar"><span>${FB.like}<b>0</b></span><span>${IG.comment}<b>0</b></span><span>${FB.repost}</span><span>${FB.share}<b>0</b></span><span class="pv-spacer"></span>${reacts}</div>
+                    <div class="pv-fb-next" aria-hidden="true"><div><i class="av"></i><span><i></i><i class="short"></i></span></div><i class="line"></i><i class="img"></i></div>
+                </div>
+            </div></div>`;
         },
         async tiktok(acc, text, notes) {
             if (!media.some(m => m.video)) notes.push(T.ttVideo);
@@ -310,8 +366,9 @@
         const notes = [];
         const html = await (views[cur.platform] || views.linkedin)(cur, textFor(cur.caption), notes);
         if (my !== seq) return;
-        const modes = cur.platform === 'instagram'
-            ? `<div class="pv-modes" role="group">${Object.entries(L.igModes).map(([k, v]) => `<button type="button" class="${igMode() === k ? 'on' : ''}" data-ig-mode="${k}">${v}</button>`).join('')}</div>` : '';
+        const modeSet = { instagram: [L.igModes, igMode(), 'ig'], facebook: [L.fbModes, fbMode(), 'fb'] }[cur.platform];
+        const modes = modeSet
+            ? `<div class="pv-modes" role="group">${Object.entries(modeSet[0]).map(([k, v]) => `<button type="button" class="${modeSet[1] === k ? 'on' : ''}" data-${modeSet[2]}-mode="${k}">${v}</button>`).join('')}</div>` : '';
         stage.innerHTML = modes + html;
         note.textContent = notes.join(' ');
     };
@@ -321,6 +378,9 @@
         const m = e.target.closest('[data-ig-mode]');
         if (m) { igChoice = m.dataset.igMode; render(); return; }
         if (e.target.closest('[data-open-reel]')) { igChoice = 'reel'; render(); return; }
+        const f = e.target.closest('[data-fb-mode]');
+        if (f) { fbChoice = f.dataset.fbMode; render(); return; }
+        if (e.target.closest('[data-open-fb-reel]')) { fbChoice = 'reel'; render(); return; }
         const b = e.target.closest('.pv-more'); if (!b) return;
         const cap = b.closest('.pv-caption');
         cap.innerHTML = cap.dataset.prefix + rich(cap.dataset.full);
@@ -328,6 +388,6 @@
     let t;
     const later = () => { clearTimeout(t); t = setTimeout(render, 150); };
     form.addEventListener('input', later);
-    form.addEventListener('change', e => { if (e.target.name === 'type') igChoice = null; later(); });
+    form.addEventListener('change', e => { if (e.target.name === 'type') { igChoice = null; fbChoice = null; } later(); });
     render();
 })();
