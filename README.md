@@ -55,7 +55,10 @@ liczniki-pierścienie, oś czasu z dziś, postami i reklamami, przedłużenia z 
 i historią. Ostrzeżenia w formularzu treści i reklamy, w kalendarzach, na pulpitach i w karcie współpracy; klient widzi
 termin i kanały swoich materiałów. Blokady: po wygaśnięciu licencji (albo przed jej startem) nie da się zaplanować
 ani opublikować nowego posta z materiałem lub jego fragmentem, promować posta ani utworzyć/wznowić reklamy z nim;
-promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
+promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy.
+Dodawanie: w karcie współpracy przeciąga się filmy/zdjęcia (kilka naraz) — każdy plik to materiał z licencją z umowy.
+Wszędzie widać miniaturę (kadr filmu ładowany, gdy widoczny, podgląd po najechaniu; bez ffmpeg na hostingu) z kółkiem
+profilu influencera. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
 
 **Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
 współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem

@@ -78,7 +78,7 @@
                 <small class="muted">{{ __('lic.material_hint') }}</small>
                 @include('licenses._issues', ['issues' => $licenseIssues])
                 <details class="mat-details" @if($ad->material_id || $licenseIssues->isNotEmpty()) open @endif>
-                    <summary class="small">{{ $ad->material ? $ad->material->description : __('lic.no_material') }}</summary>
+                    <summary class="small">@if($ad->material)<span class="mat-summary"><x-material-thumb :material="$ad->material" :size="40" /> {{ $ad->material->description }}</span>@else{{ __('lic.no_material') }}@endif</summary>
                     @include('licenses._picker', ['name' => 'material_id', 'selected' => array_filter([old('material_id', $ad->material_id)]), 'multiple' => false])
                 </details>
             </div>

@@ -14,7 +14,7 @@ class MaterialController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $materials = Material::with(['collaboration.influencer', 'collaboration.campaign.client', 'file.file', 'publication.account'])
+        $materials = Material::with(['collaboration.influencer.photo', 'collaboration.campaign.client', 'file.file', 'publication.account'])
             ->when(! $user->isAdmin(), fn ($q) => $q->where('is_received', true)
                 ->whereHas('collaboration.campaign', fn ($c) => $c->where('client_id', $user->client_id)))
             ->when($request->query('license') === 'expired', fn ($q) => $q->whereDate('license_until', '<', today()))

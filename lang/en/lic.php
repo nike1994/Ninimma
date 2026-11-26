@@ -100,4 +100,10 @@ return [
     'block_promote_beyond' => 'The promotion cannot run longer than the license for “:material” (until :until). Shorten it or extend the license.',
     'block_promote_before' => 'The promotion cannot start before the license for “:material” (from :from).',
     'picker_expired' => 'License expired — cannot be used in new posts and ads',
+    'replace_file' => 'Replace file',
+    'upload_file' => 'Upload file',
+    'add_title' => 'Add videos and photos from the influencer',
+    'add_hint' => 'Drag files here, paste or pick from disk — each file becomes a separate material with the contract license. You can also enter just a description of a material that is still to come.',
+    'add_description' => 'Description (optional), e.g. 30 s reel with product',
+    'materials_added' => '{1} Added :n material.|[2,*] Added :n materials.',
 ];

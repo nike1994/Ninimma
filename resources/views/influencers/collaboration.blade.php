@@ -74,8 +74,8 @@
             @foreach($c->materials as $m)
                 <form method="post" action="{{ route('materials.update', $m) }}" class="material-row" data-message-form>
                     @csrf @method('put')
-                    <span class="material-thumb material-thumb-lic">@if($m->file && $m->file->file->isImage())<img src="{{ route('files.show', [$m->file, $m->file->name]) }}" alt="">@elseif($m->file)<x-icon name="video" :size="20" />@else<x-icon name="image" :size="20" />@endif
-                        <x-license-ring :material="$m" :size="44" /></span>
+                    <span class="material-thumb-lic"><x-material-thumb :material="$m" :size="76" :avatar="false" />
+                        <x-license-ring :material="$m" :size="40" /></span>
                     <span class="material-body">
                         <strong>{{ $m->description }}</strong>
                         <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach <a href="{{ route('licenses.index') }}#m{{ $m->id }}">{{ __('lic.manage') }} →</a></small>
@@ -86,13 +86,18 @@
                             <input type="date" name="license_from" value="{{ $m->license_from?->toDateString() }}" title="{{ __('lic.from') }}" aria-label="{{ __('lic.from') }}">
                             <input type="date" name="license_until" value="{{ $m->license_until?->toDateString() }}" title="{{ __('inf.license_until') }}" aria-label="{{ __('inf.license_until') }}">
                         </span>
-                        @include('tickets._uploader', ['noSend' => true])
+                        <details class="mat-replace"><summary class="small">{{ $m->file ? __('lic.replace_file') : __('lic.upload_file') }}</summary>@include('tickets._uploader', ['noSend' => true])</details>
                     </span>
                     <button class="btn btn-small">{{ __('ui.save') }}</button>
                 </form>
             @endforeach
-            <form method="post" action="{{ route('collaborations.materials.store', $c) }}" class="inline-form">
-                @csrf<input name="description" placeholder="{{ __('inf.material_placeholder') }}" required style="flex: 1"><button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('inf.add_material') }}</button>
+            <form method="post" action="{{ route('collaborations.materials.store', $c) }}" class="mat-add stack" data-message-form>
+                @csrf
+                <h3><x-icon name="upload" :size="16" /> {{ __('lic.add_title') }}</h3>
+                <p class="muted small">{{ __('lic.add_hint') }}</p>
+                <input name="description" placeholder="{{ __('lic.add_description') }}" maxlength="255">
+                @include('tickets._uploader', ['noSend' => true])
+                <button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('inf.add_material') }}</button>
             </form>
         </section>
     </div>

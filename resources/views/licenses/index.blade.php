@@ -56,10 +56,11 @@
         @endphp
         <article class="lic-row lic-{{ $m->lic->state }}" id="m{{ $m->id }}">
             <div class="lic-main">
-                <x-license-ring :material="$m" :size="62" />
+                <x-material-thumb :material="$m" :size="64" />
+                <x-license-ring :material="$m" :size="58" />
                 <div class="lic-info">
                     <strong>{{ $m->description }}</strong>
-                    <small class="muted"><x-avatar :name="$m->collaboration->influencer->name" :size="18" /> {{ $m->collaboration->influencer->name }} · {{ $m->collaboration->campaign->client->name }} · <a href="{{ route('collaborations.show', $m->collaboration) }}">{{ $m->collaboration->campaign->name }}</a></small>
+                    <small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->collaboration->campaign->client->name }} · <a href="{{ route('collaborations.show', $m->collaboration) }}">{{ $m->collaboration->campaign->name }}</a></small>
                     <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach
                         @if($m->requires_takedown)<span class="lic-ch lic-ch-warn">{{ __('lic.takedown_short') }}</span>@endif</small>
                 </div>

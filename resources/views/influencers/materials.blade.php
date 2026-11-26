@@ -12,7 +12,7 @@
     @forelse($materials as $m)
         <div class="content-card">
             <span class="content-img">
-                @if($m->file && $m->file->file->isImage())<img src="{{ route('files.show', [$m->file, $m->file->name]) }}" alt="" loading="lazy">@else<x-icon :name="$m->file ? 'video' : 'image'" :size="30" />@endif
+                <x-material-thumb :material="$m" :size="72" :avatar="$me->isAdmin()" class="mat-thumb-cover" />
                 @if($m->licenseExpired())<span class="pill pill-pink">{{ __('inf.license_expired') }}</span>@elseif($m->licenseExpiringSoon())<span class="pill pill-needs_decision">{{ __('inf.license_soon') }}</span>@elseif(! $m->is_received)<span class="pill">{{ __('inf.awaiting') }}</span>@endif
             </span>
             <span class="content-body">

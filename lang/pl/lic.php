@@ -100,4 +100,10 @@ return [
     'block_promote_beyond' => 'Promocja nie może trwać dłużej niż licencja na „:material” (do :until). Skróć okres albo przedłuż licencję.',
     'block_promote_before' => 'Promocja nie może zacząć się przed licencją na „:material” (od :from).',
     'picker_expired' => 'Licencja wygasła — nie można użyć w nowych postach i reklamach',
+    'replace_file' => 'Podmień plik',
+    'upload_file' => 'Wgraj plik',
+    'add_title' => 'Dodaj filmy i zdjęcia od influencera',
+    'add_hint' => 'Przeciągnij pliki tutaj, wklej albo wybierz z dysku — każdy plik będzie osobnym materiałem z licencją z umowy. Możesz też wpisać sam opis materiału, który dopiero ma przyjść.',
+    'add_description' => 'Opis (opcjonalnie), np. Rolka 30 s z produktem',
+    'materials_added' => '{1} Dodano :n materiał.|[2,4] Dodano :n materiały.|[5,*] Dodano :n materiałów.',
 ];

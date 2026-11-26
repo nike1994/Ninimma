@@ -1032,7 +1032,7 @@ a.kpi { color: var(--text); }
 .lic-issue:hover { color: var(--navy); filter: brightness(.98); }
 
 .lic-board { padding-top: .6rem; }
-.lic-axis, .lic-row { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr) 190px; gap: 1rem; align-items: center; }
+.lic-axis, .lic-row { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr) 170px; gap: 1rem; align-items: center; }
 .lic-axis { height: 26px; border-bottom: 1px solid var(--line); }
 .lic-axis-track { position: relative; height: 100%; grid-column: 2; }
 .lic-axis-month { position: absolute; bottom: 4px; transform: translateX(-50%); font-size: .72rem; color: var(--muted); }
@@ -1112,3 +1112,33 @@ a.kpi { color: var(--text); }
 .lic-bar-flip span { left: auto; right: calc(100% + 6px); }
 .kpi-dark small { color: #cfe3f3; }
 .mat-opt.locked { opacity: .6; cursor: not-allowed; }
+
+/* Miniatury materiałów (kadr filmu / zdjęcie + profil influencera) */
+.mat-thumb { position: relative; width: var(--s); height: var(--s); flex-shrink: 0; display: inline-block; }
+.mat-thumb-media { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; background: linear-gradient(135deg, #dfe9f3, #c9d8e8); display: grid; place-items: center; }
+.mat-thumb-media video, .mat-thumb-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mat-thumb-empty { color: #8fa3b8; display: grid; place-items: center; }
+.mat-thumb-play { position: absolute; left: 5px; top: 5px; width: 20px; height: 20px; border-radius: 50%; background: rgba(11, 42, 74, .65); color: #fff; display: grid; place-items: center; pointer-events: none; }
+.mat-thumb:hover .mat-thumb-play { opacity: 0; }
+.mat-thumb-avatar { position: absolute; right: -7px; bottom: -7px; border-radius: 50%; line-height: 0; }
+.mat-thumb-avatar .inf-photo, .mat-thumb-avatar .avatar { box-shadow: 0 0 0 2.5px #fff, 0 3px 8px rgba(16, 50, 92, .2); }
+.mat-thumb-cover { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
+.mat-thumb-cover .mat-thumb-media { border-radius: 0; }
+.mat-thumb-cover .mat-thumb-avatar { right: 10px; bottom: 10px; }
+.mat-thumb-cover .mat-thumb-play { left: auto; right: 10px; top: 10px; width: 28px; height: 28px; }
+.lic-main .mat-thumb { margin-right: .2rem; }
+.mat-opt > .lic-ring { margin-left: auto; }
+.mat-opt .mat-thumb { margin-right: .3rem; }
+.material-thumb-lic { position: relative; display: inline-block; width: 76px; height: 76px; }
+.material-thumb-lic .lic-ring { position: absolute; right: -12px; bottom: -12px; background: #fff; border-radius: 50%; box-shadow: 0 3px 8px rgba(16, 50, 92, .15); }
+.material-row { grid-template-columns: 84px 1fr auto; }
+.mat-replace > summary { cursor: pointer; color: var(--blue); margin-top: .3rem; }
+.mat-add { margin-top: 1rem; padding: 1rem; border: 2px dashed #cfdbe7; border-radius: 18px; background: linear-gradient(135deg, rgba(19, 163, 180, .04), rgba(155, 225, 93, .05)); }
+.mat-add h3 { margin: 0; }
+.mat-summary { display: inline-flex; align-items: center; gap: .6rem; }
+@media (max-width: 560px) { .material-row { grid-template-columns: 76px 1fr; } }
+@media (max-width: 900px) { .lic-main .lic-ring { --s: 46px !important; } }
+/* Tekst licznika zawsze wyśrodkowany w pierścieniu, niezależnie od stylów kontenera. */
+.lic-ring > .lic-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
+.lic-ring > .lic-ring-text strong, .lic-ring > .lic-ring-text small { display: block; margin: 0; line-height: 1; }
+.lic-ring > .lic-ring-text small { margin-top: 2px; }

@@ -125,6 +125,7 @@
         <div class="content">@yield('content')</div>
     </main>
 </div>
+<script src="{{ asset('js/media-thumbs.js') }}?v=1" defer></script>
 @stack('scripts')
 </body>
 </html>

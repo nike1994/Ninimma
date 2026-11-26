@@ -101,14 +101,35 @@ class CollaborationController extends Controller
         return back();
     }
 
+    /**
+     * Nowe materiały: sam opis (do oddania później) albo od razu pliki — każdy plik to osobny materiał
+     * z warunkami licencji z umowy i rodzajem z typu pliku.
+     */
     public function storeMaterial(Request $request, Collaboration $collaboration)
     {
-        $data = $request->validate(['description' => ['required', 'string', 'max:255']]);
-        // Nowy materiał dziedziczy warunki licencji z umowy współpracy.
-        $collaboration->materials()->create($data + ['license_from' => $collaboration->license_from, 'license_until' => $collaboration->license_to,
-            'license_channels' => $collaboration->license_channels, 'requires_takedown' => $collaboration->requires_takedown]);
+        $data = $request->validate([
+            'description' => ['nullable', 'required_without:uploads', 'string', 'max:255'],
+            'uploads' => ['nullable', 'array', 'max:30'],
+            'uploads.*' => ['integer'],
+        ]);
+        $defaults = ['license_from' => $collaboration->license_from, 'license_until' => $collaboration->license_to,
+            'license_channels' => $collaboration->license_channels, 'requires_takedown' => $collaboration->requires_takedown];
+        $usages = FileUsage::with('file')->whereIn('id', $data['uploads'] ?? [])->where('uploaded_by', $request->user()->id)->whereNull('usable_id')->get();
+        if ($usages->isEmpty()) {
+            $collaboration->materials()->create(['description' => $data['description']] + $defaults);
 
-        return back();
+            return back();
+        }
+        foreach ($usages as $u) {
+            $kind = $u->file->isImage() ? 'photo' : ($u->file->isVideo() ? 'video' : 'other');
+            $name = $usages->count() === 1 && ! empty($data['description']) ? $data['description']
+                : (($data['description'] ?? null) ? $data['description'].' — ' : '').pathinfo($u->name, PATHINFO_FILENAME);
+            $m = $collaboration->materials()->create(['description' => \Illuminate\Support\Str::limit($name, 250, ''), 'kind' => $kind,
+                'is_received' => true, 'file_usage_id' => $u->id] + $defaults);
+            $u->update(['usable_type' => 'material', 'usable_id' => $m->id]);
+        }
+
+        return back()->with('status', trans_choice('lic.materials_added', $usages->count(), ['n' => $usages->count()]));
     }
 
     public function updateMaterial(Request $request, Material $material)

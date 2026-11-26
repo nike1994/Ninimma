@@ -157,6 +157,28 @@ class LicenseTest extends TestCase
         Notification::assertSentTo($admin, LicenseAlert::class, fn ($n) => $n->items->count() === 1 && $n->conflicts === 1);
     }
 
+    public function test_uploaded_files_become_materials_with_contract_license_and_thumbnail(): void
+    {
+        $admin = $this->setUpWorld();
+        $usages = collect(['rolka-unboxing.mp4' => 'video/mp4', 'kadr.png' => 'image/png'])->map(function ($mime, $name) use ($admin) {
+            $tmp = tempnam(sys_get_temp_dir(), 'm');
+            file_put_contents($tmp, $name);
+            $file = app(\App\Services\FileStore::class)->storeLocalFile($tmp, $mime);
+            $file->forceFill(['mime' => $mime])->save();
+
+            return \App\Models\FileUsage::create(['file_id' => $file->id, 'name' => $name, 'uploaded_by' => $admin->id]);
+        });
+        $this->post(route('collaborations.materials.store', $this->collab), ['uploads' => $usages->pluck('id')->values()->all()])->assertRedirect();
+        $mats = Material::orderBy('id')->get();
+        $this->assertSame(['rolka-unboxing', 'kadr'], $mats->pluck('description')->all());
+        $this->assertSame(['video', 'photo'], $mats->pluck('kind')->all());
+        $this->assertTrue($mats->every(fn ($m) => $m->is_received && $m->license_until->isSameDay(today()->addDays(5)) && $m->license_channels === ['organic']));
+        $this->assertSame('material', $usages->first()->fresh()->usable_type);
+
+        // Miniatura: kadr filmu (ładowany leniwie) + profil influencera.
+        $this->get(route('licenses.index'))->assertOk()->assertSee('mat-thumb', false)->assertSee('data-src=', false)->assertSee('mat-thumb-avatar', false);
+    }
+
     public function test_client_sees_own_material_countdown_but_not_license_screen(): void
     {
         $this->setUpWorld();

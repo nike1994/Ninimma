@@ -62,10 +62,51 @@ class LicenseDemoSeeder extends Seeder
         $c->materials()->create(['description' => 'Zdjęcia produktowe od twórcy', 'kind' => 'photo', 'is_received' => true,
             'license_channels' => ['website', 'email', 'print']]);
 
+        $this->attachDemoFiles($admin);
+
         // Przedłużona licencja z kosztem (trafia do kosztów kampanii).
         $long = $mats->first(fn ($m) => ! in_array($m->id, [$short->id, $organic->id, $soon?->id, $expired->id], true));
         if ($long) {
             app(LicenseGuard::class)->extend($long, $admin, $long->license_until->copy()->addMonths(3)->toDateString(), null, 400, 'Aneks nr 1 — +3 miesiące');
+        }
+    }
+
+    /** Krótkie pionowe filmy (ffmpeg, jeśli jest) i kadry zdjęć jako pliki materiałów — żeby było widać miniatury. */
+    private function attachDemoFiles(User $admin): void
+    {
+        $store = app(\App\Services\FileStore::class);
+        $palettes = [['13a3b4', '9be15d'], ['0b6aa8', '7fb8ff'], ['e0457b', 'ffc24b'], ['7b55d6', '13a3b4'], ['36b45c', 'feda75'], ['0e3a63', 'e08a00']];
+        $ffmpeg = trim((string) @shell_exec('command -v ffmpeg 2>/dev/null'));
+        foreach (Material::whereNull('file_usage_id')->where('is_received', true)->orderBy('id')->get() as $i => $m) {
+            [$a, $b] = $palettes[$i % count($palettes)];
+            $tmp = tempnam(sys_get_temp_dir(), 'demo');
+            $video = $m->kind !== 'photo' && $ffmpeg !== '';
+            if ($video) {
+                $out = $tmp.'.mp4';
+                $shape = $i % 2 ? 'drawbox=x=55:y=150:w=160:h=200:color=white@0.35:t=fill' : 'drawbox=x=35:y=300:w=200:h=110:color=white@0.4:t=fill';
+                exec(escapeshellarg($ffmpeg).' -v error -y -f lavfi -i '.escapeshellarg("gradients=s=270x480:c0=0x{$a}:c1=0x{$b}:speed=0.04:d=4,format=yuv420p")
+                    .' -vf '.escapeshellarg($shape).' -t 4 -c:v libx264 -an '.escapeshellarg($out), $o, $code);
+                @unlink($tmp);
+                if ($code !== 0 || ! is_file($out)) {
+                    continue;
+                }
+                $tmp = $out;
+            } else {
+                $im = imagecreatetruecolor(360, 360);
+                for ($y = 0; $y < 360; $y++) {
+                    $t = $y / 360;
+                    $c = array_map(fn ($k) => (int) (hexdec(substr($a, $k, 2)) * (1 - $t) + hexdec(substr($b, $k, 2)) * $t), [0, 2, 4]);
+                    imageline($im, 0, $y, 360, $y, imagecolorallocate($im, ...$c));
+                }
+                imagefilledellipse($im, 180, 190, 170, 170, imagecolorallocatealpha($im, 255, 255, 255, 70));
+                imagepng($im, $tmp);
+            }
+            $file = $store->storeLocalFile($tmp, $video ? 'video/mp4' : 'image/png');
+            @unlink($tmp);
+            $file->forceFill(['mime' => $video ? 'video/mp4' : 'image/png'])->save();
+            $name = \Illuminate\Support\Str::slug($m->description).($video ? '.mp4' : '.png');
+            $u = \App\Models\FileUsage::create(['file_id' => $file->id, 'usable_type' => 'material', 'usable_id' => $m->id, 'name' => $name, 'uploaded_by' => $admin->id]);
+            $m->update(['file_usage_id' => $u->id]);
         }
     }
 }

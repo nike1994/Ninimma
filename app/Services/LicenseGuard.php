@@ -203,7 +203,7 @@ class LicenseGuard
     /** Materiały do wyboru w treściach i reklamach (otrzymane, aktywnych współprac). */
     public static function pickerMaterials(array $keep = []): Collection
     {
-        return Material::with(['collaboration.influencer', 'collaboration.campaign'])
+        return Material::with(['collaboration.influencer.photo', 'collaboration.campaign', 'file.file'])
             ->where(fn ($q) => $q->where('is_received', true)->whereHas('collaboration', fn ($c) => $c->where('status', '!=', 'cancelled'))
                 ->orWhereIn('id', $keep))
             ->get()->sortBy(fn ($m) => [$m->collaboration->campaign->name, $m->description])->values();

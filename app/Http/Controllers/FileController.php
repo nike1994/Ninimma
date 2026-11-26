@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class FileController extends Controller
 {
-    private const INLINE = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf'];
+    private const INLINE = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'application/pdf'];
 
     public function index(Request $request)
     {
