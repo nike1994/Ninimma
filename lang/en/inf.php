@@ -86,7 +86,7 @@ return [
     'arrived' => 'Arrived',
     'what' => 'What is shipped?',
     'value' => 'Value',
-    'materials_hint' => 'Each agreed deliverable is a separate item. The received file goes to the library and, once published, links to the plan entry so stats are attributed.',
+    'materials_hint' => 'Each agreed material is a separate item with a license. Click “Create post” next to it — the file, client, campaign and license carry over, and the post results are attributed to the influencer.',
     'license_expired' => 'License expired',
     'license_soon' => 'License ending',
     'received' => 'Received',

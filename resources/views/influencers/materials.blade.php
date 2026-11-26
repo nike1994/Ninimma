@@ -26,6 +26,7 @@
                 @if($m->publication)<small class="muted"><x-platform :platform="$m->publication->platform" :size="14" /> {{ $m->publication->scheduled_at->format('d.m') }}</small>@endif
                 @if($m->file && ($me->isAdmin() || ($m->client_download && ! $m->licenseExpired())))<a href="{{ route('files.show', [$m->file, $m->file->name]) }}?download=1" class="small"><x-icon name="download" :size="14" /> {{ __('ui.download') }}</a>
                 @elseif($m->file)<span class="protect-note"><x-icon name="lock" :size="13" /> {{ $m->licenseExpired() ? __('files.license_locked') : __('files.view_only') }}</span>@endif
+                @if($me->isAdmin())@include('licenses._used', ['m' => $m])@endif
                 @if($me->isAdmin() && $m->file)<span class="protect-note"><x-icon :name="$m->client_download ? 'download' : 'shield'" :size="13" /> {{ $m->client_download ? __('files.client_can_download') : __('files.client_view_only') }}</span>@endif
                 @if($me->isAdmin())<a href="{{ route('collaborations.show', $m->collaboration) }}" class="small">{{ __('inf.open_collab') }}</a> <a href="{{ route('licenses.index') }}#m{{ $m->id }}" class="small">{{ __('lic.manage') }} →</a>@endif
             </span>

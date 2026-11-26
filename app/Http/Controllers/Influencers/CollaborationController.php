@@ -140,7 +140,9 @@ class CollaborationController extends Controller
             'license_from' => ['nullable', 'date'],
             'license_until' => ['nullable', 'date', 'after_or_equal:license_from'],
         ]);
-        $material->update(['is_received' => $request->boolean('is_received'), 'publication_id' => $data['publication_id'] ?? null,
+        // Ręczne powiązanie z publikacją zostaje tylko dla starszych danych (nowe: zaznaczenie materiału w poście).
+        $material->update(['is_received' => $request->boolean('is_received'),
+            'publication_id' => $request->has('publication_id') ? ($data['publication_id'] ?? null) : $material->publication_id,
             'license_from' => $data['license_from'] ?? null, 'license_until' => $data['license_until'] ?? null]);
         $this->attachUpload($request, function (FileUsage $u) use ($material) {
             $material->update(['file_usage_id' => $u->id, 'is_received' => true]);

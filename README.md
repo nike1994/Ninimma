@@ -75,6 +75,10 @@ i historią. Ostrzeżenia w formularzu treści i reklamy, w kalendarzach, na pul
 termin i kanały swoich materiałów. Blokady: po wygaśnięciu licencji (albo przed jej startem) nie da się zaplanować
 ani opublikować nowego posta z materiałem lub jego fragmentem, promować posta ani utworzyć/wznowić reklamy z nim;
 promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy.
+Od materiału do posta: przy materiale (karta współpracy, Licencje, Biblioteka) „Utwórz post” otwiera nową treść
+z klientem, kampanią, tytułem, formatem i zaznaczonym materiałem; plik materiału dołącza się do treści sam (także
+przy ręcznym zaznaczeniu materiału w poście). Zaznaczenie materiału w poście to jedno powiązanie dla strażnika
+licencji, raportu kampanii i wyników influencera; przy materiale widać listę postów, w których go użyto.
 Dodawanie: w karcie współpracy przeciąga się filmy/zdjęcia (kilka naraz) — każdy plik to materiał z licencją z umowy.
 Wszędzie widać miniaturę z kółkiem profilu influencera: kadr filmu (JPEG) robi przeglądarka przy wgrywaniu, więc działa
 w każdej przeglądarce, także dla .mov z iPhone'a (bez ffmpeg na hostingu); dla starszych filmów kadr dorabia się przy

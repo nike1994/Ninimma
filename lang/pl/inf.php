@@ -86,7 +86,7 @@ return [
     'arrived' => 'Dotarła',
     'what' => 'Co wysyłamy?',
     'value' => 'Wartość zł',
-    'materials_hint' => 'Każdy ustalony materiał to osobna pozycja. Otrzymany plik trafia do biblioteki, a po publikacji łączy się z wpisem w planie — statystyki przypisują się do influencera.',
+    'materials_hint' => 'Każdy ustalony materiał to osobna pozycja z licencją. Przy materiale kliknij „Utwórz post” — plik, klient, kampania i licencja przejdą do posta, a wyniki posta przypiszą się do influencera.',
     'license_expired' => 'Licencja wygasła',
     'license_soon' => 'Licencja kończy się',
     'received' => 'Otrzymany',

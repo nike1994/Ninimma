@@ -84,6 +84,7 @@
             </div>
             <div class="lic-side">
                 <small class="muted">{{ trans_choice('lic.used_posts', $pubCount, ['n' => $pubCount]) }} · {{ trans_choice('lic.used_ads', $m->ads->count(), ['n' => $m->ads->count()]) }}</small>
+                @if($m->file && $m->usableForPost())<a href="{{ route('social.contents.create', ['material' => $m->id]) }}" class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('lic.create_post') }}</a>@endif
                 @if($issuesM->isNotEmpty())<span class="pill pill-pink">{{ trans_choice('lic.n_conflicts', $issuesM->count(), ['n' => $issuesM->count()]) }}</span>@endif
                 <details class="lic-pop">
                     <summary class="btn btn-small">{{ __('lic.manage') }}</summary>

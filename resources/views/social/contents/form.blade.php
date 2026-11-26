@@ -16,6 +16,7 @@
     $previewFiles = $content->exists ? $content->files->filter(fn ($f) => $f->file)->map(fn ($f) => [
         'url' => $f->file->isImage() ? route('files.show', [$f, $f->name]) : ($f->file->poster_id ? route('files.poster', $f) : null),
         'video' => $f->file->isVideo(),
+        'fileId' => $f->file_id,
     ])->values() : collect();
 @endphp
 <form method="post" action="{{ $content->exists ? route('social.contents.update', $content) : route('social.contents.store') }}" class="content-form" data-message-form
@@ -74,7 +75,7 @@
 
     <section class="card stack">
         <h2><x-icon name="shield" /> {{ __('lic.materials') }}</h2>
-        <p class="muted small">{{ __('lic.materials_hint') }}</p>
+        <p class="muted small">{{ __('lic.materials_hint') }} {{ __('lic.material_file_added') }}</p>
         @include('licenses._issues', ['issues' => $licenseIssues])
         @include('licenses._picker', ['name' => 'material_ids[]', 'selected' => old('material_ids', $selectedMaterials), 'multiple' => true])
     </section>
@@ -114,7 +115,7 @@
 @endsection
 @push('scripts')
 <script src="{{ asset('js/uploader.js') }}?v=5"></script>
-<script src="{{ asset('js/post-preview.js') }}?v=10"></script>
+<script src="{{ asset('js/post-preview.js') }}?v=11"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');

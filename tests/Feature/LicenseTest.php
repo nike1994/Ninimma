@@ -202,6 +202,54 @@ class LicenseTest extends TestCase
         $this->get(route('licenses.index'))->assertOk()->assertSee('mat-thumb', false)->assertSee('data-src=', false)->assertSee('mat-thumb-avatar', false);
     }
 
+    public function test_create_post_from_material_prefills_attaches_file_and_counts_in_report(): void
+    {
+        $admin = $this->setUpWorld();
+        $this->collab->update(['license_channels' => null]);
+        $tmp = tempnam(sys_get_temp_dir(), 'v');
+        file_put_contents($tmp, random_bytes(2048));
+        $f = app(\App\Services\FileStore::class)->storeLocalFile($tmp, 'video/mp4');
+        $f->forceFill(['mime' => 'video/mp4'])->save();
+        $usage = \App\Models\FileUsage::create(['file_id' => $f->id, 'name' => 'rolka.mp4', 'uploaded_by' => $admin->id]);
+        $m = $this->collab->materials()->create(['description' => 'Rolka unboxing', 'kind' => 'video', 'is_received' => true, 'file_usage_id' => $usage->id,
+            'license_from' => today()->subDays(3), 'license_until' => today()->addDays(30)]);
+        $usage->update(['usable_type' => 'material', 'usable_id' => $m->id]);
+
+        // Karta współpracy: przycisk „Utwórz post”, materiał jeszcze nieużyty.
+        $this->get(route('collaborations.show', $this->collab))->assertOk()
+            ->assertSee(route('social.contents.create', ['material' => $m->id]), false)->assertSee(__('lic.not_used'));
+
+        // Formularz: klient, kampania, tytuł, format i zaznaczony materiał.
+        $this->get(route('social.contents.create', ['material' => $m->id]))->assertOk()
+            ->assertSee('value="Rolka unboxing"', false)
+            ->assertSee('<option value="'.$this->campaign->id.'" data-client="'.$this->acc->client_id.'" selected', false)
+            ->assertSee('name="material_ids[]" value="'.$m->id.'" checked', false);
+
+        // Zapis: plik materiału trafia do treści bez ponownego wgrywania (i tylko raz).
+        $payload = ['client_id' => $this->acc->client_id, 'campaign_id' => $this->campaign->id, 'title' => 'Rolka unboxing', 'type' => 'reel', 'format' => 'video',
+            'stage' => 'ready', 'description' => 'Zobaczcie!', 'material_ids' => [$m->id],
+            'pubs' => [['social_account_id' => $this->acc->id, 'scheduled_at' => today()->addDays(2)->format('Y-m-d').' 18:00']]];
+        $this->post(route('social.contents.store'), $payload)->assertRedirect();
+        $content = Content::latest('id')->first();
+        $this->assertSame([$f->id], $content->files()->pluck('file_id')->all());
+        $this->put(route('social.contents.update', $content), array_merge($payload, ['pubs' => []]));
+        $this->assertSame(1, $content->files()->count());
+
+        // Jedno powiązanie: post z materiałem liczy się w karcie i raporcie influencera.
+        $pub = Publication::first();
+        $this->assertSame([$pub->id], $m->usedPublicationIds()->all());
+        $pub->update(['status' => 'published', 'published_at' => now()]);
+        $pub->measurements()->create(['measured_on' => today(), 'reach' => 900, 'reactions' => 40, 'comments' => 5, 'shares' => 2, 'clicks' => 9]);
+        $this->assertSame(900, $this->collab->fresh()->results()['reach']);
+        $this->assertTrue((new CampaignReport($this->campaign->fresh()))->publications()->contains('id', $pub->id));
+        $this->get(route('collaborations.show', $this->collab))->assertOk()->assertSee(__('lic.used_in'))->assertSee($pub->scheduled_at->format('d.m'));
+
+        // Wygasła licencja: „Utwórz post” zablokowany.
+        $m->update(['license_until' => today()->subDay()]);
+        $this->from(route('collaborations.show', $this->collab))->get(route('social.contents.create', ['material' => $m->id]))
+            ->assertRedirect(route('collaborations.show', $this->collab))->assertSessionHas('error');
+    }
+
     public function test_client_sees_own_material_countdown_but_not_license_screen(): void
     {
         $this->setUpWorld();

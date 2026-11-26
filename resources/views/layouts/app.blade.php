@@ -122,6 +122,7 @@
             </div>
         </header>
         @if(session('status'))<div class="flash"><x-icon name="check-circle" :size="18" />{{ session('status') }}</div>@endif
+        @if(session('error'))<div class="flash flash-error"><x-icon name="alert" :size="18" />{{ session('error') }}</div>@endif
         @if($errors->any())<div class="flash flash-error"><x-icon name="alert" :size="18" />{{ $errors->first() }}</div>@endif
         <div class="content">@yield('content')</div>
     </main>

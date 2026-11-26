@@ -106,4 +106,9 @@ return [
     'add_hint' => 'Przeciągnij pliki tutaj, wklej albo wybierz z dysku — każdy plik będzie osobnym materiałem z licencją z umowy. Możesz też wpisać sam opis materiału, który dopiero ma przyjść.',
     'add_description' => 'Opis (opcjonalnie), np. Rolka 30 s z produktem',
     'materials_added' => '{1} Dodano :n materiał.|[2,4] Dodano :n materiały.|[5,*] Dodano :n materiałów.',
+    'create_post' => 'Utwórz post',
+    'cannot_post' => '„:material” nie może trafić do nowego posta — licencja wygasła albo nie obejmuje postów.',
+    'used_in' => 'Użyty w',
+    'not_used' => 'Jeszcze nie użyty w żadnym poście',
+    'material_file_added' => 'Plik materiału zostanie dodany do treści automatycznie.',
 ];

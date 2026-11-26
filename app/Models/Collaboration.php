@@ -98,7 +98,8 @@ class Collaboration extends Model
     /** Zasięg i zaangażowanie z publikacji powiązanych z materiałami. */
     public function results(): array
     {
-        $pubs = Publication::with('latestMeasurement')->whereIn('id', $this->materials->pluck('publication_id')->filter())->get();
+        $ids = $this->materials->flatMap(fn ($m) => $m->usedPublicationIds())->unique();
+        $pubs = Publication::with('latestMeasurement')->whereIn('id', $ids)->where('status', 'published')->get();
 
         return [
             'reach' => (int) $pubs->sum(fn ($p) => $p->latestMeasurement?->reach ?? 0),

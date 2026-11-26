@@ -59,6 +59,29 @@ class Material extends Model
         return $this->belongsTo(Publication::class);
     }
 
+    /**
+     * Publikacje z tym materiałem: posty treści, w których materiał zaznaczono, oraz (starsze) ręczne powiązanie.
+     * Jedno źródło dla raportu kampanii, strażnika licencji i karty współpracy.
+     */
+    public function usedPublicationIds(): \Illuminate\Support\Collection
+    {
+        $contentIds = $this->relationLoaded('contents') ? $this->contents->pluck('id') : $this->contents()->pluck('contents.id');
+
+        return Publication::whereIn('content_id', $contentIds)->where('status', '!=', 'cancelled')->pluck('id')
+            ->when($this->publication_id, fn ($c) => $c->push($this->publication_id))->unique()->values();
+    }
+
+    public function usedPublications(): \Illuminate\Support\Collection
+    {
+        return Publication::with(['content', 'account'])->whereIn('id', $this->usedPublicationIds())->orderBy('scheduled_at')->get();
+    }
+
+    /** Może trafić do nowego posta (licencja nie wygasła i obejmuje posty). */
+    public function usableForPost(): bool
+    {
+        return ! $this->licenseExpired() && $this->allows('organic');
+    }
+
     public function licenseExpired(): bool
     {
         return $this->license_until !== null && $this->license_until->isBefore(today());

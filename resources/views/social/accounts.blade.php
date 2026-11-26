@@ -2,7 +2,6 @@
 @section('title', __('social.profiles'))
 @section('content')
 <h1 class="page-title">{{ __('social.profiles') }}</h1>
-@if(session('error'))<div class="flash flash-error" style="margin-bottom: 1rem">{{ session('error') }}</div>@endif
 <div class="grid-main">
     <section class="card">
         @forelse($accounts as $a)

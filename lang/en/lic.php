@@ -106,4 +106,9 @@ return [
     'add_hint' => 'Drag files here, paste or pick from disk — each file becomes a separate material with the contract license. You can also enter just a description of a material that is still to come.',
     'add_description' => 'Description (optional), e.g. 30 s reel with product',
     'materials_added' => '{1} Added :n material.|[2,*] Added :n materials.',
+    'create_post' => 'Create post',
+    'cannot_post' => '“:material” cannot be used in a new post — the license expired or does not cover posts.',
+    'used_in' => 'Used in',
+    'not_used' => 'Not used in any post yet',
+    'material_file_added' => 'The material file will be added to the content automatically.',
 ];

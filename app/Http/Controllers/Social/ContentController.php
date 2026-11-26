@@ -39,10 +39,15 @@ class ContentController extends Controller
             $prefill = ['scheduled_at' => $date.'T'.$time, 'social_account_id' => $account?->id, 'status' => 'planned', 'auto_publish' => 1];
         }
 
-        $clientId = $request->integer('client') ?: $account?->client_id;
+        // „Utwórz post” z materiału influencera: klient, kampania, tytuł i format z materiału.
+        $material = $request->integer('material') ? \App\Models\Material::with('collaboration.campaign', 'file.file')->find($request->integer('material')) : null;
+        if ($material && ! $material->usableForPost()) {
+            return redirect()->back()->with('error', __('lic.cannot_post', ['material' => $material->description]));
+        }
+        $clientId = $request->integer('client') ?: $account?->client_id ?: $material?->collaboration->campaign->client_id;
         $defaults = $clientId ? Client::find($clientId)?->socialDefaults() : null;
-        $content = new Content(['client_id' => $clientId, 'stage' => $request->query('stage', $prefill ? 'preparing' : 'idea'),
-            'campaign_id' => $request->integer('campaign') ?: null]);
+        $content = new Content(['client_id' => $clientId, 'stage' => $request->query('stage', $prefill || $material ? 'preparing' : 'idea'),
+            'campaign_id' => $request->integer('campaign') ?: $material?->collaboration->campaign_id]);
         // Ustawienia domyślne klienta: hashtagi, typ, format i publikacje na zwykłych kontach o zwykłych godzinach.
         $rows = null;
         if ($defaults) {
@@ -53,6 +58,11 @@ class ContentController extends Controller
                     'scheduled_at' => $day ? $day.'T'.($request->query('time') ?: $a['time']) : null,
                     'visible_to_client' => $defaults['visible_to_client'] ? 1 : null, 'auto_publish' => $defaults['auto_publish'] ? 1 : null])->all();
             }
+        }
+
+        if ($material) {
+            $video = $material->kind === 'video' || $material->file?->file?->isVideo();
+            $content->fill(['title' => $material->description, 'format' => $video ? 'video' : 'image', 'type' => $video ? 'reel' : ($content->type ?? 'post')]);
         }
 
         return $this->form($content, $prefill, $rows);
@@ -151,6 +161,13 @@ class ContentController extends Controller
     {
         $ids = $request->validate(['material_ids' => ['array'], 'material_ids.*' => ['integer', 'exists:materials,id']])['material_ids'] ?? [];
         $this->attachedMaterials = $content->materials()->sync($ids)['attached'];
+        // Plik materiału trafia do treści (podgląd, publikacja) — bez ponownego wgrywania.
+        foreach (\App\Models\Material::with('file')->whereIn('id', $this->attachedMaterials)->get() as $m) {
+            if ($m->file && ! $content->files()->where('file_id', $m->file->file_id)->exists()) {
+                \App\Models\FileUsage::create(['file_id' => $m->file->file_id, 'name' => $m->file->name, 'uploaded_by' => $request->user()->id,
+                    'usable_type' => 'content', 'usable_id' => $content->id]);
+            }
+        }
     }
 
     /** Materiały dopięte w tym zapisie (wymuszają sprawdzenie licencji istniejących promocji). */

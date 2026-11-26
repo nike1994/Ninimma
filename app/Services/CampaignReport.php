@@ -30,7 +30,7 @@ class CampaignReport
     public function publications(): Collection
     {
         $ids = Publication::whereIn('content_id', $this->campaign->contents->pluck('id'))->pluck('id')
-            ->merge($this->campaign->collaborations->flatMap->materials->pluck('publication_id')->filter())->unique();
+            ->merge($this->campaign->collaborations->flatMap->materials->flatMap(fn ($m) => $m->usedPublicationIds()))->unique();
 
         return Publication::with(['latestMeasurement', 'content', 'account'])->whereIn('id', $ids)->get();
     }

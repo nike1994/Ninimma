@@ -81,12 +81,11 @@
                         <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach <a href="{{ route('licenses.index') }}#m{{ $m->id }}">{{ __('lic.manage') }} →</a></small>
                         <span class="material-fields">
                             <label class="check"><input type="checkbox" name="is_received" value="1" @checked($m->is_received)> {{ __('inf.received') }}</label>
-                            <select name="publication_id"><option value="">{{ __('inf.link_publication') }}</option>
-                                @foreach($publications as $p)<option value="{{ $p->id }}" @selected($m->publication_id === $p->id)>{{ $p->scheduled_at->format('d.m') }} · {{ $p->platform->label() }} · {{ \Illuminate\Support\Str::limit($p->content->title, 30) }}</option>@endforeach</select>
                             <input type="date" name="license_from" value="{{ $m->license_from?->toDateString() }}" title="{{ __('lic.from') }}" aria-label="{{ __('lic.from') }}">
                             <input type="date" name="license_until" value="{{ $m->license_until?->toDateString() }}" title="{{ __('inf.license_until') }}" aria-label="{{ __('inf.license_until') }}">
                         </span>
                         <details class="mat-replace"><summary class="small">{{ $m->file ? __('lic.replace_file') : __('lic.upload_file') }}</summary>@include('tickets._uploader', ['noSend' => true])</details>
+                        @include('licenses._used', ['m' => $m])
                     </span>
                     <button class="btn btn-small">{{ __('ui.save') }}</button>
                 </form>

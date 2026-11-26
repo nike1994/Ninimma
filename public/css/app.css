@@ -1588,3 +1588,7 @@ a.kpi { color: var(--text); }
 .pv-pin-domain { padding: 0 6px 4px; font-size: 12px; color: #cfcfcf; font-weight: 600; }
 .pv-pin-domain::before { content: "↗ "; }
 [data-pin-link][hidden] { display: none; }
+.mat-used { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .45rem; }
+.mat-used-pub { display: inline-flex; align-items: center; gap: .25rem; font-size: .75rem; font-weight: 600; padding: .12rem .45rem; border-radius: 99px; background: #eef5fc; color: var(--navy); }
+.mat-used-pub.published { background: #e5f6ef; }
+.btn.is-disabled { opacity: .5; cursor: not-allowed; }

@@ -4,7 +4,9 @@
     @forelse($materials as $m)
         @php($st = \App\Services\LicenseGuard::status($m))
         @php($locked = $st->state === 'expired' && ! in_array($m->id, $selected))
-        <label @class(['mat-opt', 'lic-'.$st->state, 'locked' => $locked]) data-client="{{ $m->collaboration->campaign->client_id }}" @if($locked) title="{{ __('lic.picker_expired') }}" @endif>
+        @php($mf = $m->file?->file)
+        @php($mediaUrl = $mf ? ($mf->isImage() ? route('files.show', [$m->file, $m->file->name]) : ($mf->poster_id ? route('files.poster', $m->file) : '')) : '')
+        <label @class(['mat-opt', 'lic-'.$st->state, 'locked' => $locked]) data-client="{{ $m->collaboration->campaign->client_id }}" data-media-url="{{ $mediaUrl }}" data-media-video="{{ $mf?->isVideo() ? 1 : 0 }}" data-file-id="{{ $mf?->id }}" @if($locked) title="{{ __('lic.picker_expired') }}" @endif>
             <input type="{{ $multiple ? 'checkbox' : 'radio' }}" name="{{ $name }}" value="{{ $m->id }}" @checked(in_array($m->id, $selected)) @disabled($locked)>
             <x-material-thumb :material="$m" :size="56" />
             <span class="mat-opt-body">

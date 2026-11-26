@@ -7,7 +7,17 @@
     if (!form) return;
     const accounts = JSON.parse(form.dataset.previewAccounts || '{}');
     const limits = JSON.parse(form.dataset.limits || '{}');
-    const media = JSON.parse(form.dataset.files || '[]');
+    const ownMedia = JSON.parse(form.dataset.files || '[]');
+    // Pliki zaznaczonych materiałów influencerów (trafią do treści przy zapisie) — w podglądzie od razu.
+    const media = [];
+    const syncMedia = () => {
+        const fromMaterials = [...form.querySelectorAll('[data-mat-picker] input:checked')].map(i => i.closest('[data-media-url]'))
+            .filter(Boolean).map(l => ({ url: l.dataset.mediaUrl || null, video: l.dataset.mediaVideo === '1', fileId: Number(l.dataset.fileId) || null }))
+            .filter(m => m.url || m.video);
+        const seen = new Set(ownMedia.map(m => m.fileId).filter(Boolean));
+        media.splice(0, media.length, ...fromMaterials.filter(m => !m.fileId || !seen.has(m.fileId)), ...ownMedia);
+    };
+    syncMedia();
     const desc = form.querySelector('[data-desc]'), tags = form.querySelector('[data-hashtags]');
     const stage = form.querySelector('[data-preview-stage]'), tabsEl = form.querySelector('[data-preview-tabs]'), note = form.querySelector('[data-preview-note]');
     const PL = document.documentElement.lang !== 'en';
@@ -34,8 +44,9 @@
     // Nowo wgrane pliki (z przeglądarki) — od razu w podglądzie.
     form.addEventListener('upload-done', e => {
         const f = e.detail.file;
-        if (/^image\//.test(f.type)) media.push({ url: URL.createObjectURL(f), video: false });
-        else if (/^video\//.test(f.type) || /\.(mov|mp4|m4v|webm)$/i.test(f.name)) media.push({ url: null, video: true, blob: URL.createObjectURL(f) });
+        if (/^image\//.test(f.type)) ownMedia.push({ url: URL.createObjectURL(f), video: false });
+        else if (/^video\//.test(f.type) || /\.(mov|mp4|m4v|webm)$/i.test(f.name)) ownMedia.push({ url: null, video: true, blob: URL.createObjectURL(f) });
+        syncMedia();
         render();
     });
 
@@ -382,6 +393,7 @@
     let seq = 0;
     const render = async () => {
         const my = ++seq;
+        syncMedia();
         const sel = selected();
         counters(sel);
         const list = sel.length ? sel : [{ platform: 'instagram', label: 'Instagram', handle: 'profil', name: 'Profil', caption: '' }];
