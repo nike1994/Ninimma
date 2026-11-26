@@ -1432,3 +1432,70 @@ a.kpi { color: var(--text); }
 .pv-tt-top strong { border-bottom: 0 !important; padding-bottom: 7px; }
 .pv-tt-top svg { flex-shrink: 0; width: 21px; height: 21px; }
 .pv-tt-top .pv-tt-live { flex-shrink: 0; }
+
+/* Instagram na ekranie telefonu (ciemny motyw): post w kanale, rolka, relacja */
+.pv-phone { max-width: 320px; border: 0; background: transparent; }
+.pv-screen { position: relative; aspect-ratio: 9 / 19.5; border-radius: 28px; overflow: hidden; background: #000; color: #f5f5f5;
+    font: 13.5px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; box-shadow: 0 0 0 6px #111, 0 18px 40px rgba(0,0,0,.25); }
+.pv-screen svg { display: block; }
+.pv-status { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; padding: 10px 22px 0 26px; font-size: 13px; color: #fff; }
+.pv-status span { display: flex; align-items: center; gap: 4px; }
+.pv-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pv-bg-empty { background: linear-gradient(160deg, #2b2f36, #111); }
+.pv-shade { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.35), transparent 16%, transparent 60%, rgba(0,0,0,.6)); }
+.pv-modes { display: flex; gap: 4px; justify-content: center; margin: 0 auto 10px; padding: 3px; border-radius: 12px; background: #eef3f8; width: max-content; }
+.pv-modes button { border: 0; background: none; padding: .3rem .8rem; border-radius: 9px; font: inherit; font-size: .82rem; font-weight: 600; color: var(--muted); cursor: pointer; }
+.pv-modes button.on { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(16,50,92,.15); }
+.preview-stage { flex-direction: column; align-items: center; }
+.pv-avatar.pv-md { width: 36px !important; height: 36px !important; }
+.pv-avatar.pv-sm { width: 30px !important; height: 30px !important; }
+.pv-avatar.pv-square-sm { width: 28px !important; height: 28px !important; border-radius: 7px; box-shadow: 0 0 0 1.5px #fff; }
+.pv-screen .pv-ring { box-shadow: 0 0 0 2px #000, 0 0 0 4px #e1306c; }
+.pv-follow { border: 1px solid rgba(255,255,255,.55); border-radius: 8px; padding: 3px 10px; font-weight: 600; font-size: 12.5px; color: #fff; white-space: nowrap; }
+/* post w kanale */
+.pv-feed-scroll { position: absolute; inset: 42px 0 0 0; overflow: hidden; }
+.pv-ig-head { display: flex; align-items: center; gap: 9px; padding: 8px 10px; }
+.pv-ig-head .pv-who strong { color: #fff; font-size: 13.5px; }
+.pv-ig-head .pv-who small { color: #e0e0e0; font-size: 11.5px; display: flex; align-items: center; gap: 4px; }
+.pv-ig-head svg { color: #fff; flex-shrink: 0; }
+.pv-ig-media { position: relative; cursor: default; }
+.pv-ig-media.is-video { cursor: pointer; }
+.pv-ig-media .pv-media { background: #111; }
+.pv-ig-media .pv-dots { bottom: -16px; }
+.pv-mute { position: absolute; right: 10px; bottom: 10px; width: 28px; height: 28px; border-radius: 50%; background: rgba(38,38,38,.85); color: #fff; display: grid; place-items: center; }
+.pv-ig-actions { display: flex; align-items: center; gap: 14px; padding: 12px 12px 6px; color: #fff; }
+.pv-ig-actions > span:not(.pv-spacer) { display: inline-flex; align-items: center; gap: 5px; }
+.pv-ig-actions b { font-size: 13px; font-weight: 600; }
+.pv-ig-actions svg { width: 23px; height: 23px; }
+.pv-ig-feed .pv-caption { padding: 2px 12px; color: #f5f5f5; }
+.pv-ig-feed .pv-caption strong { color: #fff; font-weight: 600; }
+.pv-ig-feed .pv-tag { color: #e0f1ff; } .pv-ig-feed .pv-more { color: #a8a8a8; }
+.pv-ig-time { padding: 4px 12px; color: #a8a8a8; font-size: 11.5px; }
+.pv-ig-nav { position: absolute; left: 14px; right: 14px; bottom: 14px; height: 52px; border-radius: 28px; background: rgba(28,28,30,.92); backdrop-filter: blur(8px);
+    display: flex; justify-content: space-around; align-items: center; color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+.pv-ig-nav > span { display: grid; place-items: center; width: 46px; height: 40px; border-radius: 20px; }
+.pv-ig-nav > span.on { background: rgba(255,255,255,.14); width: 64px; }
+/* rolka */
+.pv-reel-top { position: absolute; top: 36px; left: 0; right: 0; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 0 14px; color: #fff; font-size: 17px; }
+.pv-reel-top strong { margin-left: 24px; font-weight: 700; } .pv-reel-top > span:not(.pv-spacer) { color: rgba(255,255,255,.6); font-weight: 700; }
+.pv-reel-side { position: absolute; right: 8px; bottom: 92px; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 14px; color: #fff; }
+.pv-reel-side > span { display: flex; flex-direction: column; align-items: center; gap: 3px; filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.4)); }
+.pv-reel-side small { font-size: 11px; font-weight: 600; }
+.pv-reel-info { position: absolute; left: 12px; right: 60px; bottom: 74px; z-index: 2; color: #fff; }
+.pv-reel-user { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pv-reel-user strong { font-size: 13.5px; }
+.pv-reel-info .pv-caption { padding: 0; font-size: 13px; } .pv-reel-info .pv-tag { color: #fff; }
+.pv-reel-progress { position: absolute; left: 0; right: 0; bottom: 56px; height: 2px; background: rgba(255,255,255,.3); z-index: 2; }
+.pv-reel-progress i { display: block; width: 8%; height: 100%; background: #fff; }
+.pv-reel-comment { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: #000; z-index: 2; padding: 9px 12px; }
+.pv-reel-comment span { display: block; border-radius: 22px; background: #1c1c1e; color: #e5e5e5; padding: 9px 16px; font-size: 13px; }
+/* relacja */
+.pv-story-media { position: absolute; left: 0; right: 0; top: 38px; bottom: 62px; border-radius: 10px; overflow: hidden; background: #111; }
+.pv-story-bars { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 2; display: flex; gap: 3px; }
+.pv-story-bars i { flex: 1; height: 2.5px; border-radius: 2px; background: rgba(255,255,255,.4); }
+.pv-story-bars i.on { background: linear-gradient(90deg, #fff 55%, rgba(255,255,255,.4) 55%); }
+.pv-story-head { position: absolute; top: 18px; left: 10px; right: 10px; z-index: 2; display: flex; align-items: center; gap: 8px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.pv-story-head small { color: rgba(255,255,255,.75); }
+.pv-story-media .pv-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.pv-story-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 62px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #fff; }
+.pv-story-input { flex: 1; border: 1px solid rgba(255,255,255,.5); border-radius: 22px; padding: 9px 16px; color: #e5e5e5; font-size: 13px; }
