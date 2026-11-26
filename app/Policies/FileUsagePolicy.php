@@ -40,6 +40,9 @@ class FileUsagePolicy
             // Klient widzi gotowe materiały swoich kampanii.
             return $usable->is_received && $usable->collaboration->campaign->client_id === $user->client_id;
         }
+        if ($usable instanceof \App\Models\SocialAccount) {
+            return $usable->client_id === $user->client_id;
+        }
         if ($usable instanceof Ticket) {
             return $usable->client_id === $user->client_id;
         }

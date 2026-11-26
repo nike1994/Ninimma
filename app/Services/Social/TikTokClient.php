@@ -32,7 +32,7 @@ class TikTokClient
 
     public function userInfo(string $token): array
     {
-        return $this->check(Http::withToken($token)->timeout(20)->get(self::API.'user/info/', ['fields' => 'open_id,display_name,username']))['data']['user'] ?? [];
+        return $this->check(Http::withToken($token)->timeout(20)->get(self::API.'user/info/', ['fields' => 'open_id,display_name,username,avatar_large_url']))['data']['user'] ?? [];
     }
 
     /** Token dostępu ważny 24 h — odświeżamy przed użyciem. */

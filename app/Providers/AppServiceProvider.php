@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
             'material' => \App\Models\Material::class,
             'site' => \App\Models\Site::class,
             'board_version' => \App\Models\BoardVersion::class,
+            'social_account' => \App\Models\SocialAccount::class,
         ]);
 
         // Mini-lista zleceń w panelu bocznym.

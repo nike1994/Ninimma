@@ -195,6 +195,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::delete('/notes/{note}', [\App\Http\Controllers\Social\NoteController::class, 'destroy'])->name('notes.destroy');
         Route::get('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'index'])->name('accounts');
         Route::post('/accounts', [\App\Http\Controllers\Social\AccountController::class, 'store']);
+        Route::post('/accounts/{account}/avatar', [\App\Http\Controllers\Social\AccountController::class, 'avatar'])->name('accounts.avatar');
         Route::patch('/accounts/{account}/toggle', [\App\Http\Controllers\Social\AccountController::class, 'toggle'])->name('accounts.toggle');
     });
 

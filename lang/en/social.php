@@ -170,4 +170,7 @@ return [
     'preview' => 'Post preview',
     'limit_chars' => ':platform: the text has :n characters, the limit is :max.',
     'limit_tags' => ':platform: :n hashtags, the limit is :max.',
+    'avatar_invalid' => 'This image could not be read.',
+    'avatar_saved' => 'Profile picture saved.',
+    'avatar_change' => 'Change profile picture (used in post previews)',
 ];

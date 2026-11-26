@@ -7,7 +7,10 @@
     <section class="card">
         @forelse($accounts as $a)
             <div @class(['acc-row', 'inactive' => ! $a->is_active])>
-                <div class="acc"><x-avatar :name="$a->name" :size="42" /><x-platform :platform="$a->platform" :size="18" class="acc-badge" />
+                <div class="acc">
+                    <form method="post" action="{{ route('social.accounts.avatar', $a) }}" enctype="multipart/form-data" class="acc-avatar-form" title="{{ __('social.avatar_change') }}">
+                        @csrf<label><x-account-avatar :account="$a" :size="42" /><span class="acc-avatar-edit"><x-icon name="image" :size="12" /></span>
+                        <input type="file" name="avatar" accept="image/*" hidden onchange="this.form.submit()" aria-label="{{ __('social.avatar_change') }}"></label></form>
                     <span><strong>{{ $a->name }}</strong><small class="muted">{{ $a->platform->label() }}@if($a->handle) · {{ '@'.ltrim($a->handle, '@') }}@endif · {{ $a->client->name }}</small></span></div>
                 <span class="muted small">{{ trans_choice('social.pub_count', $a->publications_count, ['n' => $a->publications_count]) }}</span>
                 @if(\App\Services\Social\Integrations::enabledFor($a->platform))

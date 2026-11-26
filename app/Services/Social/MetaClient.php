@@ -55,6 +55,16 @@ class MetaClient
         return $data['data'] ?? [];
     }
 
+    /** Adres zdjęcia profilu Strony albo konta Instagram (do pobrania i zapisania u nas). */
+    public function profilePicture(SocialAccount $acc): ?string
+    {
+        if ($acc->platform === \App\Enums\Platform::Instagram) {
+            return $this->get($acc->external_id, ['fields' => 'profile_picture_url'], $acc->access_token)['profile_picture_url'] ?? null;
+        }
+
+        return $this->get($acc->external_id.'/picture', ['redirect' => 0, 'type' => 'large'], $acc->access_token)['data']['url'] ?? null;
+    }
+
     // ---------------------------------------------------------------- publikacja
 
     /** Facebook: tekst, zdjęcie, kilka zdjęć albo film. Zwraca [id posta, link]. */

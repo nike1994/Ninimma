@@ -170,4 +170,7 @@ return [
     'preview' => 'Podgląd posta',
     'limit_chars' => ':platform: tekst ma :n znaków, limit to :max.',
     'limit_tags' => ':platform: :n hashtagów, limit to :max.',
+    'avatar_invalid' => 'To nie jest obraz, który da się odczytać.',
+    'avatar_saved' => 'Zapisano zdjęcie profilu.',
+    'avatar_change' => 'Zmień zdjęcie profilu (używane w podglądzie postów)',
 ];

@@ -114,6 +114,22 @@ class SocialDemoSeeder extends Seeder
         }
 
         Publication::where('status', 'planned')->where('visible_to_client', true)->limit(1)->update(['client_status' => 'changes', 'client_comment' => 'Proszę o jaśniejsze zdjęcie.']);
+
+        // Zdjęcia profilu kont (logo marki: kolorowe koło z inicjałem) — do podglądu postów.
+        $colors = ['FitLife' => [224, 69, 123], 'Studio Blu' => [11, 106, 168], 'Zielony Dom' => [54, 180, 92]];
+        foreach (SocialAccount::with('client')->get() as $acc) {
+            [$r, $g, $b] = $colors[$acc->client->name] ?? [19, 163, 180];
+            $im = imagecreatetruecolor(320, 320);
+            imagefill($im, 0, 0, imagecolorallocate($im, $r, $g, $b));
+            imagefilledellipse($im, 160, 160, 236, 236, imagecolorallocate($im, 255, 255, 255));
+            $font = resource_path('fonts/DejaVuSans-Bold.ttf');
+            $letter = mb_substr($acc->client->name, 0, 1);
+            $box = imagettfbbox(120, 0, $font, $letter);
+            imagettftext($im, 120, 0, (int) (160 - ($box[2] - $box[0]) / 2 - $box[0]), (int) (160 + ($box[1] - $box[7]) / 2), imagecolorallocate($im, $r, $g, $b), $font, $letter);
+            ob_start();
+            imagepng($im);
+            $acc->storeAvatar(ob_get_clean());
+        }
     }
 
     /** Prosta grafika demonstracyjna: gradient + kształty. */

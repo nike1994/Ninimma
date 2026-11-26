@@ -52,7 +52,10 @@ hashtagów i akceptacja klienta ustawiane raz; przeciągnięte grafiki/filmy sta
 „+” dokłada pliki do karuzeli), „Rozłóż daty” przydziela kolejne wybrane dni tygodnia. Ustawienia zapamiętują się jako
 domyślne klienta i podpowiadają się też w zwykłym formularzu posta. Każdą treść można zduplikować.
 
-**Podgląd posta i limity.** W formularzu treści obok pól jest podgląd na żywo dla kont wybranych w publikacjach
+**Podgląd posta i limity.** Konta mają zdjęcie profilu (wgrane w Social media → Profile albo pobrane z platformy
+przy łączeniu z API). W formularzu treści obok pól jest podgląd na żywo w wyglądzie aplikacji — zdjęcie profilu,
+nazwa, „Sponsorowane” przy promocji, przyciski (Instagram: serce, komentarz, wyślij, zapisz; Facebook: „Lubię to!”,
+„Komentarz”, „Udostępnij”, pole komentarza; TikTok: pionowy kadr z prawym paskiem) — dla kont wybranych w publikacjach
 (Instagram, Facebook, TikTok, LinkedIn): kadr (Instagram/Facebook przycinają do 4:5–1.91:1, film jako rolka 9:16),
 ucięcie opisu na „…więcej” / „Wyświetl więcej”, hashtagi. Liczniki znaków i hashtagów pokazują najostrzejszy limit
 z wybranych platform (Instagram i TikTok 2200 znaków, Instagram 30 hashtagów, LinkedIn 3000, Pinterest 500);

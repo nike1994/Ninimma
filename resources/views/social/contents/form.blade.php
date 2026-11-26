@@ -11,7 +11,8 @@
     @endif
 </div>
 @php
-    $previewAccounts = $accounts->mapWithKeys(fn ($a) => [$a->id => ['name' => $a->name, 'handle' => ltrim((string) ($a->handle ?: $a->name), '@'), 'platform' => $a->platform->value, 'label' => $a->platform->label()]]);
+    $previewAccounts = $accounts->mapWithKeys(fn ($a) => [$a->id => ['name' => $a->api_meta['name'] ?? $a->name, 'handle' => ltrim((string) ($a->api_meta['username'] ?? $a->handle ?: $a->name), '@'),
+        'platform' => $a->platform->value, 'label' => $a->platform->label(), 'avatar' => $a->avatarUrl()]]);
     $previewFiles = $content->exists ? $content->files->filter(fn ($f) => $f->file)->map(fn ($f) => [
         'url' => $f->file->isImage() ? route('files.show', [$f, $f->name]) : ($f->file->poster_id ? route('files.poster', $f) : null),
         'video' => $f->file->isVideo(),
@@ -113,7 +114,7 @@
 @endsection
 @push('scripts')
 <script src="{{ asset('js/uploader.js') }}?v=5"></script>
-<script src="{{ asset('js/post-preview.js') }}?v=2"></script>
+<script src="{{ asset('js/post-preview.js') }}?v=4"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');

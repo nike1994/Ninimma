@@ -14,7 +14,7 @@ class AccountController extends Controller
     public function index()
     {
         return view('social.accounts', [
-            'accounts' => SocialAccount::with('client')->withCount('publications')->orderBy('name')->get(),
+            'accounts' => SocialAccount::with(['client', 'avatar'])->withCount('publications')->orderBy('name')->get(),
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
@@ -30,6 +30,16 @@ class AccountController extends Controller
         ]));
 
         return back()->with('status', __('ui.saved'));
+    }
+
+    public function avatar(Request $request, SocialAccount $account)
+    {
+        $request->validate(['avatar' => ['required', 'image', 'max:8192']]);
+        if (! $account->storeAvatar((string) file_get_contents($request->file('avatar')->getRealPath()), $request->user()->id)) {
+            return back()->withErrors(['avatar' => __('social.avatar_invalid')]);
+        }
+
+        return back()->with('status', __('social.avatar_saved'));
     }
 
     public function toggle(SocialAccount $account)

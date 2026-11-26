@@ -40,6 +40,7 @@ class ConnectController extends Controller
                 $account->forceFill(['external_id' => $t['open_id'], 'access_token' => $t['access_token'], 'refresh_token' => $t['refresh_token'],
                     'token_expires_at' => now()->addSeconds((int) $t['expires_in']), 'connected_at' => now(), 'api_error' => null,
                     'api_meta' => ['name' => $u['display_name'] ?? null, 'username' => $u['username'] ?? null]])->save();
+                rescue(fn () => $this->fetchAvatar($account, $u['avatar_large_url'] ?? null), report: false);
 
                 return redirect()->route('social.accounts')->with('status', __('api.connected', ['name' => $account->name]));
             }
@@ -79,8 +80,25 @@ class ConnectController extends Controller
         $account->forceFill(['external_id' => $isIg ? $page['ig_id'] : $page['id'], 'access_token' => decrypt($page['token']), 'refresh_token' => null,
             'token_expires_at' => null, 'connected_at' => now(), 'api_error' => null,
             'api_meta' => ['name' => $page['name'], 'username' => $isIg ? $page['ig_username'] : null]])->save();
+        try {
+            $this->fetchAvatar($account, app(MetaClient::class)->profilePicture($account));
+        } catch (\Throwable) {
+            // Bez zdjęcia — można wgrać ręcznie.
+        }
 
         return redirect()->route('social.accounts')->with('status', __('api.connected', ['name' => $account->name]));
+    }
+
+    /** Zdjęcie profilu z platformy (tylko gdy konto nie ma jeszcze własnego). */
+    private function fetchAvatar(SocialAccount $account, ?string $url): void
+    {
+        if (! $url || $account->avatar_usage_id || ! str_starts_with($url, 'https://')) {
+            return;
+        }
+        $r = \Illuminate\Support\Facades\Http::timeout(15)->get($url);
+        if ($r->successful() && strlen($r->body()) < 5 * 1024 * 1024) {
+            $account->storeAvatar($r->body(), auth()->id());
+        }
     }
 
     public function disconnect(SocialAccount $account)

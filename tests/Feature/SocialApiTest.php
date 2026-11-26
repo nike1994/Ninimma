@@ -61,6 +61,30 @@ class SocialApiTest extends TestCase
             'scheduled_at' => now()->subMinute(), 'status' => 'planned', 'auto_publish' => true]);
     }
 
+    private function pngBytes(): string
+    {
+        $im = imagecreatetruecolor(200, 120);
+        imagefill($im, 0, 0, imagecolorallocate($im, 19, 163, 180));
+        ob_start();
+        imagepng($im);
+
+        return ob_get_clean();
+    }
+
+    public function test_account_avatar_upload_is_cropped_and_shown_in_preview(): void
+    {
+        $acc = SocialAccount::factory()->create(['platform' => 'instagram']);
+        $tmp = tempnam(sys_get_temp_dir(), 'av').'.png';
+        file_put_contents($tmp, $this->pngBytes());
+        $this->post(route('social.accounts.avatar', $acc), ['avatar' => new \Illuminate\Http\UploadedFile($tmp, 'logo.png', 'image/png', null, true)])->assertRedirect();
+        $acc->refresh();
+        $path = app(FileStore::class)->absolutePath($acc->avatar->file);
+        $this->assertSame([320, 320], array_slice(getimagesize($path), 0, 2)); // kwadrat
+        $this->get(route('social.accounts'))->assertOk()->assertSee($acc->avatarUrl(), false);
+        $this->get(route('social.contents.create', ['client' => $acc->client_id]))->assertOk()->assertSee(str_replace('/', '\\/', $acc->avatarUrl()), false);
+        $this->post(route('social.accounts.avatar', $acc), ['avatar' => \Illuminate\Http\UploadedFile::fake()->create('x.txt', 3, 'text/plain')])->assertSessionHasErrors('avatar');
+    }
+
     public function test_everything_stays_manual_when_integration_is_disabled(): void
     {
         $acc = $this->account('facebook');
@@ -193,6 +217,8 @@ class SocialApiTest extends TestCase
                 ['id' => '11', 'name' => 'Strona bez IG', 'access_token' => 'T11'],
                 ['id' => '22', 'name' => 'Zielony Dom', 'access_token' => 'T22', 'instagram_business_account' => ['id' => '9922', 'username' => 'zielonydom']],
             ]]),
+            'graph.facebook.com/v23.0/9922*' => Http::response(['profile_picture_url' => 'https://cdn.example.com/avatar.jpg']),
+            'cdn.example.com/*' => Http::response($this->pngBytes(), 200, ['Content-Type' => 'image/png']),
         ]);
         $this->get(route('social.connect.callback', ['provider' => 'meta', 'state' => 'zly', 'code' => 'x']))->assertForbidden();
         // Stan sesji zużyty przy błędnej próbie — zaczynamy od nowa.
@@ -203,6 +229,8 @@ class SocialApiTest extends TestCase
         $acc->refresh();
         $this->assertSame(['9922', 'T22', 'zielonydom'], [$acc->external_id, $acc->access_token, $acc->api_meta['username']]);
         $this->assertTrue($acc->isConnected());
+        $this->assertNotNull($acc->avatar_usage_id); // zdjęcie profilu pobrane z Instagrama
+        $this->get($acc->avatarUrl())->assertOk()->assertHeader('Content-Type', 'image/jpeg');
         $this->assertStringNotContainsString('T22', json_encode($acc->toArray()));
         $this->get(route('social.accounts'))->assertOk()->assertSee(__('api.connected_as', ['name' => 'zielonydom']));
     }

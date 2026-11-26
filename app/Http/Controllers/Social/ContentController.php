@@ -91,7 +91,7 @@ class ContentController extends Controller
             'defaultRows' => $defaultRows,
             'hashtagSets' => Client::whereNotNull('social_defaults')->get()->mapWithKeys(fn ($c) => [$c->id => $c->socialDefaults()['hashtag_sets']])->filter(),
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
-            'accounts' => SocialAccount::where('is_active', true)->orderBy('name')->get(),
+            'accounts' => SocialAccount::with('avatar')->where('is_active', true)->orderBy('name')->get(),
             'campaigns' => \App\Models\Campaign::where('status', '!=', 'finished')->orWhere('id', $content->campaign_id)->orderBy('name')->get(),
             'materials' => LicenseGuard::pickerMaterials($content->exists ? $content->materials->pluck('id')->all() : []),
             'selectedMaterials' => $content->exists ? $content->materials->pluck('id')->all() : array_filter([request()->integer('material')]),
