@@ -119,6 +119,18 @@ curl -H "Authorization: Bearer $TOKEN" https://panel.agencja.pl/backup/exports/N
 Pliki z `storage/app/store` najlepiej synchronizować przez SFTP/rsync. Paczki offline muszą mieć kopię w homelabie —
 z hostingu znikają z nich ciężkie pliki.
 
+### Integracje z platformami (Meta, TikTok) — włączane
+
+Administracja → Integracje: osobny włącznik dla Mety (Facebook + Instagram) i TikToka oraz dla pobierania statystyk.
+Wyłączone = wszystko działa ręcznie, jak dotąd. Po włączeniu i wpisaniu kluczy aplikacji konto łączy się w Social media
+→ Profile („Połącz z API”); przy publikacji pojawia się „Publikuj automatycznie o tej godzinie”. Cron co minutę publikuje
+zaplanowane posty: Facebook (tekst, zdjęcie, kilka zdjęć, film), Instagram (zdjęcie, karuzela, rolka — media pobierane
+przez Metę z podpisanego linku ważnego 2 h), TikTok (film wysyłany w kawałkach z serwera). Publikacja jest wstrzymywana,
+gdy licencja materiału nie pozwala, post czeka na akceptację klienta albo konto jest odłączone; błędy platformy —
+3 próby, potem e-mail do zespołu; ponad dobę po terminie panel nie publikuje sam. Statystyki 1/7/30 dni pobierają się
+co godzinę zamiast ręcznego wpisywania. Tokeny są szyfrowane w bazie. Wymagane: weryfikacja aplikacji (App Review)
+u Mety oraz audyt Content Posting API u TikToka (przed audytem posty TikTok tylko prywatne).
+
 ### Zgłoszenia przez e-mail
 
 Klient (i zespół) może po prostu odpowiedzieć na powiadomienie — odpowiedź dopisuje się do zlecenia razem
@@ -160,7 +172,7 @@ Konta demo: `admin@example.com` / `anna@example.com`, hasło `demo-haslo-123`.
 
 ## Świadomie odłożone (ze specyfikacji)
 
-Edycja tablic w pełni na żywo (WebSocket), automatyczna publikacja i pobieranie statystyk przez API platform,
+Edycja tablic w pełni na żywo (WebSocket), API YouTube / LinkedIn / Pinterest,
 własne fakturowanie i integracja z KSeF, role podwykonawców, wiele agencji
 w jednej instalacji. Architektura zostawia na nie miejsce (np. `public/js/live.js` — jeden moduł transportu).
 

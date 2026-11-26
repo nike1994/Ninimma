@@ -114,6 +114,7 @@
                             <a href="{{ route('admin.team') }}"><x-icon name="shield" :size="16" />{{ __('ui.team') }}</a>
                             <a href="{{ route('admin.archive') }}"><x-icon name="download" :size="16" />{{ __('arch.title') }}</a>
                             <a href="{{ route('admin.system') }}"><x-icon name="activity" :size="16" />{{ __('ui.system_log') }}</a>
+                            <a href="{{ route('admin.integrations') }}"><x-icon name="zap" :size="16" />{{ __('api.nav') }}</a>
                         @endif
                         <form method="post" action="{{ route('logout') }}">@csrf<button><x-icon name="logout" :size="16" />{{ __('ui.logout') }}</button></form>
                     </div>

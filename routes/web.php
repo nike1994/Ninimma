@@ -37,6 +37,9 @@ Route::middleware('guest')->group(function () {
 Route::get('/sso/wordpress', \App\Http\Controllers\WordPressSsoController::class)->middleware('throttle:20,1')->name('sso.wordpress');
 
 // Kopie zapasowe pobierane przez homelab (token w nagłówku).
+// Media postów dla platform (Meta pobiera zdjęcia/filmy z adresu): podpisany link ważny 2 godziny.
+Route::get('/m/{usage}/{name}', \App\Http\Controllers\PublicMediaController::class)->middleware(['signed', 'throttle:120,1'])->name('media.public');
+
 Route::get('/backup/latest', [BackupController::class, 'latest'])->middleware('throttle:10,1')->name('backup.latest');
 Route::get('/backup/exports', [BackupController::class, 'exports'])->middleware('throttle:10,1')->name('backup.exports');
 Route::get('/backup/exports/{name}', [BackupController::class, 'export'])->middleware('throttle:30,1')->name('backup.export');
@@ -174,6 +177,13 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::post('/ads-import', [$ad, 'import'])->name('ads.import');
         Route::post('/campaigns/{campaign}/utm', [\App\Http\Controllers\Social\UtmController::class, 'store'])->name('utm.store');
         Route::delete('/utm/{link}', [\App\Http\Controllers\Social\UtmController::class, 'destroy'])->name('utm.destroy');
+        // Połączenia z API platform (włączane w Administracja → Integracje).
+        $cn = \App\Http\Controllers\Social\ConnectController::class;
+        Route::get('/accounts/{account}/connect', [$cn, 'redirect'])->name('connect');
+        Route::delete('/accounts/{account}/connect', [$cn, 'disconnect'])->name('connect.disconnect');
+        Route::get('/connect/choose', [$cn, 'choose'])->name('connect.choose');
+        Route::post('/connect/choose', [$cn, 'attach'])->name('connect.attach');
+        Route::get('/connect/{provider}/callback', [$cn, 'callback'])->whereIn('provider', ['meta', 'tiktok'])->name('connect.callback');
         Route::post('/tasks', [\App\Http\Controllers\Social\TaskController::class, 'store'])->name('tasks.store');
         Route::patch('/tasks/{ticket}/toggle', [\App\Http\Controllers\Social\TaskController::class, 'toggle'])->name('tasks.toggle');
         Route::post('/notes', [\App\Http\Controllers\Social\NoteController::class, 'store'])->name('notes.store');
@@ -185,6 +195,9 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/integrations', [Admin\IntegrationController::class, 'edit'])->name('integrations');
+        Route::put('/integrations', [Admin\IntegrationController::class, 'update'])->name('integrations.update');
+        Route::put('/integrations/stats', [Admin\IntegrationController::class, 'stats'])->name('integrations.stats');
         Route::patch('/tickets/{ticket}', [TicketController::class, 'update'])->name('tickets.update');
         Route::patch('/tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');
         Route::post('/tickets/{ticket}/time', [TicketController::class, 'logTime'])->name('tickets.time');

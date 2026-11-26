@@ -17,10 +17,10 @@ class Publication extends Model
 
     protected $fillable = [
         'content_id', 'social_account_id', 'platform', 'scheduled_at', 'published_at', 'status', 'url', 'caption',
-        'promoted', 'promo_budget', 'promo_from', 'promo_to', 'visible_to_client',
+        'promoted', 'promo_budget', 'promo_from', 'promo_to', 'visible_to_client', 'auto_publish',
     ];
 
-    protected $attributes = ['status' => 'planned', 'checks_done' => 0, 'promoted' => false, 'visible_to_client' => false];
+    protected $attributes = ['status' => 'planned', 'checks_done' => 0, 'promoted' => false, 'visible_to_client' => false, 'auto_publish' => false, 'api_attempts' => 0];
 
     protected function casts(): array
     {
@@ -32,6 +32,8 @@ class Publication extends Model
             'promo_to' => 'date',
             'promoted' => 'boolean',
             'visible_to_client' => 'boolean',
+            'auto_publish' => 'boolean',
+            'api_next_attempt_at' => 'datetime',
             'promo_budget' => 'decimal:2',
         ];
     }

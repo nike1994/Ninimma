@@ -150,6 +150,7 @@ class ContentController extends Controller
             'pubs.*.promo_from' => ['nullable', 'date'],
             'pubs.*.promo_to' => ['nullable', 'date'],
             'pubs.*.visible_to_client' => ['nullable', 'boolean'],
+            'pubs.*.auto_publish' => ['nullable', 'boolean'],
         ])['pubs'] ?? [];
 
         $materials = $content->materials()->get();
@@ -178,6 +179,8 @@ class ContentController extends Controller
                 'promo_from' => $row['promo_from'] ?? null,
                 'promo_to' => $row['promo_to'] ?? null,
                 'visible_to_client' => ! empty($row['visible_to_client']),
+                // Automatyczna publikacja tylko dla kont połączonych z API (inaczej zawsze ręcznie).
+                'auto_publish' => ! empty($row['auto_publish']) && $account->isConnected(),
             ];
             $pub ??= new Publication(['content_id' => $content->id]);
             $pub->content_id = $content->id;
@@ -187,6 +190,10 @@ class ContentController extends Controller
             }
             if ($status !== 'published') {
                 $pub->published_at = null;
+            }
+            // Zmiana terminu, konta, opisu albo włącznika = nowa szansa dla automatycznej publikacji.
+            if ($pub->status === 'planned' && $pub->api_status !== 'processing' && $pub->isDirty(['scheduled_at', 'social_account_id', 'caption', 'auto_publish'])) {
+                $pub->forceFill(['api_status' => null, 'api_error' => null, 'api_attempts' => 0, 'api_next_attempt_at' => null, 'api_container' => null]);
             }
             $this->checkLicense($pub, $materials, $i, $licenseErrors);
             $pub->save();

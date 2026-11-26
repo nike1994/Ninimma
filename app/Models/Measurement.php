@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Measurement extends Model
 {
-    protected $fillable = ['publication_id', 'user_id', 'measured_on', 'reach', 'reactions', 'comments', 'shares', 'clicks'];
+    protected $fillable = ['publication_id', 'user_id', 'measured_on', 'reach', 'reactions', 'comments', 'shares', 'clicks', 'views', 'source'];
 
     protected function casts(): array
     {

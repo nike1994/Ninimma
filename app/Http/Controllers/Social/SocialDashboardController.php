@@ -29,6 +29,8 @@ class SocialDashboardController extends Controller
 
         return view('social.dashboard', [
             'licFlags' => $licIssues->whereNotNull('publication_id')->groupBy('publication_id')->map(fn ($g) => $g->pluck('message')->unique()),
+            'apiProblems' => Publication::where('status', 'planned')->whereIn('api_status', ['failed', 'held'])
+                ->when($clientId, fn ($q) => $q->whereHas('account', fn ($a) => $a->where('client_id', $clientId)))->orderBy('scheduled_at')->get(['id', 'content_id']),
             'licConflicts' => $licIssues->where('severity', 'error')->count(),
             'licExpiring' => \App\Models\Material::whereNotNull('license_until')->whereDate('license_until', '>=', today())
                 ->whereDate('license_until', '<=', today()->addDays(\App\Services\LicenseGuard::EXPIRING_DAYS))

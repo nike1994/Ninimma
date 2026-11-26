@@ -90,8 +90,16 @@
     const client = document.querySelector('[data-client-select]');
     const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client], [data-mat-picker] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));
     client.addEventListener('change', filter); filter();
+    // „Publikuj automatycznie” tylko przy kontach połączonych z API.
+    const autoToggle = row => {
+        const sel = row.querySelector('[data-account-select]'), box = row.querySelector('[data-pub-auto]');
+        if (!sel || !box) return;
+        box.hidden = sel.selectedOptions[0]?.dataset.api !== '1';
+    };
+    wrap.addEventListener('change', e => { if (e.target.matches('[data-account-select]')) autoToggle(e.target.closest('[data-pub-row]')); });
+    wrap.querySelectorAll('[data-pub-row]').forEach(autoToggle);
     document.querySelector('[data-add-pub]').addEventListener('click', () => {
-        wrap.insertAdjacentHTML('beforeend', tpl.innerHTML.replaceAll('__I__', n++)); filter();
+        wrap.insertAdjacentHTML('beforeend', tpl.innerHTML.replaceAll('__I__', n++)); filter(); autoToggle(wrap.lastElementChild);
     });
 })();
 </script>

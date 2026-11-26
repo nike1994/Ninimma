@@ -23,6 +23,19 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
 Schedule::command('agency:mail-in --imap')->everyMinute()->withoutOverlapping(5)
     ->when(fn () => filled(config('agency.inbound.address')) && filled(config('agency.inbound.imap_host')))->name('mail-in');
 
+// Automatyczna publikacja zaplanowanych postów i statystyki z API (gdy integracje włączone).
+Schedule::call(function () {
+    app(\App\Services\Social\AutoPublisher::class)->runDue();
+})->everyMinute()->name('social-publish')->withoutOverlapping(15)
+    ->when(fn () => \App\Services\Social\Integrations::enabled('meta') || \App\Services\Social\Integrations::enabled('tiktok'));
+Schedule::call(function () {
+    $n = app(\App\Services\Social\AutoPublisher::class)->fetchStats();
+    if ($n) {
+        SystemLog::record('social_stats', "Fetched stats for {$n} publications");
+    }
+})->hourly()->name('social-stats')->withoutOverlapping(30)
+    ->when(fn () => \App\Services\Social\Integrations::enabled('meta') || \App\Services\Social\Integrations::enabled('tiktok'));
+
 Schedule::command('agency:stall-check')->hourly()->withoutOverlapping();
 Schedule::command('agency:digests')->dailyAt('07:30');
 Schedule::command('agency:backup')->dailyAt('02:15');

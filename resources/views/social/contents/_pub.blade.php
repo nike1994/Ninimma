@@ -13,7 +13,7 @@
         <label class="field"><span>{{ __('social.account') }}</span>
             <select name="pubs[{{ $i }}][social_account_id]" data-account-select>
                 <option value="">—</option>
-                @foreach($accounts as $a)<option value="{{ $a->id }}" data-client="{{ $a->client_id }}" @selected((string) $v('social_account_id', $p?->social_account_id) === (string) $a->id)>{{ $a->name }} · {{ $a->platform->label() }}</option>@endforeach
+                @foreach($accounts as $a)<option value="{{ $a->id }}" data-client="{{ $a->client_id }}" data-api="{{ $a->isConnected() ? 1 : 0 }}" @selected((string) $v('social_account_id', $p?->social_account_id) === (string) $a->id)>{{ $a->name }} · {{ $a->platform->label() }}</option>@endforeach
             </select>
         </label>
         <label class="field"><span>{{ __('social.date_time') }}</span><input type="datetime-local" name="pubs[{{ $i }}][scheduled_at]" value="{{ $v('scheduled_at', $p?->scheduled_at?->format('Y-m-d\TH:i')) }}"></label>
@@ -33,6 +33,10 @@
         </div>
         @if($p?->ad)<a href="{{ route('social.ads.edit', $p->ad) }}" class="small"><x-icon name="bar-chart" :size="14" /> {{ __('ads.open_results') }}</a>@endif
     </details>
+    <div class="pub-auto" data-pub-auto>
+        <label class="check"><input type="checkbox" name="pubs[{{ $i }}][auto_publish]" value="1" @checked($on('auto_publish', $p ? $p->auto_publish : true))> <x-icon name="zap" :size="14" /> {{ __('api.auto_publish') }}</label>
+        @if($p)@include('social.contents._api-status', ['p' => $p])@endif
+    </div>
     <div class="pub-foot">
         <label class="check"><input type="checkbox" name="pubs[{{ $i }}][visible_to_client]" value="1" @checked($on('visible_to_client', $p?->visible_to_client))> {{ __('social.visible_to_client') }}</label>
         @if($p?->client_status)<span @class(['pill', 'pill-done' => $p->client_status === 'approved', 'pill-pink' => $p->client_status === 'changes'])>{{ __('social.client_'.$p->client_status) }}</span>@endif

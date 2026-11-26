@@ -161,6 +161,12 @@
                     <span class="todo-text">{{ trans_choice('social.stats_due', $statsQueue->count(), ['n' => $statsQueue->count()]) }}</span>
                 </a>
             @endif
+            @if($apiProblems->isNotEmpty())
+                <a href="{{ route('social.contents.edit', $apiProblems->first()->content_id) }}" class="todo-row todo-auto">
+                    <span class="todo-box auto lic"><x-icon name="zap" :size="12" /></span>
+                    <span class="todo-text"><span class="overdue">{{ trans_choice('api.failed_count', $apiProblems->count(), ['n' => $apiProblems->count()]) }}</span></span>
+                </a>
+            @endif
             @if($licConflicts)
                 <a href="{{ route('licenses.index', ['filter' => 'conflicts']) }}" class="todo-row todo-auto">
                     <span class="todo-box auto lic"><x-icon name="shield" :size="12" /></span>
@@ -183,7 +189,7 @@
                     @if($t->assignee)<x-avatar :name="$t->assignee->name" :size="28" title="{{ $t->assignee->name }}" />@endif
                 </div>
             @endforeach
-            @if($tasks->isEmpty() && $statsQueue->isEmpty() && $awaitingClient->isEmpty() && ! $licConflicts)<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
+            @if($tasks->isEmpty() && $statsQueue->isEmpty() && $awaitingClient->isEmpty() && ! $licConflicts && $apiProblems->isEmpty())<p class="muted">{{ __('ui.nothing_here') }}</p>@endif
         </section>
 
         <section class="card">

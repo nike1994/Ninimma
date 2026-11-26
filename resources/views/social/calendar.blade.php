@@ -34,6 +34,7 @@
                     @isset($licFlags[$pub->id])<x-icon name="shield" :size="13" class="lic-flag-icon" />@endisset
                     <x-platform :platform="$pub->platform" :size="16" />
                     <span>{{ $pub->scheduled_at->format('H:i') }} {{ $pub->content->title }}</span>
+                    @if($me->isAdmin() && $pub->auto_publish && $pub->status === 'planned')<x-icon name="zap" :size="12" :class="'cal-auto api-'.($pub->api_status ?? 'queued')" />@endif
                 </a>
             @endforeach
         </div>
