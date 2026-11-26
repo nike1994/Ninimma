@@ -126,4 +126,9 @@ return [
     'stats_due' => '{1} Wpisz statystyki: 1 publikacja|[2,4] Wpisz statystyki: :n publikacje|[5,*] Wpisz statystyki: :n publikacji',
     'awaiting_count' => '{1} Akceptacja klienta: 1 post czeka|[2,4] Akceptacja klienta: :n posty czekają|[5,*] Akceptacja klienta: :n postów czeka',
     'campaigns_nav' => 'Kampanie',
+    'move_only_planned' => 'Przenosić można tylko zaplanowane publikacje.',
+    'moved' => 'Przeniesiono na: :date',
+    'add_on_day' => 'Nowy post na :date',
+    'drag_hint' => 'Przeciągnij post na inny dzień, żeby zmienić termin. Najedź, żeby zobaczyć podgląd; „+” w dniu dodaje nowy post.',
+    'dblclick_hint' => 'Kliknij dwukrotnie, żeby dodać post o tej godzinie; przeciągnij post, żeby zmienić termin.',
 ];

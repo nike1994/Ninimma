@@ -27,10 +27,15 @@
 <section class="card month">
     @for($d = 0; $d < 7; $d++)<div class="month-dow">{{ $gridStart->addDays($d)->translatedFormat('D') }}</div>@endfor
     @for($day = $gridStart; $day <= $gridEnd; $day = $day->addDay())
-        <div @class(['month-cell', 'other' => ! $day->isSameMonth($month), 'today' => $day->isToday()])>
+        <div @class(['month-cell', 'other' => ! $day->isSameMonth($month), 'today' => $day->isToday()]) data-date="{{ $day->toDateString() }}">
             <span class="month-num">{{ $day->day }}</span>
+            @if($me->isAdmin() && ! $day->isBefore(today()))
+                <a href="{{ route('social.contents.create', array_filter(['date' => $day->toDateString(), 'account' => $accountId])) }}" class="month-add" title="{{ __('social.add_on_day', ['date' => $day->translatedFormat('j F')]) }}" aria-label="{{ __('social.add_on_day', ['date' => $day->translatedFormat('j F')]) }}"><x-icon name="plus" :size="14" /></a>
+            @endif
             @foreach($pubs[$day->toDateString()] ?? [] as $pub)
-                <a href="{{ $me->isAdmin() ? route('social.contents.edit', $pub->content_id) : route('publications.index').'#p'.$pub->id }}" @class(['month-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) @isset($licFlags[$pub->id]) title="{{ __('lic.calendar_flag') }}: {{ $licFlags[$pub->id]->implode(' ') }}" @endisset>
+                <a href="{{ $me->isAdmin() ? route('social.contents.edit', $pub->content_id) : route('publications.index').'#p'.$pub->id }}" @class(['month-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) @isset($licFlags[$pub->id]) data-lic="{{ __('lic.calendar_flag') }}: {{ $licFlags[$pub->id]->implode(' ') }}" @endisset
+                    data-peek="{{ json_encode($pub->peek()) }}" data-time="{{ $pub->scheduled_at->format('H:i') }}"
+                    @if($me->isAdmin() && $pub->status === 'planned') draggable="true" data-move="{{ route('social.publications.reschedule', $pub) }}" @endif>
                     @isset($licFlags[$pub->id])<x-icon name="shield" :size="13" class="lic-flag-icon" />@endisset
                     <x-platform :platform="$pub->platform" :size="16" />
                     <span>{{ $pub->scheduled_at->format('H:i') }} {{ $pub->content->title }}</span>
@@ -40,4 +45,6 @@
         </div>
     @endfor
 </section>
+@if($me->isAdmin())<p class="muted small cal-hint"><x-icon name="cursor" :size="14" /> {{ __('social.drag_hint') }}</p>@endif
 @endsection
+@push('scripts')<script src="{{ asset('js/calendar-plan.js') }}?v=1"></script>@endpush

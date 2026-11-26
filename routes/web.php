@@ -177,6 +177,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::post('/ads-import', [$ad, 'import'])->name('ads.import');
         Route::post('/campaigns/{campaign}/utm', [\App\Http\Controllers\Social\UtmController::class, 'store'])->name('utm.store');
         Route::delete('/utm/{link}', [\App\Http\Controllers\Social\UtmController::class, 'destroy'])->name('utm.destroy');
+        Route::patch('/publications/{publication}/reschedule', [\App\Http\Controllers\Social\PublicationController::class, 'reschedule'])->name('publications.reschedule');
         // Połączenia z API platform (włączane w Administracja → Integracje).
         $cn = \App\Http\Controllers\Social\ConnectController::class;
         Route::get('/accounts/{account}/connect', [$cn, 'redirect'])->name('connect');

@@ -126,4 +126,9 @@ return [
     'stats_due' => '{1} Enter stats: 1 publication|[2,*] Enter stats: :n publications',
     'awaiting_count' => '{1} Client approval: 1 post waiting|[2,*] Client approval: :n posts waiting',
     'campaigns_nav' => 'Campaigns',
+    'move_only_planned' => 'Only planned publications can be moved.',
+    'moved' => 'Moved to: :date',
+    'add_on_day' => 'New post on :date',
+    'drag_hint' => 'Drag a post to another day to reschedule. Hover to preview; “+” on a day adds a new post.',
+    'dblclick_hint' => 'Double-click to add a post at this time; drag a post to reschedule.',
 ];

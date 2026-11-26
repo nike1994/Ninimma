@@ -47,6 +47,11 @@ leady, przychód) — ręcznie albo importem CSV z menedżera reklam (dopasowani
 CPM, koszt wyniku, ROAS. Lista promocji z filtrami i paskiem wykorzystania budżetu, alert przed końcem, start i koniec
 według dat (cron). Budżet kampanii: wydane vs planowane. Generator linków UTM. Raport: wyniki płatne osobno od organicznych.
 
+**Planowanie w kalendarzu.** Przeciąganie postów na inny dzień (kalendarz miesięczny) albo dzień i godzinę (tydzień
+na pulpicie social media) — z tymi samymi zasadami co formularz (licencje, okres promocji przesuwa się razem z postem,
+automatyczna publikacja dostaje nową szansę). „+” w dniu i dwuklik w godzinę tygodnia zakładają post z tym terminem
+(i kontem z filtra). Po najechaniu — podgląd: grafika, opis, hashtagi, status, akceptacja klienta, licencja.
+
 **Strażnik licencji (influencerzy / UGC).** Każdy materiał ma licencję od–do, kanały użycia (posty, reklamy, strona,
 e-mail, druk) i zasadę „zdjąć po końcu” — domyślnie przejmowane z umowy współpracy. Materiał podpina się do treści
 (a przez nią do publikacji) i do reklam. Panel wykrywa konflikty: publikacja po końcu / przed startem licencji, reklama

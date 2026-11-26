@@ -81,12 +81,15 @@
             <div class="week-hours"><span></span>@foreach($hours as $h)<span>{{ sprintf('%02d:00', $h) }}</span>@endforeach</div>
             @for($d = 0; $d < 7; $d++)
                 @php($day = $weekStart->addDays($d))
-                <div @class(['week-day', 'today' => $day->isToday()])>
+                <div @class(['week-day', 'today' => $day->isToday()]) data-date="{{ $day->toDateString() }}">
                     <div class="week-day-head"><strong>{{ $day->translatedFormat('D') }}</strong><small>{{ $day->translatedFormat('j M') }}</small></div>
-                    <div class="week-slots">
+                    <div class="week-slots" data-create="{{ route('social.contents.create', ['date' => $day->toDateString()]) }}" title="{{ __('social.dblclick_hint') }}">
                         @foreach($week->filter(fn ($p) => $p->scheduled_at->isSameDay($day)) as $pub)
                             @php($pos = max(0, min(100, (($pub->scheduled_at->hour + $pub->scheduled_at->minute / 60) - 8) / 13 * 100)))
-                            <a href="{{ route('social.contents.edit', $pub->content_id) }}" @class(['week-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) style="top: {{ $pos }}%" title="{{ $pub->scheduled_at->format('H:i') }} · {{ $pub->account->name }} · {{ $pub->content->title }}@isset($licFlags[$pub->id]) — {{ $licFlags[$pub->id]->implode(' ') }}@endisset">
+                            <a href="{{ route('social.contents.edit', $pub->content_id) }}" @class(['week-item', $pub->status, 'lic-flagged' => isset($licFlags[$pub->id])]) style="top: {{ $pos }}%"
+                                data-peek="{{ json_encode($pub->peek()) }}" data-time="{{ $pub->scheduled_at->format('H:i') }}"
+                                @isset($licFlags[$pub->id]) data-lic="{{ __('lic.calendar_flag') }}: {{ $licFlags[$pub->id]->implode(' ') }}" @endisset
+                                @if($pub->status === 'planned') draggable="true" data-move="{{ route('social.publications.reschedule', $pub) }}" @endif>
                                 @include('social._thumb', ['pub' => $pub])
                                 @isset($licFlags[$pub->id])<span class="lic-flag" aria-label="{{ __('lic.calendar_flag') }}"><x-icon name="shield" :size="11" /></span>@endisset
                                 <i class="status-bar"></i>
@@ -227,5 +230,6 @@
 @endsection
 @push('scripts')
 <script src="{{ asset('js/dashboard.js') }}?v=3"></script>
+<script src="{{ asset('js/calendar-plan.js') }}?v=1"></script>
 <script>document.querySelectorAll('[data-toggle]').forEach(b => b.addEventListener('click', () => { const t = document.querySelector(b.dataset.toggle); t.hidden = !t.hidden; t.querySelector('input')?.focus(); }));</script>
 @endpush

@@ -70,7 +70,7 @@
                 @endforeach
             @else
                 @foreach($pubs as $i => $p) @include('social.contents._pub', ['i' => $i, 'p' => $p]) @endforeach
-                @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null])
+                @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null, 'o' => $prefill ?? null])
             @endif
         </div>
         <template data-pub-template>@include('social.contents._pub', ['i' => '__I__', 'p' => null])</template>

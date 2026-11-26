@@ -29,8 +29,17 @@ class ContentController extends Controller
 
     public function create(Request $request)
     {
-        return $this->form(new Content(['client_id' => $request->integer('client') ?: null, 'stage' => $request->query('stage', 'idea'),
-            'campaign_id' => $request->integer('campaign') ?: null]));
+        // Z kalendarza: kliknięty dzień (i godzina) oraz konto z filtra trafiają do pierwszej publikacji.
+        $account = $request->integer('account') ? SocialAccount::find($request->integer('account')) : null;
+        $date = $request->query('date');
+        $prefill = null;
+        if ($date && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $time = preg_match('/^\d{2}:\d{2}$/', (string) $request->query('time')) ? $request->query('time') : '12:00';
+            $prefill = ['scheduled_at' => $date.'T'.$time, 'social_account_id' => $account?->id, 'status' => 'planned', 'auto_publish' => 1];
+        }
+
+        return $this->form(new Content(['client_id' => $request->integer('client') ?: $account?->client_id, 'stage' => $request->query('stage', $prefill ? 'preparing' : 'idea'),
+            'campaign_id' => $request->integer('campaign') ?: null]), $prefill);
     }
 
     public function edit(Content $content)
@@ -38,10 +47,11 @@ class ContentController extends Controller
         return $this->form($content->load(['publications', 'files.file', 'materials']));
     }
 
-    private function form(Content $content)
+    private function form(Content $content, ?array $prefill = null)
     {
         return view('social.contents.form', [
             'content' => $content,
+            'prefill' => $prefill,
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'accounts' => SocialAccount::where('is_active', true)->orderBy('name')->get(),
             'campaigns' => \App\Models\Campaign::where('status', '!=', 'finished')->orWhere('id', $content->campaign_id)->orderBy('name')->get(),
