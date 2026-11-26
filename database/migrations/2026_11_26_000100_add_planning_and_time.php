@@ -32,6 +32,7 @@ return new class extends Migration
         Schema::dropIfExists('time_entries');
         Schema::table('tickets', function (Blueprint $table) {
             $table->dropConstrainedForeignId('assigned_to');
+            $table->dropIndex(['due_on']); // najpierw indeks, potem kolumna (SQLite/MySQL)
             $table->dropColumn(['priority', 'due_on', 'started_at']);
         });
     }
