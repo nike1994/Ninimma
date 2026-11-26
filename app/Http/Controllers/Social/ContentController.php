@@ -102,7 +102,35 @@ class ContentController extends Controller
     private function syncMaterials(Request $request, Content $content): void
     {
         $ids = $request->validate(['material_ids' => ['array'], 'material_ids.*' => ['integer', 'exists:materials,id']])['material_ids'] ?? [];
-        $content->materials()->sync($ids);
+        $this->attachedMaterials = $content->materials()->sync($ids)['attached'];
+    }
+
+    /** Materiały dopięte w tym zapisie (wymuszają sprawdzenie licencji istniejących promocji). */
+    private array $attachedMaterials = [];
+
+    /**
+     * Licencja materiałów: po wygaśnięciu nie można zaplanować ani opublikować nowego posta z materiałem (także fragmentem)
+     * ani go promować. Już opublikowane posty bez zmian nie są blokowane (pilnuje ich lista konfliktów).
+     */
+    private function checkLicense(Publication $pub, $materials, int|string $i, array &$errors): void
+    {
+        if ($materials->isEmpty() || $pub->status === 'cancelled') {
+            return;
+        }
+        $newPost = ! $pub->exists || $pub->isDirty(['scheduled_at', 'status']) || $pub->status === 'planned';
+        if ($newPost && ($pub->status === 'planned' || $pub->getOriginal('status') !== 'published')) {
+            foreach (LicenseGuard::publishBlockers($materials, $pub->scheduled_at) as $msg) {
+                $errors['pubs.'.$i.'.scheduled_at'][] = $msg;
+            }
+        }
+        $promoChanged = ! $pub->exists || $pub->isDirty(['promoted', 'promo_from', 'promo_to', 'scheduled_at']) || $this->attachedMaterials;
+        if ($pub->promoted && $promoChanged) {
+            $promoMaterials = $pub->exists && ! $pub->isDirty(['promoted', 'promo_from', 'promo_to', 'scheduled_at'])
+                ? $materials->whereIn('id', $this->attachedMaterials) : $materials;
+            foreach (LicenseGuard::promoteBlockers($promoMaterials, $pub->promo_from ?? $pub->scheduled_at, $pub->promo_to) as $msg) {
+                $errors['pubs.'.$i.'.promoted'][] = $msg;
+            }
+        }
     }
 
     /** Publikacje tej treści na poszczególnych kontach (dodawanie, zmiana, usuwanie). */
@@ -124,7 +152,9 @@ class ContentController extends Controller
             'pubs.*.visible_to_client' => ['nullable', 'boolean'],
         ])['pubs'] ?? [];
 
-        foreach ($rows as $row) {
+        $materials = $content->materials()->get();
+        $licenseErrors = [];
+        foreach ($rows as $i => $row) {
             $pub = ! empty($row['id']) ? $content->publications()->find($row['id']) : null;
             if (! empty($row['remove'])) {
                 $pub?->delete();
@@ -158,8 +188,13 @@ class ContentController extends Controller
             if ($status !== 'published') {
                 $pub->published_at = null;
             }
+            $this->checkLicense($pub, $materials, $i, $licenseErrors);
             $pub->save();
             app(\App\Services\AdService::class)->syncFromPublication($pub);
+        }
+
+        if ($licenseErrors) {
+            throw \Illuminate\Validation\ValidationException::withMessages($licenseErrors);
         }
 
         // Treść z zaplanowaną publikacją jest gotowa.

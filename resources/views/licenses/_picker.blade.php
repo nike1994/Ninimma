@@ -3,12 +3,14 @@
 <div class="mat-picker" data-mat-picker>
     @forelse($materials as $m)
         @php($st = \App\Services\LicenseGuard::status($m))
-        <label class="mat-opt lic-{{ $st->state }}" data-client="{{ $m->collaboration->campaign->client_id }}">
-            <input type="{{ $multiple ? 'checkbox' : 'radio' }}" name="{{ $name }}" value="{{ $m->id }}" @checked(in_array($m->id, $selected))>
+        @php($locked = $st->state === 'expired' && ! in_array($m->id, $selected))
+        <label @class(['mat-opt', 'lic-'.$st->state, 'locked' => $locked]) data-client="{{ $m->collaboration->campaign->client_id }}" @if($locked) title="{{ __('lic.picker_expired') }}" @endif>
+            <input type="{{ $multiple ? 'checkbox' : 'radio' }}" name="{{ $name }}" value="{{ $m->id }}" @checked(in_array($m->id, $selected)) @disabled($locked)>
             <x-license-ring :material="$m" :size="40" />
             <span class="mat-opt-body">
                 <strong>{{ $m->description }}</strong>
                 <small class="muted">{{ $m->collaboration->influencer->name }} · {{ $m->collaboration->campaign->name }}</small>
+                @if($st->state === 'expired')<small class="error">{{ __('lic.picker_expired') }}</small>@endif
                 <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach</small>
             </span>
         </label>

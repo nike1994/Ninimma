@@ -53,7 +53,9 @@ e-mail, druk) i zasadę „zdjąć po końcu” — domyślnie przejmowane z umo
 dłuższa niż licencja lub trwająca po końcu, kanał nieobjęty licencją, opublikowany post do zdjęcia. Ekran „Licencje”:
 liczniki-pierścienie, oś czasu z dziś, postami i reklamami, przedłużenia z kosztem (wchodzi do kosztów kampanii)
 i historią. Ostrzeżenia w formularzu treści i reklamy, w kalendarzach, na pulpitach i w karcie współpracy; klient widzi
-termin i kanały swoich materiałów. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
+termin i kanały swoich materiałów. Blokady: po wygaśnięciu licencji (albo przed jej startem) nie da się zaplanować
+ani opublikować nowego posta z materiałem lub jego fragmentem, promować posta ani utworzyć/wznowić reklamy z nim;
+promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
 
 **Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
 współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem

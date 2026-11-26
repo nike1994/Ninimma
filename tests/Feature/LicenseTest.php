@@ -61,42 +61,65 @@ class LicenseTest extends TestCase
         $this->assertSame('none', LicenseGuard::status($m)->state);
     }
 
-    public function test_content_with_material_flags_publication_after_expiry_and_ad_channel(): void
+    public function test_publishing_and_promoting_outside_license_is_blocked(): void
     {
         $this->setUpWorld();
         $m = $this->collab->materials()->create(['description' => 'Rolka', 'is_received' => true, 'license_from' => $this->collab->license_from,
             'license_until' => $this->collab->license_to, 'license_channels' => ['organic']]);
+        $base = ['client_id' => $this->acc->client_id, 'title' => 'Repost', 'type' => 'reel', 'format' => 'video', 'stage' => 'ready', 'material_ids' => [$m->id]];
+        $at = fn ($d) => today()->addDays($d)->setTime(12, 0)->format('Y-m-d H:i');
 
-        $this->post(route('social.contents.store'), [
-            'client_id' => $this->acc->client_id, 'title' => 'Repost', 'type' => 'reel', 'format' => 'video', 'stage' => 'ready', 'material_ids' => [$m->id],
-            'pubs' => [
-                ['social_account_id' => $this->acc->id, 'scheduled_at' => today()->addDays(2)->setTime(12, 0)->format('Y-m-d H:i')],
-                ['social_account_id' => $this->acc->id, 'scheduled_at' => today()->addDays(9)->setTime(12, 0)->format('Y-m-d H:i')],
-            ],
-        ])->assertRedirect();
+        // Post po końcu licencji (licencja do +5 dni) — zablokowany, nic się nie zapisuje.
+        $this->post(route('social.contents.store'), $base + ['pubs' => [['social_account_id' => $this->acc->id, 'scheduled_at' => $at(9)]]])
+            ->assertSessionHasErrors('pubs.0.scheduled_at');
+        $this->assertSame(0, Content::count());
+
+        // W okresie licencji — OK; promowanie posta przy licencji tylko na posty — zablokowane.
+        $this->post(route('social.contents.store'), $base + ['pubs' => [['social_account_id' => $this->acc->id, 'scheduled_at' => $at(2),
+            'promoted' => 1, 'promo_budget' => 200, 'promo_to' => today()->addDays(4)->toDateString()]]])->assertSessionHasErrors('pubs.0.promoted');
+        $this->post(route('social.contents.store'), $base + ['pubs' => [['social_account_id' => $this->acc->id, 'scheduled_at' => $at(2)]]])->assertSessionHasNoErrors();
         $content = Content::first();
+        $pub = Publication::first();
         $this->assertSame([$m->id], $content->materials->pluck('id')->all());
 
+        // Zgoda na reklamy: promocja dłuższa niż licencja albo bez daty końca — zablokowana; w licencji — OK.
+        $m->update(['license_channels' => ['organic', 'paid']]);
+        $row = ['id' => $pub->id, 'social_account_id' => $this->acc->id, 'scheduled_at' => $at(2), 'promoted' => 1, 'promo_budget' => 200];
+        $this->put(route('social.contents.update', $content), $base + ['pubs' => [$row + ['promo_to' => today()->addDays(20)->toDateString()]]])->assertSessionHasErrors('pubs.0.promoted');
+        $this->put(route('social.contents.update', $content), $base + ['pubs' => [$row]])->assertSessionHasErrors('pubs.0.promoted');
+        $this->assertFalse($pub->fresh()->promoted);
+        $this->put(route('social.contents.update', $content), $base + ['pubs' => [$row + ['promo_to' => today()->addDays(5)->toDateString()]]])->assertSessionHasNoErrors();
+        $this->assertTrue($pub->fresh()->promoted);
+
+        // Reklama z materiałem: dłuższa niż licencja — zablokowana; w licencji — OK.
+        $ad = ['client_id' => $this->acc->client_id, 'platform' => 'meta', 'name' => 'Dark post', 'objective' => 'reach', 'budget' => 300, 'status' => 'planned',
+            'starts_on' => today()->toDateString(), 'material_id' => $m->id];
+        $this->post(route('social.ads.store'), $ad + ['ends_on' => today()->addDays(20)->toDateString()])->assertSessionHasErrors('material_id');
+        $this->post(route('social.ads.store'), $ad + ['ends_on' => today()->addDays(5)->toDateString()])->assertSessionHasNoErrors();
+        $created = AdCampaign::where('material_id', $m->id)->first();
+
+        // Licencja wygasła: nowego posta ani reklamy nie da się dodać, wznowienie reklamy zablokowane, cron jej nie uruchomi.
+        $m->update(['license_from' => today()->subDays(30), 'license_until' => today()->subDay()]);
+        $this->post(route('social.ads.store'), $ad + ['ends_on' => today()->addDays(3)->toDateString()])->assertSessionHasErrors('material_id');
+        $created->update(['status' => 'paused']);
+        $this->put(route('social.ads.update', $created), ['status' => 'active', 'ends_on' => today()->addDays(3)->toDateString()] + $ad)->assertSessionHasErrors('material_id');
+        $this->put(route('social.contents.update', $content), $base + ['pubs' => [['social_account_id' => $this->acc->id, 'scheduled_at' => $at(1)]]])
+            ->assertSessionHasErrors('pubs.0.scheduled_at');
+        $created->update(['status' => 'planned']);
+        app(\App\Services\AdService::class)->updateStatuses();
+        $this->assertSame('planned', $created->fresh()->status);
+
+        // Istniejące rzeczy zostają na liście konfliktów i w kalendarzu.
         $guard = app(LicenseGuard::class);
-        $issues = $guard->issuesFor($m);
-        $this->assertSame(['publish_after_expiry'], $issues->pluck('type')->all());
-        $late = Publication::orderByDesc('scheduled_at')->first();
-        $this->assertSame($late->id, $issues->first()->publication_id);
-        $this->assertTrue($guard->issuesByPublication()->has($late->id));
-        $this->assertCount(1, $guard->issuesForContent($content));
-
-        // Reklama z materiałem bez zgody na reklamy, dłuższa niż licencja.
-        $this->post(route('social.ads.store'), ['client_id' => $this->acc->client_id, 'platform' => 'meta', 'name' => 'Dark post', 'objective' => 'reach',
-            'budget' => 300, 'status' => 'planned', 'starts_on' => today()->toDateString(), 'ends_on' => today()->addDays(20)->toDateString(), 'material_id' => $m->id])->assertRedirect();
-        $this->assertSame($m->id, AdCampaign::first()->material_id);
-        $types = $guard->issuesFor($m)->pluck('type')->sort()->values()->all();
-        $this->assertSame(['ad_beyond_license', 'channel_paid', 'publish_after_expiry'], $types);
-
-        // Ostrzeżenia widać w formularzu, kalendarzu i na ekranie licencji.
+        $types = $guard->issuesFor($m)->pluck('type')->unique()->sort()->values()->all();
+        $this->assertContains('publish_after_expiry', $types);
+        $this->assertTrue($guard->issuesByPublication()->has($pub->id));
         $this->get(route('social.contents.edit', $content))->assertOk()->assertSee(__('lic.type_publish_after_expiry'));
-        $this->get(route('social.calendar', ['month' => today()->addDays(9)->format('Y-m')]))->assertOk()->assertSee('lic-flagged');
-        $this->get(route('licenses.index', ['filter' => 'conflicts']))->assertOk()->assertSee('Rolka')->assertSee(__('lic.type_channel_paid'));
-        $this->get(route('social.ads.edit', AdCampaign::first()))->assertOk()->assertSee(__('lic.type_channel_paid'));
+        $this->get(route('social.calendar', ['month' => $pub->scheduled_at->format('Y-m')]))->assertOk()->assertSee('lic-flagged');
+        $this->get(route('licenses.index', ['filter' => 'conflicts']))->assertOk()->assertSee('Rolka');
+
+        // W wyborze materiałów wygasły jest zablokowany dla nowych treści.
+        $this->get(route('social.contents.create'))->assertOk()->assertSee(__('lic.picker_expired'));
     }
 
     public function test_extension_updates_license_records_history_and_counts_in_campaign_costs(): void

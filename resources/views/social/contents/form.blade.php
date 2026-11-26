@@ -61,6 +61,9 @@
     <section class="card stack">
         <h2><x-icon name="share" /> {{ __('social.publications') }}</h2>
         <p class="muted small">{{ __('social.publications_hint') }}</p>
+        @if($errors->has('pubs.*'))
+            <div class="lic-issues">@foreach(collect($errors->get('pubs.*'))->flatten()->unique() as $msg)<div class="lic-issue lic-issue-error"><x-icon name="lock" :size="16" /><span>{{ $msg }}</span></div>@endforeach</div>
+        @endif
         <div data-pubs>
             @php($pubs = $content->exists ? $content->publications()->with('measurements')->orderBy('scheduled_at')->get() : collect())
             @foreach($pubs as $i => $p) @include('social.contents._pub', ['i' => $i, 'p' => $p]) @endforeach

@@ -155,7 +155,9 @@ class AdService
     /** Cron: planowane → aktywne w dniu startu, aktywne → zakończone po dacie końca. */
     public function updateStatuses(): array
     {
+        // Reklama z materiałem po wygaśnięciu licencji nie startuje sama (zostaje jako konflikt do decyzji).
         $started = AdCampaign::where('status', 'planned')->whereNotNull('starts_on')->whereDate('starts_on', '<=', today())
+            ->whereDoesntHave('material', fn ($m) => $m->whereNotNull('license_until')->whereDate('license_until', '<', today()))
             ->where(fn ($q) => $q->whereNull('ends_on')->orWhereDate('ends_on', '>=', today()))->update(['status' => 'active']);
         $finished = AdCampaign::whereIn('status', ['planned', 'active'])->whereNotNull('ends_on')->whereDate('ends_on', '<', today())->update(['status' => 'finished']);
 

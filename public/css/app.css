@@ -1111,3 +1111,4 @@ a.kpi { color: var(--text); }
 .lic-bar-short span { position: absolute; left: calc(100% + 6px); color: var(--navy) !important; background: rgba(255, 255, 255, .9); border-radius: 99px; z-index: 4; }
 .lic-bar-flip span { left: auto; right: calc(100% + 6px); }
 .kpi-dark small { color: #cfe3f3; }
+.mat-opt.locked { opacity: .6; cursor: not-allowed; }

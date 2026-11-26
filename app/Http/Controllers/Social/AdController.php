@@ -65,14 +65,18 @@ class AdController extends Controller
 
     public function store(Request $request)
     {
-        $ad = AdCampaign::create($this->validated($request));
+        $data = $this->validated($request);
+        $this->checkLicense(new AdCampaign, $data);
+        $ad = AdCampaign::create($data);
 
         return redirect()->route('social.ads.edit', $ad)->with('status', __('ui.saved'));
     }
 
     public function update(Request $request, AdCampaign $ad)
     {
-        $ad->update($this->validated($request));
+        $data = $this->validated($request);
+        $this->checkLicense($ad, $data);
+        $ad->update($data);
 
         return back()->with('status', __('ui.saved'));
     }
@@ -113,6 +117,33 @@ class AdController extends Controller
 
         return back()->with('status', trans_choice('ads.imported', $saved, ['n' => $saved]))
             ->with('unmatched', $unmatched);
+    }
+
+    /**
+     * Reklama z materiałem influencera (bezpośrednio albo przez promowany post): po wygaśnięciu licencji
+     * nie można jej utworzyć ani wznowić, a jej okres musi mieścić się w licencji.
+     */
+    private function checkLicense(AdCampaign $ad, array $data): void
+    {
+        if (! in_array($data['status'], ['planned', 'active'], true)) {
+            return;
+        }
+        $materials = collect();
+        if ($data['material_id']) {
+            $materials->push(\App\Models\Material::find($data['material_id']));
+        }
+        if ($ad->publication) {
+            $materials = $materials->merge($ad->publication->content->materials);
+        }
+        $ad->fill($data);
+        $relevant = ! $ad->exists || $ad->isDirty(['status', 'starts_on', 'ends_on', 'material_id']);
+        if (! $relevant || $materials->isEmpty()) {
+            return;
+        }
+        $errors = \App\Services\LicenseGuard::promoteBlockers($materials->unique('id'), $data['starts_on'], $data['ends_on']);
+        if ($errors) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['material_id' => $errors]);
+        }
     }
 
     private function validated(Request $request): array

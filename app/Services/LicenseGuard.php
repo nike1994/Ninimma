@@ -151,6 +151,55 @@ class LicenseGuard
             ->filter(fn ($i) => $i->content_id === $content->id)->values();
     }
 
+    /**
+     * Blokada publikacji: nowy post (także z fragmentem materiału) tylko w okresie licencji i gdy obejmuje posty.
+     * Zwraca listę komunikatów (pusta = można publikować).
+     */
+    public static function publishBlockers(iterable $materials, \DateTimeInterface $at): array
+    {
+        $day = \Illuminate\Support\Carbon::instance($at)->startOfDay();
+        $out = [];
+        foreach ($materials as $m) {
+            if ($m->license_until && $day->isAfter($m->license_until)) {
+                $out[] = __('lic.block_publish_expired', ['material' => $m->description, 'until' => $m->license_until->format('d.m.Y'), 'date' => $day->format('d.m.Y')]);
+            } elseif ($m->license_from && $day->isBefore($m->license_from)) {
+                $out[] = __('lic.block_publish_before', ['material' => $m->description, 'from' => $m->license_from->format('d.m.Y'), 'date' => $day->format('d.m.Y')]);
+            }
+            if (! $m->allows('organic')) {
+                $out[] = __('lic.block_channel_organic', ['material' => $m->description]);
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Blokada reklamy / promowania posta z materiałem: cały okres promocji musi mieścić się w licencji,
+     * licencja musi obejmować reklamy, a przy licencji z datą końca promocja musi mieć datę końca.
+     */
+    public static function promoteBlockers(iterable $materials, $from, $to): array
+    {
+        $from = $from ? \Illuminate\Support\Carbon::parse($from)->startOfDay() : today();
+        $to = $to ? \Illuminate\Support\Carbon::parse($to)->startOfDay() : null;
+        $out = [];
+        foreach ($materials as $m) {
+            $p = ['material' => $m->description, 'until' => $m->license_until?->format('d.m.Y'), 'from' => $m->license_from?->format('d.m.Y')];
+            if (! $m->allows('paid')) {
+                $out[] = __('lic.block_channel_paid', $p);
+            } elseif ($m->license_until && $m->license_until->isBefore(max($from, today()))) {
+                $out[] = __('lic.block_promote_expired', $p);
+            } elseif ($m->license_until && ! $to) {
+                $out[] = __('lic.block_promote_no_end', $p);
+            } elseif ($m->license_until && $to->isAfter($m->license_until)) {
+                $out[] = __('lic.block_promote_beyond', $p);
+            } elseif ($m->license_from && $from->isBefore($m->license_from)) {
+                $out[] = __('lic.block_promote_before', $p);
+            }
+        }
+
+        return $out;
+    }
+
     /** Materiały do wyboru w treściach i reklamach (otrzymane, aktywnych współprac). */
     public static function pickerMaterials(array $keep = []): Collection
     {
