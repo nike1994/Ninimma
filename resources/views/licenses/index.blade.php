@@ -56,7 +56,7 @@
         @endphp
         <article class="lic-row lic-{{ $m->lic->state }}" id="m{{ $m->id }}">
             <div class="lic-main">
-                <x-material-thumb :material="$m" :size="64" />
+                <x-material-thumb :material="$m" :size="64" :player="true" />
                 <x-license-ring :material="$m" :size="58" />
                 <div class="lic-info">
                     <strong>{{ $m->description }}</strong>
@@ -114,8 +114,17 @@
                             </div>
                             @include('licenses._channels', ['selected' => $m->license_channels])
                             <label class="check"><input type="checkbox" name="requires_takedown" value="1" @checked($m->requires_takedown)> {{ __('lic.requires_takedown') }}</label>
+                            <label class="check"><input type="checkbox" name="client_download" value="1" @checked($m->client_download)> {{ __('files.client_download_label') }}</label>
                             <button class="btn btn-small">{{ __('ui.save') }}</button>
                         </form>
+                        @if($m->file)
+                            <h3><x-icon name="eye" :size="16" /> {{ __('files.access_log') }}</h3>
+                            <ul class="access-log">
+                                @forelse($access[$m->file_usage_id] ?? [] as $a)
+                                    <li @class(['blocked' => $a->action === 'blocked'])>{{ \Illuminate\Support\Carbon::parse($a->created_at)->format('d.m H:i') }} · {{ $a->name }} · {{ __('files.access_'.$a->action) }}</li>
+                                @empty<li class="muted">{{ __('files.no_access') }}</li>@endforelse
+                            </ul>
+                        @endif
                         @if($m->extensions->isNotEmpty())
                             <h3><x-icon name="history" :size="16" /> {{ __('lic.history') }}</h3>
                             <ul class="lic-history">@foreach($m->extensions as $e)<li><strong>{{ $e->previous_until?->format('d.m.Y') ?? '—' }} → {{ $e->new_until->format('d.m.Y') }}</strong>@if($e->cost) · {{ number_format($e->cost, 2, ',', ' ') }} zł @endif<small class="muted"> · {{ $e->user?->name }}, {{ $e->created_at->format('d.m.Y') }}@if($e->note) · {{ $e->note }}@endif</small></li>@endforeach</ul>

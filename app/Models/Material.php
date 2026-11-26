@@ -14,13 +14,13 @@ class Material extends Model
     public const KINDS = ['video', 'photo', 'story', 'other'];
 
     protected $fillable = ['collaboration_id', 'description', 'is_received', 'file_usage_id', 'publication_id', 'license_from', 'license_until',
-        'license_channels', 'requires_takedown', 'kind'];
+        'license_channels', 'requires_takedown', 'kind', 'client_download'];
 
-    protected $attributes = ['is_received' => false, 'requires_takedown' => false, 'kind' => 'video'];
+    protected $attributes = ['is_received' => false, 'requires_takedown' => false, 'kind' => 'video', 'client_download' => false];
 
     protected function casts(): array
     {
-        return ['is_received' => 'boolean', 'license_from' => 'date', 'license_until' => 'date', 'license_channels' => 'array', 'requires_takedown' => 'boolean'];
+        return ['is_received' => 'boolean', 'license_from' => 'date', 'license_until' => 'date', 'license_channels' => 'array', 'requires_takedown' => 'boolean', 'client_download' => 'boolean'];
     }
 
     public function contents(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

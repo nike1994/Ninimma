@@ -70,4 +70,11 @@ Schedule::call(function () {
         Storage::disk('local')->deleteDirectory($s->chunkDir());
         $s->delete();
     });
+    // Podglądy ze znakiem wodnym (z datą) — starsze niż 2 dni do usunięcia, odtworzą się przy potrzebie.
+    $disk = Storage::disk('local');
+    foreach ($disk->files('previews') as $f) {
+        if ($disk->lastModified($f) < now()->subDays(2)->timestamp) {
+            $disk->delete($f);
+        }
+    }
 })->daily()->name('cleanup-uploads');

@@ -12,7 +12,7 @@
     @forelse($materials as $m)
         <div class="content-card">
             <span class="content-img">
-                <x-material-thumb :material="$m" :size="72" :avatar="$me->isAdmin()" class="mat-thumb-cover" />
+                <x-material-thumb :material="$m" :size="72" :avatar="$me->isAdmin()" :player="true" class="mat-thumb-cover" />
                 @if($m->licenseExpired())<span class="pill pill-pink">{{ __('inf.license_expired') }}</span>@elseif($m->licenseExpiringSoon())<span class="pill pill-needs_decision">{{ __('inf.license_soon') }}</span>@elseif(! $m->is_received)<span class="pill">{{ __('inf.awaiting') }}</span>@endif
             </span>
             <span class="content-body">
@@ -24,7 +24,9 @@
                     <small class="lic-channels">@foreach(\App\Models\Material::CHANNELS as $ch)<span @class(['lic-ch', 'off' => ! $m->allows($ch)])>{{ __('lic.ch_'.$ch) }}</span>@endforeach</small></span>
                 </span>
                 @if($m->publication)<small class="muted"><x-platform :platform="$m->publication->platform" :size="14" /> {{ $m->publication->scheduled_at->format('d.m') }}</small>@endif
-                @if($m->file)<a href="{{ route('files.show', [$m->file, $m->file->name]) }}?download=1" class="small"><x-icon name="download" :size="14" /> {{ __('ui.download') }}</a>@endif
+                @if($m->file && ($me->isAdmin() || ($m->client_download && ! $m->licenseExpired())))<a href="{{ route('files.show', [$m->file, $m->file->name]) }}?download=1" class="small"><x-icon name="download" :size="14" /> {{ __('ui.download') }}</a>
+                @elseif($m->file)<span class="protect-note"><x-icon name="lock" :size="13" /> {{ $m->licenseExpired() ? __('files.license_locked') : __('files.view_only') }}</span>@endif
+                @if($me->isAdmin() && $m->file)<span class="protect-note"><x-icon :name="$m->client_download ? 'download' : 'shield'" :size="13" /> {{ $m->client_download ? __('files.client_can_download') : __('files.client_view_only') }}</span>@endif
                 @if($me->isAdmin())<a href="{{ route('collaborations.show', $m->collaboration) }}" class="small">{{ __('inf.open_collab') }}</a> <a href="{{ route('licenses.index') }}#m{{ $m->id }}" class="small">{{ __('lic.manage') }} →</a>@endif
             </span>
         </div>

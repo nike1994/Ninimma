@@ -1142,3 +1142,20 @@ a.kpi { color: var(--text); }
 .lic-ring > .lic-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
 .lic-ring > .lic-ring-text strong, .lic-ring > .lic-ring-text small { display: block; margin: 0; line-height: 1; }
 .lic-ring > .lic-ring-text small { margin-top: 2px; }
+
+/* Ochrona podglądu dla klienta */
+.mat-thumb-guard { position: absolute; inset: 0; z-index: 1; background-repeat: repeat; background-size: 260px 140px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.mat-thumb.is-protected img, .mat-thumb.is-protected video { pointer-events: none; -webkit-user-drag: none; user-select: none; }
+.mat-thumb.is-locked .mat-thumb-media { background: repeating-linear-gradient(135deg, #f3f6f9 0 8px, #e9eef4 8px 16px); }
+.mat-thumb[data-player] { cursor: pointer; }
+.mat-thumb[data-player]:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; border-radius: 14px; }
+.media-modal { position: fixed; inset: 0; z-index: 100; background: rgba(6, 22, 40, .82); display: grid; place-items: center; padding: 1rem; backdrop-filter: blur(4px); }
+.media-modal-box { position: relative; max-width: min(92vw, 900px); max-height: 90vh; }
+.media-modal-stage { position: relative; border-radius: 18px; overflow: hidden; background: #000; line-height: 0; }
+.media-modal-stage video { max-width: min(92vw, 900px); max-height: 84vh; display: block; }
+.media-modal-guard { position: absolute; inset: 0 0 52px 0; pointer-events: none; background-repeat: repeat; background-size: 260px 140px; }
+.media-modal-close { position: absolute; top: -14px; right: -14px; z-index: 2; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fff; color: var(--navy); font-size: 1.5rem; line-height: 1; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 0, 0, .3); }
+.protect-note { display: inline-flex; align-items: center; gap: .3rem; font-size: .75rem; color: var(--muted); }
+.access-log { list-style: none; margin: 0; padding: 0; font-size: .8rem; display: flex; flex-direction: column; gap: .2rem; }
+.access-log .blocked { color: var(--red); }
+@media print { .mat-thumb.is-protected, .client-pub-img { visibility: hidden; } }

@@ -58,7 +58,14 @@ ani opublikować nowego posta z materiałem lub jego fragmentem, promować posta
 promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy.
 Dodawanie: w karcie współpracy przeciąga się filmy/zdjęcia (kilka naraz) — każdy plik to materiał z licencją z umowy.
 Wszędzie widać miniaturę (kadr filmu ładowany, gdy widoczny, podgląd po najechaniu; bez ffmpeg na hostingu) z kółkiem
-profilu influencera. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
+profilu influencera.
+
+**Ochrona materiałów przed klientem.** Filmy i zdjęcia materiałów oraz projekty postów (do publikacji) klient widzi
+tylko w trybie chronionym: zdjęcia jako pomniejszona kopia ze znakiem wodnym (nazwa klienta + data, GD), filmy tylko
+w odtwarzaczu panelu (bez pobierania, bez menu, z nakładką znaku wodnego; bezpośredni link i `?download=1` → 403).
+Po wygaśnięciu licencji podgląd jest zablokowany. Oryginał klient pobierze dopiero po włączeniu „Klient może pobrać
+oryginał” przy materiale. Pobrania i zablokowane próby trafiają do dziennika (widoczny przy licencji materiału).
+Uwaga: nagrania ekranu nie da się technicznie zablokować — znak wodny wskazuje, od kogo pochodzi wyciek. E-mail do zespołu 30/14/7/1/0 dni przed końcem (cron 7:40, każdy próg raz).
 
 **Influencerzy.** Karty, etapy, tabela z filtrami („komu paczka nie dotarła”, „kto nie oddał materiałów”),
 współprace (umowa → brief → przesyłka → materiały → publikacja → rozliczenie), materiały z licencją i powiązaniem

@@ -24,6 +24,10 @@ class LicenseController extends Controller
             ->get();
 
         $issues = $this->guard->allIssues($clientId);
+        $access = \Illuminate\Support\Facades\DB::table('file_access_logs')->join('users', 'users.id', '=', 'file_access_logs.user_id')
+            ->whereIn('file_usage_id', $materials->pluck('file_usage_id')->filter())->where('users.role', '!=', 'admin')
+            ->orderByDesc('file_access_logs.id')->get(['file_usage_id', 'action', 'file_access_logs.created_at', 'users.name'])
+            ->groupBy('file_usage_id')->map(fn ($g) => $g->take(5));
         $withIssues = $issues->pluck('material.id')->unique();
         $materials = $materials->each(fn ($m) => $m->setAttribute('lic', LicenseGuard::status($m)))
             ->filter(fn ($m) => match ($filter) {
@@ -48,6 +52,7 @@ class LicenseController extends Controller
         return view('licenses.index', [
             'materials' => $materials,
             'issues' => $issues,
+            'access' => $access,
             'filter' => $filter,
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'counts' => [
@@ -72,12 +77,14 @@ class LicenseController extends Controller
             'license_channels.*' => [Rule::in(Material::CHANNELS)],
             'requires_takedown' => ['nullable', 'boolean'],
             'kind' => ['nullable', Rule::in(Material::KINDS)],
+            'client_download' => ['nullable', 'boolean'],
         ]);
         $material->update([
             'license_from' => $data['license_from'] ?? null,
             'license_until' => $data['license_until'] ?? null,
             'license_channels' => self::channels($data['license_channels'] ?? []),
             'requires_takedown' => $request->boolean('requires_takedown'),
+            'client_download' => $request->boolean('client_download'),
         ] + (isset($data['kind']) ? ['kind' => $data['kind']] : []));
 
         return back()->with('status', __('ui.saved'));
