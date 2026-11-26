@@ -12,6 +12,7 @@ use App\Services\FileStore;
 use App\Services\LicenseGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ContentController extends Controller
@@ -38,8 +39,43 @@ class ContentController extends Controller
             $prefill = ['scheduled_at' => $date.'T'.$time, 'social_account_id' => $account?->id, 'status' => 'planned', 'auto_publish' => 1];
         }
 
-        return $this->form(new Content(['client_id' => $request->integer('client') ?: $account?->client_id, 'stage' => $request->query('stage', $prefill ? 'preparing' : 'idea'),
-            'campaign_id' => $request->integer('campaign') ?: null]), $prefill);
+        $clientId = $request->integer('client') ?: $account?->client_id;
+        $defaults = $clientId ? Client::find($clientId)?->socialDefaults() : null;
+        $content = new Content(['client_id' => $clientId, 'stage' => $request->query('stage', $prefill ? 'preparing' : 'idea'),
+            'campaign_id' => $request->integer('campaign') ?: null]);
+        // Ustawienia domyślne klienta: hashtagi, typ, format i publikacje na zwykłych kontach o zwykłych godzinach.
+        $rows = null;
+        if ($defaults) {
+            $content->fill(['hashtags' => $defaults['hashtags'] ?: null, 'type' => $defaults['type'], 'format' => $defaults['format']]);
+            if (! $account && $defaults['accounts']) {
+                $day = $prefill ? substr($prefill['scheduled_at'], 0, 10) : null;
+                $rows = collect($defaults['accounts'])->map(fn ($a) => ['social_account_id' => $a['id'], 'status' => 'planned',
+                    'scheduled_at' => $day ? $day.'T'.($request->query('time') ?: $a['time']) : null,
+                    'visible_to_client' => $defaults['visible_to_client'] ? 1 : null, 'auto_publish' => $defaults['auto_publish'] ? 1 : null])->all();
+            }
+        }
+
+        return $this->form($content, $prefill, $rows);
+    }
+
+    /** Kopia treści jako punkt wyjścia dla podobnego posta (bez publikacji; pliki i materiały te same). */
+    public function duplicate(Request $request, Content $content)
+    {
+        $copy = DB::transaction(function () use ($request, $content) {
+            $copy = $content->replicate(['created_at', 'updated_at']);
+            $copy->fill(['title' => Str::limit($content->title.' '.__('social.copy_suffix'), 200, ''), 'stage' => 'preparing']);
+            $copy->created_by = $request->user()->id;
+            $copy->save();
+            foreach ($content->files as $f) {
+                \App\Models\FileUsage::create(['file_id' => $f->file_id, 'name' => $f->name, 'uploaded_by' => $request->user()->id,
+                    'usable_type' => 'content', 'usable_id' => $copy->id]);
+            }
+            $copy->materials()->sync($content->materials()->pluck('materials.id'));
+
+            return $copy;
+        });
+
+        return redirect()->route('social.contents.edit', $copy)->with('status', __('social.duplicated'));
     }
 
     public function edit(Content $content)
@@ -47,11 +83,13 @@ class ContentController extends Controller
         return $this->form($content->load(['publications', 'files.file', 'materials']));
     }
 
-    private function form(Content $content, ?array $prefill = null)
+    private function form(Content $content, ?array $prefill = null, ?array $defaultRows = null)
     {
         return view('social.contents.form', [
             'content' => $content,
             'prefill' => $prefill,
+            'defaultRows' => $defaultRows,
+            'hashtagSets' => Client::whereNotNull('social_defaults')->get()->mapWithKeys(fn ($c) => [$c->id => $c->socialDefaults()['hashtag_sets']])->filter(),
             'clients' => Client::where('is_active', true)->orderBy('name')->get(),
             'accounts' => SocialAccount::where('is_active', true)->orderBy('name')->get(),
             'campaigns' => \App\Models\Campaign::where('status', '!=', 'finished')->orWhere('id', $content->campaign_id)->orderBy('name')->get(),

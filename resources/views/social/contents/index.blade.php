@@ -3,7 +3,8 @@
 @section('content')
 <div class="page-head">
     <h1 class="page-title">{{ __('social.contents') }}</h1>
-    <a href="{{ route('social.contents.create') }}" class="btn btn-dark"><x-icon name="plus" :size="16" />{{ __('social.new_content') }}</a>
+    <div class="head-actions"><a href="{{ route('social.contents.batch', array_filter(['client' => request('client')])) }}" class="btn"><x-icon name="layers" :size="16" />{{ __('social.batch_link') }}</a>
+    <a href="{{ route('social.contents.create') }}" class="btn btn-dark"><x-icon name="plus" :size="16" />{{ __('social.new_content') }}</a></div>
 </div>
 <section class="card">
     <form class="filters">

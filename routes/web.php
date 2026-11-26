@@ -161,6 +161,9 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::middleware('admin')->prefix('social')->name('social.')->group(function () {
         Route::get('/', \App\Http\Controllers\Social\SocialDashboardController::class)->name('dashboard');
         Route::get('/calendar', \App\Http\Controllers\Social\CalendarController::class)->name('calendar');
+        Route::get('/contents/batch', [\App\Http\Controllers\Social\BatchController::class, 'create'])->name('contents.batch');
+        Route::post('/contents/batch', [\App\Http\Controllers\Social\BatchController::class, 'store'])->name('contents.batch.store');
+        Route::post('/contents/{content}/duplicate', [\App\Http\Controllers\Social\ContentController::class, 'duplicate'])->name('contents.duplicate');
         Route::resource('contents', \App\Http\Controllers\Social\ContentController::class)->except('show');
         Route::get('/stats', [\App\Http\Controllers\Social\StatsController::class, 'index'])->name('stats');
         Route::post('/stats', [\App\Http\Controllers\Social\StatsController::class, 'store']);

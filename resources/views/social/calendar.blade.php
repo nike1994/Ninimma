@@ -13,7 +13,8 @@
         <a href="{{ route($route, array_filter(['month' => $month->addMonth()->format('Y-m'), 'account' => $accountId])) }}" class="icon-btn icon-btn-sm"><x-icon name="chevron-right" :size="16" /></a>
     </div>
     @if($me->isAdmin())
-        <a href="{{ route('social.contents.create', ['stage' => 'preparing']) }}" class="btn btn-dark"><x-icon name="plus" :size="16" />{{ __('social.new_post') }}</a>
+        <div class="head-actions"><a href="{{ route('social.contents.batch', array_filter(['client' => $accounts->firstWhere('id', $accountId)?->client_id])) }}" class="btn"><x-icon name="layers" :size="16" />{{ __('social.batch_link') }}</a>
+        <a href="{{ route('social.contents.create', array_filter(['stage' => 'preparing', 'account' => $accountId])) }}" class="btn btn-dark"><x-icon name="plus" :size="16" />{{ __('social.new_post') }}</a></div>
     @endif
 </div>
 @if($accounts->isNotEmpty())

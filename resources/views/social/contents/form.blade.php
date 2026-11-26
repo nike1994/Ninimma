@@ -4,7 +4,10 @@
 <div class="page-head">
     <h1 class="page-title">{{ $content->exists ? $content->title : __('social.new_content') }}</h1>
     @if($content->exists)
+        <div class="head-actions">
+        <form method="post" action="{{ route('social.contents.duplicate', $content) }}">@csrf<button class="btn btn-small"><x-icon name="layers" :size="14" /> {{ __('social.duplicate') }}</button></form>
         <form method="post" action="{{ route('social.contents.destroy', $content) }}" onsubmit="return confirm('{{ __('ui.confirm_delete') }}')">@csrf @method('delete')<button class="btn btn-small">{{ __('social.delete') }}</button></form>
+        </div>
     @endif
 </div>
 <form method="post" action="{{ $content->exists ? route('social.contents.update', $content) : route('social.contents.store') }}" class="content-form" data-message-form>
@@ -38,7 +41,15 @@
             </select>
         </label>
         <x-field name="description" type="textarea" :label="__('ui.description')" :value="$content->description" rows="5" data-paste-target />
-        <x-field name="hashtags" :label="__('social.hashtags')" :value="$content->hashtags" placeholder="#marka #produkt" />
+        <x-field name="hashtags" :label="__('social.hashtags')" :value="$content->hashtags" placeholder="#marka #produkt" data-hashtags />
+        @if($hashtagSets->isNotEmpty())
+            <div class="tag-sets" data-tag-sets>
+                <small class="muted">{{ __('social.hashtag_sets') }}:</small>
+                @foreach($hashtagSets as $clientId => $sets)
+                    @foreach($sets as $set)<button type="button" class="chip chip-sm" data-client="{{ $clientId }}" data-tags="{{ $set['tags'] }}" title="{{ $set['tags'] }}">＃ {{ $set['name'] }}</button>@endforeach
+                @endforeach
+            </div>
+        @endif
         @if($content->exists && $content->files->isNotEmpty())
             <div class="content-files">
                 @foreach($content->files as $f)
@@ -70,7 +81,12 @@
                 @endforeach
             @else
                 @foreach($pubs as $i => $p) @include('social.contents._pub', ['i' => $i, 'p' => $p]) @endforeach
-                @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null, 'o' => $prefill ?? null])
+                @if(! empty($defaultRows))
+                    {{-- Zwykłe konta i godziny klienta (ustawienia domyślne z planowania seryjnego). --}}
+                    @foreach($defaultRows as $i => $row) @include('social.contents._pub', ['i' => $i, 'p' => null, 'o' => $row]) @endforeach
+                @else
+                    @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null, 'o' => $prefill ?? null])
+                @endif
             @endif
         </div>
         <template data-pub-template>@include('social.contents._pub', ['i' => '__I__', 'p' => null])</template>
@@ -80,7 +96,7 @@
 </form>
 @endsection
 @push('scripts')
-<script src="{{ asset('js/uploader.js') }}?v=3"></script>
+<script src="{{ asset('js/uploader.js') }}?v=4"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');
@@ -88,8 +104,15 @@
     let n = Math.max(-1, ...[...wrap.querySelectorAll('[data-pub-row] input[name$="[id]"]')].map(i => parseInt(i.name.match(/pubs\[(\d+)\]/)?.[1] ?? -1, 10))) + 1;
     // Konta tylko wybranego klienta.
     const client = document.querySelector('[data-client-select]');
-    const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client], [data-mat-picker] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));
+    const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client], [data-mat-picker] [data-client], [data-tag-sets] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));
     client.addEventListener('change', filter); filter();
+    // Zestaw hashtagów: dopisanie do pola (bez powtórzeń).
+    document.querySelectorAll('[data-tag-sets] [data-tags]').forEach(b => b.addEventListener('click', () => {
+        const input = document.querySelector('[data-hashtags]');
+        const have = new Set(input.value.split(/\s+/).filter(Boolean));
+        b.dataset.tags.split(/\s+/).filter(Boolean).forEach(t => have.add(t));
+        input.value = [...have].join(' ');
+    }));
     // „Publikuj automatycznie” tylko przy kontach połączonych z API.
     const autoToggle = row => {
         const sel = row.querySelector('[data-account-select]'), box = row.querySelector('[data-pub-auto]');

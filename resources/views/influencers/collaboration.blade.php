@@ -144,4 +144,4 @@
     </aside>
 </div>
 @endsection
-@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=3"></script>@endpush
+@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=4"></script>@endpush

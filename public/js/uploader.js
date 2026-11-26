@@ -158,6 +158,9 @@
         });
     }
 
+    // Do użycia przez inne ekrany (np. planowanie seryjne): wysyłka pliku w kawałkach + kadr filmu.
+    window.NinimmaUpload = { uploadFile, compressImage, videoPoster, post };
+
     document.querySelectorAll('[data-uploader]').forEach(initUploader);
     // Blokada wysłania formularza, dopóki trwa wysyłka plików.
     document.querySelectorAll('form[data-message-form]').forEach(form => form.addEventListener('submit', e => {

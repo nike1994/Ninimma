@@ -60,6 +60,7 @@
         <h2>{{ __('ui.quick_actions') }}</h2>
         <div class="quick-tiles">
             <a href="{{ route('social.contents.create', ['stage' => 'preparing']) }}" class="qt qt-green"><span><x-icon name="plus" :size="22" /></span>{{ __('social.new_post') }}</a>
+            <a href="{{ route('social.contents.batch', array_filter(['client' => $clientId])) }}" class="qt"><span><x-icon name="layers" :size="20" /></span>{{ __('social.batch_link') }}</a>
             <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="qt"><span><x-icon name="layers" :size="20" /></span>{{ __('social.new_campaign') }}</a>
             <a href="{{ route('social.stats') }}" class="qt"><span><x-icon name="bar-chart" :size="20" /></span>{{ __('social.enter_stats') }} @if($statsQueue->count())<em>{{ $statsQueue->count() }}</em>@endif</a>
             <a href="{{ route('social.ads.index') }}" class="qt"><span><x-icon name="zap" :size="20" /></span>{{ __('ads.title_short') }} @if($adsEnding)<em>{{ $adsEnding }}</em>@endif</a>

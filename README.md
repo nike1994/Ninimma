@@ -47,6 +47,11 @@ leady, przychód) — ręcznie albo importem CSV z menedżera reklam (dopasowani
 CPM, koszt wyniku, ROAS. Lista promocji z filtrami i paskiem wykorzystania budżetu, alert przed końcem, start i koniec
 według dat (cron). Budżet kampanii: wydane vs planowane. Generator linków UTM. Raport: wyniki płatne osobno od organicznych.
 
+**Planowanie seryjne.** Social media → Treści → „Planowanie seryjne”: klient, konta z godzinami, hashtagi, zestawy
+hashtagów i akceptacja klienta ustawiane raz; przeciągnięte grafiki/filmy stają się osobnymi postami (kolejność wg nazw,
+„+” dokłada pliki do karuzeli), „Rozłóż daty” przydziela kolejne wybrane dni tygodnia. Ustawienia zapamiętują się jako
+domyślne klienta i podpowiadają się też w zwykłym formularzu posta. Każdą treść można zduplikować.
+
 **Planowanie w kalendarzu.** Przeciąganie postów na inny dzień (kalendarz miesięczny) albo dzień i godzinę (tydzień
 na pulpicie social media) — z tymi samymi zasadami co formularz (licencje, okres promocji przesuwa się razem z postem,
 automatyczna publikacja dostaje nową szansę). „+” w dniu i dwuklik w godzinę tygodnia zakładają post z tym terminem

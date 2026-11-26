@@ -16,7 +16,17 @@ class Client extends Model
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['is_active' => 'boolean', 'social_defaults' => 'array'];
+    }
+
+    /**
+     * Ustawienia domyślne planowania social media:
+     * accounts: [{id, time}], hashtags, hashtag_sets: [{name, tags}], visible_to_client, auto_publish, type, format.
+     */
+    public function socialDefaults(): array
+    {
+        return ($this->social_defaults ?? []) + ['accounts' => [], 'hashtags' => '', 'hashtag_sets' => [],
+            'visible_to_client' => false, 'auto_publish' => true, 'type' => 'post', 'format' => 'image'];
     }
 
     public function users(): HasMany
