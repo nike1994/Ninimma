@@ -45,10 +45,4 @@ class MaterialController extends Controller
         ]);
     }
 
-    public function clientReports(Request $request)
-    {
-        return view('influencers.client-reports', [
-            'campaigns' => Campaign::where('client_id', $request->user()->client_id)->where('status', '!=', 'draft')->latest('starts_on')->get(),
-        ]);
-    }
 }

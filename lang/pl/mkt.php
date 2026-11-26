@@ -149,4 +149,12 @@ return [
     'pace_mail_line' => ':campaign (:client): :state — wydano :sp% budżetu reklam, minęło :tp% czasu, prognoza :sum.',
     'open' => 'Otwórz kampanie',
     'goal_of' => 'z :target',
+    'client_title' => 'Kampanie',
+    'client_subtitle' => 'Wyniki Twoich kampanii i realizacja celów',
+    'client_none' => 'Nie ma jeszcze kampanii do pokazania.',
+    'preview_as' => 'Podgląd tak, jak widzi to klient: :client',
+    'preview_back' => 'Wróć do panelu',
+    'full_report' => 'Pełny raport',
+    'preview_client' => 'Widok klienta',
+    'preview_client_hint' => 'Tak tę kampanię widzi klient (bez kosztów wewnętrznych i tempa budżetu). Szkice są dla klienta ukryte.',
 ];

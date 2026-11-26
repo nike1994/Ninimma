@@ -71,7 +71,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
 
     // Materiały i raporty kampanii (klient: tylko swoje, bez stawek i danych osobowych).
     Route::get('/materials', [\App\Http\Controllers\Influencers\MaterialController::class, 'index'])->name('materials.index');
-    Route::get('/reports', [\App\Http\Controllers\Influencers\MaterialController::class, 'clientReports'])->name('reports.index');
+    Route::get('/reports', [\App\Http\Controllers\ClientCampaignController::class, 'index'])->name('reports.index');
     Route::get('/reports/campaigns/{campaign}', [\App\Http\Controllers\Influencers\MaterialController::class, 'report'])->name('reports.campaign');
 
     // Strony i SEO — klient: raport miesięczny.

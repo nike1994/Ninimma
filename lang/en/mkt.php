@@ -149,4 +149,12 @@ return [
     'pace_mail_line' => ':campaign (:client): :state — :sp% of ad budget spent, :tp% of time elapsed, forecast :sum.',
     'open' => 'Open campaigns',
     'goal_of' => 'of :target',
+    'client_title' => 'Campaigns',
+    'client_subtitle' => 'Results of your campaigns and goal completion',
+    'client_none' => 'No campaigns to show yet.',
+    'preview_as' => 'Preview as the client sees it: :client',
+    'preview_back' => 'Back to panel',
+    'full_report' => 'Full report',
+    'preview_client' => 'Client view',
+    'preview_client_hint' => 'How the client sees this campaign (no internal costs or budget pacing). Drafts are hidden from the client.',
 ];

@@ -50,7 +50,7 @@
                 <a href="{{ route('publications.index') }}" @class(['active' => request()->routeIs('publications.*')])><x-icon name="megaphone" />{{ __('ui.publications') }}</a>
                 <a href="{{ route('client.sites') }}" @class(['active' => request()->routeIs('client.sites')])><x-icon name="layers" />{{ __('ui.sites_seo') }}</a>
                 <a href="{{ route('materials.index') }}" @class(['active' => request()->routeIs('materials.*')])><x-icon name="image" />{{ __('inf.ready_materials') }}</a>
-                <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.*')])><x-icon name="bar-chart" />{{ __('inf.reports') }}</a>
+                <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.*')])><x-icon name="bar-chart" />{{ __('mkt.client_title') }}</a>
                 <a href="{{ route('billing.index') }}" @class(['active' => request()->routeIs('billing.*')])><x-icon name="grid" />{{ __('ui.billing') }}</a>
                 <a href="{{ route('settings') }}" @class(['active' => request()->routeIs('settings')])><x-icon name="lock" />{{ __('ui.company_access') }}</a>
             @endif

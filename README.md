@@ -55,6 +55,10 @@ ostrzeżenie na karcie i e-mail do administratorów (cron 07:45, ten sam alert n
 **Meta Ads (Administracja → Integracje):** token użytkownika systemowego z `ads_read` + ID kampanii z menedżera reklam
 przy reklamie → codziennie o 05:40 (i przyciskiem „Pobierz z Meta Ads”) pobierają się wydatki, zasięg, kliknięcia,
 wejścia na stronę, koszyk, zakupy z przychodem, leady oraz odbiorcy (wiek, płeć, województwa, kraje).
+**Kampanie w panelu klienta (menu „Kampanie”).** Klient widzi swoje kampanie (bez szkiców): cel i jego realizację,
+wskaźniki wg celu, wykres w czasie, lejek, demografię, najlepsze kreacje, lokalizacje i pełny raport do druku — bez
+tempa budżetu, stawek influencerów i godzin pracy. Agencja otwiera ten sam widok przyciskiem „Widok klienta”.
+Pulpit social media pokazuje przy kampaniach główny wynik wg celu i realizację celu.
 
 **Marketing płatny (reklamy i promocje).** Promowane posty (budżet i okres przy publikacji tworzą wpis reklamy)
 oraz samodzielne kampanie reklamowe (Meta, Google, TikTok, LinkedIn, Pinterest, YouTube) z celem, budżetem planowanym

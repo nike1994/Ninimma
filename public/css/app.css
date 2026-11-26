@@ -1719,3 +1719,9 @@ a.kpi { color: var(--text); }
 .mk-rank td.nowrap, td.nowrap { white-space: nowrap; }
 .mk-rank td:nth-last-child(-n+2) { white-space: nowrap; }
 @media (max-width: 760px) { .mk-kpis .kpi-value strong { font-size: 21px; } }
+.mk-preview-bar { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: 0 0 1rem; padding: .6rem 1rem; border-radius: 14px; background: #fff6e0; color: #7a5200; font-size: .88rem; font-weight: 600; }
+.mk-preview-bar .btn { margin-left: auto; }
+.mk-client-goal .mk-goal { margin: .6rem 0; }
+.mk-row2-1 .mk-loc .mk-loc-body { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
+.mk-row2-1 .mk-loc .mk-map { max-width: 380px; justify-self: center; }
+@media (max-width: 760px) { .mk-row2-1 .mk-loc .mk-loc-body { grid-template-columns: minmax(0, 1fr); } }

@@ -121,8 +121,9 @@ class SocialTest extends TestCase
             'client_id' => $acc->client_id, 'name' => 'Black Friday', 'budget' => 5000, 'status' => 'active',
         ])->assertRedirect();
         $campaign = \App\Models\Campaign::first();
-        $this->assertSame('ROAS', $campaign->update(['revenue' => 21000]) ? $campaign->fresh()->headlineMetric()['label'] : null);
-        $this->assertSame('4,2', $campaign->fresh()->headlineMetric()['value']);
+        // Główny wynik wg celu: przychód (cel wywnioskowany: sprzedaż) i realizacja celu liczbowego.
+        $campaign->update(['revenue' => 21000, 'target_value' => 42000]);
+        $this->assertSame([__('mkt.m_revenue'), '21 000 zł', 50], array_values($campaign->fresh()->headlineMetric()));
 
         // Treść przypięta do kampanii innego klienta jest odrzucana.
         $other = \App\Models\Campaign::create(['client_id' => SocialAccount::factory()->create()->client_id, 'name' => 'Obca']);

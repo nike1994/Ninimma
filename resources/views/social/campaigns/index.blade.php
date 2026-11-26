@@ -76,6 +76,7 @@
             <h2>{{ $selected->name }}@if($withClient($selected)) <span class="muted">– {{ $selected->client->name }}</span>@endif</h2>
             <span class="mk-status mk-{{ $selected->status }}">{{ __('mkt.status_'.$selected->status) }}</span>
             <span class="mk-spacer"></span>
+            @if($selected->status !== 'draft')<a href="{{ route('reports.index', ['client' => $selected->client_id, 'c' => $selected->id]) }}" class="btn btn-small" title="{{ __('mkt.preview_client_hint') }}"><x-icon name="eye" :size="14" /> {{ __('mkt.preview_client') }}</a>@endif
             <a href="{{ route('reports.campaign', $selected) }}" class="btn btn-small"><x-icon name="bar-chart" :size="14" /> {{ __('mkt.report') }}</a>
             <a href="{{ route('social.campaigns.edit', $selected) }}" class="btn btn-small"><x-icon name="pencil" :size="14" /> {{ __('mkt.edit') }}</a>
         </div>

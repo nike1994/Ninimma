@@ -135,12 +135,12 @@
             <a href="{{ route('social.campaigns.create', array_filter(['client' => $clientId])) }}" class="btn btn-small btn-pill-round"><x-icon name="plus" :size="14" /> {{ __('social.new_campaign') }}</a></span></div>
         @forelse($campaigns as $cmp)
             @php($metric = $cmp->headlineMetric())
-            <a href="{{ route('social.campaigns.edit', $cmp) }}" class="campaign-row">
+            <a href="{{ route('social.campaigns.index', ['c' => $cmp->id]) }}#detail" class="campaign-row">
                 <x-avatar :name="$cmp->client->name" :size="40" />
                 <span class="campaign-name"><strong>{{ $cmp->name }}</strong><span class="pill cmp-{{ $cmp->status }}"><i></i>{{ __('social.cmp_'.$cmp->status) }}</span></span>
                 <span class="campaign-num"><small>{{ __('social.budget_short') }}</small><strong>{{ number_format((float) $cmp->budget, 0, ',', ' ') }} zł</strong>
                     @if($cmp->budgetUsedPct() !== null)<span @class(['mini-bar', 'warn' => $cmp->budgetUsedPct() >= 90])><i style="width: {{ min(100, $cmp->budgetUsedPct()) }}%"></i></span><small class="muted">{{ __('ads.used_pct', ['pct' => $cmp->budgetUsedPct()]) }}</small>@endif</span>
-                <span class="campaign-num"><small>{{ $metric['label'] }}</small><strong>{{ $metric['value'] }}</strong></span>
+                <span class="campaign-num"><small>{{ $metric['label'] }}</small><strong>{{ $metric['value'] }}</strong>@if($metric['pct'] !== null)<small class="muted">{{ __('mkt.goal_short', ['n' => $metric['pct']]) }}</small>@endif</span>
             </a>
         @empty
             <p class="muted">{{ __('social.no_campaigns') }}</p>

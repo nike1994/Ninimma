@@ -100,16 +100,15 @@ class Campaign extends Model
             ->get()->sum(fn ($p) => $p->latestMeasurement?->reach ?? 0);
     }
 
-    /** Główny wynik: ROAS (gdy jest przychód), leady albo zasięg. */
+    /** Główny wynik wg celu kampanii (pulpit): etykieta, wartość i realizacja celu w %. */
     public function headlineMetric(): array
     {
-        if ($this->revenue !== null && (float) $this->budget > 0) {
-            return ['label' => 'ROAS', 'value' => number_format((float) $this->revenue / (float) $this->budget, 1, ',', ' ')];
-        }
-        if ($this->leads !== null) {
-            return ['label' => __('social.leads'), 'value' => number_format($this->leads, 0, ',', ' ')];
-        }
+        $ins = new \App\Services\CampaignInsights($this);
+        $g = $ins->goal($ins->totals());
+        $value = $g->format === 'money'
+            ? ($g->value >= 100000 ? \App\Support\Num::short((int) $g->value) : number_format((float) $g->value, 0, ',', ' ')).' zł'
+            : \App\Support\Num::short((int) $g->value);
 
-        return ['label' => __('social.kpi_reach'), 'value' => \App\Support\Num::short($this->reach())];
+        return ['label' => __('mkt.m_'.$g->metric), 'value' => $value, 'pct' => $g->pct];
     }
 }

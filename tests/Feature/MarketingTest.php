@@ -198,4 +198,32 @@ class MarketingTest extends TestCase
         $this->actingAs($client)->withSession(['two_factor_passed' => true]);
         $this->get(route('social.campaigns.index'))->assertForbidden();
     }
+
+    public function test_client_sees_own_campaigns_without_internal_data(): void
+    {
+        $campaign = $this->campaignWithAd();
+        $campaign->ads()->first()->results()->first()->update(['spend' => 900]); // tempo „za szybko” — tylko dla agencji
+        $draft = Campaign::create(['client_id' => $campaign->client_id, 'name' => 'Szkic tajny', 'status' => 'draft']);
+        $other = Campaign::create(['client_id' => SocialAccount::factory()->create()->client_id, 'name' => 'Cudza kampania', 'status' => 'active']);
+
+        $client = User::factory()->create(['client_id' => $campaign->client_id]);
+        $this->actingAs($client)->withSession(['two_factor_passed' => true]);
+        $this->get(route('reports.index'))->assertOk()
+            ->assertSee('Wiosna')->assertSee(__('mkt.goal_pct', ['n' => 50]))->assertSee(__('mkt.m_cost_per_purchase'))
+            ->assertDontSee('Szkic tajny')->assertDontSee('Cudza kampania')
+            ->assertDontSee(__('mkt.pace_over'))->assertDontSee(__('mkt.pace_short_over'));
+        // Cudza kampania nie otwiera się przez ?c=, a parametr client jest ignorowany.
+        $this->get(route('reports.index', ['c' => $other->id, 'client' => $other->client_id]))->assertOk()->assertDontSee('Cudza kampania');
+        $this->get(route('reports.campaign', $other))->assertForbidden();
+    }
+
+    public function test_admin_previews_client_view(): void
+    {
+        $this->admin();
+        $campaign = $this->campaignWithAd();
+        $this->get(route('reports.index'))->assertRedirect(route('social.campaigns.index'));
+        $this->get(route('reports.index', ['client' => $campaign->client_id, 'c' => $campaign->id]))->assertOk()
+            ->assertSee(__('mkt.preview_as', ['client' => $campaign->client->name]))->assertSee('Wiosna');
+        $this->get(route('social.campaigns.index', ['c' => $campaign->id]))->assertSee(__('mkt.preview_client'));
+    }
 }
