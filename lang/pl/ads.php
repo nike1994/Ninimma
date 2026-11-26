@@ -90,4 +90,6 @@ return [
     'utm_save' => 'Zapisz link',
     'utm_created' => 'Link UTM zapisany.',
     'copy' => 'Kopiuj',
+    'landing_views' => 'Wejścia na stronę',
+    'add_to_cart' => 'Dodania do koszyka',
 ];

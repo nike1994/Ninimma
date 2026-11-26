@@ -4,20 +4,130 @@ namespace App\Http\Controllers\Social;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
+use App\Models\CampaignAudience;
+use App\Models\SocialAccount;
+use App\Services\AudienceImport;
+use App\Services\CampaignInsights;
+use Carbon\CarbonImmutable;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class CampaignController extends Controller
 {
+    /** Kampanie marketingowe: lista z filtrami, wskaźniki, wybrana kampania (zakładki), ranking. */
     public function index(Request $request)
     {
+        $clientId = $request->integer('client') ?: null;
+        $status = $request->query('status', 'all');
+        $groups = ['active' => ['active'], 'planned' => ['draft', 'review'], 'finished' => ['finished']];
+        $all = Campaign::with(['client', 'audiences'])->withCount('contents')
+            ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
+            ->orderByRaw("case status when 'active' then 0 when 'review' then 1 when 'draft' then 2 else 3 end")
+            ->latest('starts_on')->get();
+        $counts = collect($groups)->map(fn ($st) => $all->whereIn('status', $st)->count());
+        $list = $status !== 'all' && isset($groups[$status]) ? $all->whereIn('status', $groups[$status])->values() : $all;
+
+        // Wyniki każdej kampanii (karty, ranking, wskaźniki).
+        $insights = $all->mapWithKeys(fn ($c) => [$c->id => new CampaignInsights($c)]);
+        $totals = $insights->map(fn ($i) => $i->totals());
+        $sum = fn ($k, $ids = null) => ($ids ?? $list->pluck('id'))->sum(fn ($id) => $totals[$id][$k] ?? 0);
+        $ids = $list->pluck('id');
+        $spend = $sum('spend');
+        $revenue = $sum('revenue');
+        // Trend: przyrost w ostatnich 7 dniach vs 7 dni wcześniej (wszystkie kampanie z listy).
+        $now = CarbonImmutable::today();
+        $st = fn ($d) => $ids->reduce(fn ($c, $id) => array_map(fn ($a, $b) => $a + $b, $c, array_values($insights[$id]->stateAt($d))), [0, 0, 0]);
+        [$a, $b, $c] = [$st($now), $st($now->subDays(7)), $st($now->subDays(14))];
+        $pct = fn ($i) => ($b[$i] - $c[$i]) > 0 ? (int) round((($a[$i] - $b[$i]) - ($b[$i] - $c[$i])) / ($b[$i] - $c[$i]) * 100) : null;
+
+        $selected = $list->firstWhere('id', $request->integer('c')) ?? $list->first();
+        $sel = $selected ? $insights[$selected->id] : null;
+        $tab = in_array($request->query('tab'), ['summary', 'settings', 'creatives', 'audience', 'results'], true) ? $request->query('tab') : 'summary';
+
+        $accounts = SocialAccount::with('client')->where('is_active', true)->get();
+
         return view('social.campaigns.index', [
-            'campaigns' => Campaign::with('client')->withCount('contents')
-                ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
-                ->orderByRaw("case status when 'active' then 0 when 'review' then 1 when 'draft' then 2 else 3 end")
-                ->latest('starts_on')->get(),
+            'list' => $list, 'counts' => $counts, 'status' => $status, 'clientId' => $clientId, 'view' => $request->query('view') === 'grid' ? 'grid' : 'list',
+            'totals' => $totals, 'insights' => $insights,
+            'kpi' => [
+                'active' => $all->where('status', 'active')->count(),
+                'reach' => $sum('reach'), 'reach_trend' => $pct(0),
+                'clicks' => $sum('clicks'), 'clicks_trend' => $pct(1),
+                'spend' => $spend, 'roas' => $spend > 0 && $revenue > 0 ? round($revenue / $spend, 1) : null,
+            ],
+            'brands' => $accounts->groupBy('client_id')->map(fn ($accs) => (object) ['client' => $accs->first()->client, 'platforms' => $accs->pluck('platform')->unique('value')])
+                ->sortBy(fn ($b) => $b->client->name)->values(),
+            'accountsCount' => $accounts->count(),
+            'selected' => $selected, 'sel' => $sel, 'tab' => $tab,
+            'selTotals' => $selected ? $totals[$selected->id] : null,
+            'ranking' => $list->sortByDesc(fn ($c) => [$totals[$c->id]['roas'] ?? 0, $totals[$c->id]['conversions']])->values(),
         ]);
+    }
+
+    /** Struktura odbiorców: ręcznie (płeć, wiek, miasta, kraje) — zastępuje poprzednie dane. */
+    public function audience(Request $request, Campaign $campaign)
+    {
+        $data = $request->validate([
+            'female' => ['nullable', 'numeric', 'between:0,100'], 'male' => ['nullable', 'numeric', 'between:0,100'],
+            'age' => ['array'], 'age.*' => ['nullable', 'numeric', 'between:0,100'],
+            'cities' => ['nullable', 'string', 'max:2000'], 'countries' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $rows = [];
+        foreach (['female' => 'female', 'male' => 'male'] as $k => $label) {
+            if (($data[$k] ?? null) !== null && $data[$k] !== '') {
+                $rows[] = ['gender', $label, (float) $data[$k]];
+            }
+        }
+        foreach (CampaignAudience::AGES as $age) {
+            if (($data['age'][$age] ?? null) !== null && $data['age'][$age] !== '') {
+                $rows[] = ['age', $age, (float) $data['age'][$age]];
+            }
+        }
+        foreach (['city' => 'cities', 'country' => 'countries'] as $dim => $field) {
+            foreach (self::parseShares($data[$field] ?? '') as $label => $share) {
+                $rows[] = [$dim, $label, $share];
+            }
+        }
+        $this->saveAudience($campaign, $rows);
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    /** Import podziału odbiorców z eksportu menedżera reklam (kolumny: wiek/płeć/region/kraj + zasięg lub wyświetlenia). */
+    public function audienceImport(Request $request, Campaign $campaign)
+    {
+        $request->validate(['csv' => ['required', 'file', 'max:4096']]);
+        $rows = AudienceImport::parse((string) $request->file('csv')->get());
+        if (! $rows) {
+            return back()->withErrors(['csv' => __('mkt.import_empty')]);
+        }
+        $this->saveAudience($campaign, $rows, array_unique(array_column($rows, 0)));
+
+        return back()->with('status', __('mkt.import_done', ['n' => count($rows)]));
+    }
+
+    /** „Warszawa: 18,4” / „Warszawa 18.4%” w kolejnych liniach → [label => %]. */
+    public static function parseShares(string $text): array
+    {
+        $out = [];
+        foreach (preg_split('/\R/', $text) as $line) {
+            if (preg_match('/^\s*(.+?)[\s:;=-]+(\d+(?:[.,]\d+)?)\s*%?\s*$/u', $line, $m)) {
+                $out[mb_substr(trim($m[1]), 0, 80)] = min(100, (float) str_replace(',', '.', $m[2]));
+            }
+        }
+
+        return array_slice($out, 0, 20, true);
+    }
+
+    private function saveAudience(Campaign $campaign, array $rows, ?array $onlyDims = null): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($campaign, $rows, $onlyDims) {
+            $campaign->audiences()->when($onlyDims, fn ($q) => $q->whereIn('dimension', $onlyDims))->delete();
+            foreach ($rows as [$dim, $label, $share]) {
+                $campaign->audiences()->updateOrCreate(['dimension' => $dim, 'label' => $label], ['share' => round($share, 2)]);
+            }
+        });
     }
 
     public function create(Request $request)

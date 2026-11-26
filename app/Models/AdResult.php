@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdResult extends Model
 {
-    protected $fillable = ['ad_campaign_id', 'user_id', 'measured_on', 'spend', 'impressions', 'reach', 'clicks', 'conversions', 'leads', 'revenue', 'source'];
+    protected $fillable = ['ad_campaign_id', 'user_id', 'measured_on', 'spend', 'impressions', 'reach', 'clicks', 'conversions', 'leads', 'revenue', 'source', 'landing_views', 'add_to_cart'];
 
     protected function casts(): array
     {

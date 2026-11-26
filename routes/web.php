@@ -168,6 +168,8 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::get('/stats', [\App\Http\Controllers\Social\StatsController::class, 'index'])->name('stats');
         Route::post('/stats', [\App\Http\Controllers\Social\StatsController::class, 'store']);
         Route::resource('campaigns', \App\Http\Controllers\Social\CampaignController::class)->except(['show', 'destroy']);
+        Route::put('/campaigns/{campaign}/audience', [\App\Http\Controllers\Social\CampaignController::class, 'audience'])->name('campaigns.audience');
+        Route::post('/campaigns/{campaign}/audience/import', [\App\Http\Controllers\Social\CampaignController::class, 'audienceImport'])->name('campaigns.audience.import');
         $ad = \App\Http\Controllers\Social\AdController::class;
         Route::get('/ads', [$ad, 'index'])->name('ads.index');
         Route::get('/ads/create', [$ad, 'create'])->name('ads.create');

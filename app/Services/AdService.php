@@ -50,6 +50,7 @@ class AdService
             'spend' => (float) ($data['spend'] ?? 0), 'impressions' => (int) ($data['impressions'] ?? 0), 'reach' => (int) ($data['reach'] ?? 0),
             'clicks' => (int) ($data['clicks'] ?? 0), 'conversions' => (int) ($data['conversions'] ?? 0), 'leads' => (int) ($data['leads'] ?? 0),
             'revenue' => (float) ($data['revenue'] ?? 0),
+            'landing_views' => (int) ($data['landing_views'] ?? 0), 'add_to_cart' => (int) ($data['add_to_cart'] ?? 0),
         ]);
     }
 
@@ -63,6 +64,8 @@ class AdService
         'clicks' => ['kliknięcia linku', 'link clicks', 'kliknięcia', 'clicks'],
         'conversions' => ['konwersje', 'conversions', 'zakupy', 'purchases', 'wyniki', 'results'],
         'leads' => ['leady', 'leads', 'potencjalni klienci'],
+        'landing_views' => ['wyświetlenia strony docelowej', 'landing page views', 'wejścia na stronę', 'sesje', 'sessions'],
+        'add_to_cart' => ['dodania do koszyka', 'adds to cart', 'add to cart', 'dodanie do koszyka'],
         'revenue' => ['wartość konwersji', 'conv. value', 'wartość konwersji zakupów', 'purchases conversion value', 'przychód', 'revenue'],
     ];
 
@@ -115,7 +118,7 @@ class AdService
                     continue;
                 }
                 $row = ['measured_on' => $date ?? (isset($map['date']) && strtotime($cols[$map['date']] ?? '') ? Carbon::parse($cols[$map['date']])->toDateString() : today()->toDateString())];
-                foreach (['spend', 'impressions', 'reach', 'clicks', 'conversions', 'leads', 'revenue'] as $f) {
+                foreach (['spend', 'impressions', 'reach', 'clicks', 'conversions', 'leads', 'revenue', 'landing_views', 'add_to_cart'] as $f) {
                     $row[$f] = isset($map[$f]) ? self::number((string) ($cols[$map[$f]] ?? '0')) : 0;
                 }
                 $this->addResult($ad, $by, $row, 'import');

@@ -28,7 +28,7 @@
                 @csrf
                 <label><span>{{ __('ui.date') }}</span><input type="date" name="measured_on" value="{{ today()->toDateString() }}" required></label>
                 @php($last = $ad->results->last())
-                @foreach(['spend' => 'ads.spend_pln', 'impressions' => 'ads.impressions', 'reach' => 'social.kpi_reach', 'clicks' => 'ads.clicks', 'conversions' => 'ads.conversions', 'leads' => 'ads.leads', 'revenue' => 'ads.revenue'] as $f => $label)
+                @foreach(['spend' => 'ads.spend_pln', 'impressions' => 'ads.impressions', 'reach' => 'social.kpi_reach', 'clicks' => 'ads.clicks', 'landing_views' => 'ads.landing_views', 'add_to_cart' => 'ads.add_to_cart', 'conversions' => 'ads.conversions', 'leads' => 'ads.leads', 'revenue' => 'ads.revenue'] as $f => $label)
                     <label><span>{{ __($label) }}</span><input type="number" min="0" step="{{ in_array($f, ['spend', 'revenue']) ? '0.01' : '1' }}" name="{{ $f }}" placeholder="{{ $last?->{$f} }}" @if($f === 'spend') required @endif></label>
                 @endforeach
                 <button class="btn btn-dark"><x-icon name="plus" :size="14" /> {{ __('ads.add_result') }}</button>

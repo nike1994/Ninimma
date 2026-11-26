@@ -90,4 +90,6 @@ return [
     'utm_save' => 'Save link',
     'utm_created' => 'UTM link saved.',
     'copy' => 'Copy',
+    'landing_views' => 'Landing page views',
+    'add_to_cart' => 'Adds to cart',
 ];

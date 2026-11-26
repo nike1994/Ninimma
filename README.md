@@ -40,6 +40,15 @@ platformie, lejek treści, kalendarz tygodnia i miesiąca, kolejka statystyk po 
 pulpit z KPI i trendami, wyniki według marek i platform, kampanie (ROAS/leady/zasięg), zadania i notatki,
 akceptacja postów przez klienta.
 
+**Kampanie marketingowe (Social media → Kampanie).** Jedna strona z KPI (aktywne kampanie, łączny zasięg,
+kliknięcia, wydatki, ROAS) i trendem 7 dni do 7 poprzednich, filtrami po kliencie i statusie (aktywne / zaplanowane /
+zakończone), listą lub siatką kart oraz szczegółem kampanii w zakładkach: podsumowanie (okładka, wyniki, wykres zasięgu
+i kliknięć w czasie, budżet i harmonogram, platformy, cel), ustawienia, kreacje, grupy odbiorców i wyniki. Pod spodem
+lejek (zasięg → wejścia na stronę → dodania do koszyka → zakup/lead; dane z wyników reklam), demografia (płeć, wiek),
+najlepsze kreacje według CTR, lokalizacje (top miasta na mapie Polski / top kraje) i ranking najskuteczniejszych
+kampanii (ROAS, konwersje). Struktura odbiorców wpisywana ręcznie albo importowana z CSV menedżera reklam
+(kolumny wiek/płeć/region/kraj + zasięg lub wyświetlenia).
+
 **Marketing płatny (reklamy i promocje).** Promowane posty (budżet i okres przy publikacji tworzą wpis reklamy)
 oraz samodzielne kampanie reklamowe (Meta, Google, TikTok, LinkedIn, Pinterest, YouTube) z celem, budżetem planowanym
 i okresem. Wyniki płatne narastająco z datą, bez nadpisywania (wydatek, wyświetlenia, zasięg, kliknięcia, konwersje,

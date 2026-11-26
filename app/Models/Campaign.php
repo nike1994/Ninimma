@@ -29,6 +29,11 @@ class Campaign extends Model
         return $this->hasMany(AdCampaign::class);
     }
 
+    public function audiences(): HasMany
+    {
+        return $this->hasMany(CampaignAudience::class);
+    }
+
     public function utmLinks(): HasMany
     {
         return $this->hasMany(UtmLink::class)->latest();

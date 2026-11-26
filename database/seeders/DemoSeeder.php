@@ -105,6 +105,7 @@ class DemoSeeder extends Seeder
         $this->call(InfluencerDemoSeeder::class);
         $this->call(AdsDemoSeeder::class);
         $this->call(LicenseDemoSeeder::class);
+        $this->call(MarketingDemoSeeder::class);
         $this->call(SitesDemoSeeder::class);
 
         $this->command?->info("Admin: admin@example.com / demo-haslo-123, sekret 2FA: {$secret}");

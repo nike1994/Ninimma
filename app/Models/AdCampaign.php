@@ -42,6 +42,7 @@ class AdCampaign extends Model
             'spend' => (float) ($r->spend ?? 0), 'impressions' => (int) ($r->impressions ?? 0), 'reach' => (int) ($r->reach ?? 0),
             'clicks' => (int) ($r->clicks ?? 0), 'conversions' => (int) ($r->conversions ?? 0), 'leads' => (int) ($r->leads ?? 0),
             'revenue' => (float) ($r->revenue ?? 0), 'measured_on' => $r?->measured_on,
+            'landing_views' => (int) ($r->landing_views ?? 0), 'add_to_cart' => (int) ($r->add_to_cart ?? 0),
         ];
     }
 

@@ -100,6 +100,8 @@ class AdController extends Controller
             'conversions' => ['nullable', 'integer', 'min:0'],
             'leads' => ['nullable', 'integer', 'min:0'],
             'revenue' => ['nullable', 'numeric', 'min:0'],
+            'landing_views' => ['nullable', 'integer', 'min:0'],
+            'add_to_cart' => ['nullable', 'integer', 'min:0'],
         ]);
         $this->ads->addResult($ad, $request->user(), $data);
         if ($ad->status === 'planned') {
