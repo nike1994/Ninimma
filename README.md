@@ -57,8 +57,9 @@ termin i kanały swoich materiałów. Blokady: po wygaśnięciu licencji (albo p
 ani opublikować nowego posta z materiałem lub jego fragmentem, promować posta ani utworzyć/wznowić reklamy z nim;
 promocja musi mieć datę końca w okresie licencji. Wygasłe materiały są zablokowane w wyborze, a cron nie uruchomi takiej reklamy.
 Dodawanie: w karcie współpracy przeciąga się filmy/zdjęcia (kilka naraz) — każdy plik to materiał z licencją z umowy.
-Wszędzie widać miniaturę (kadr filmu ładowany, gdy widoczny, podgląd po najechaniu; bez ffmpeg na hostingu) z kółkiem
-profilu influencera.
+Wszędzie widać miniaturę z kółkiem profilu influencera: kadr filmu (JPEG) robi przeglądarka przy wgrywaniu, więc działa
+w każdej przeglądarce, także dla .mov z iPhone'a (bez ffmpeg na hostingu); dla starszych filmów kadr dorabia się przy
+pierwszym podglądzie przez zespół. Po najechaniu film gra bez dźwięku.
 
 **Ochrona materiałów przed klientem.** Filmy i zdjęcia materiałów oraz projekty postów (do publikacji) klient widzi
 tylko w trybie chronionym: zdjęcia jako pomniejszona kopia ze znakiem wodnym (nazwa klienta + data, GD), filmy tylko

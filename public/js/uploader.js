@@ -29,6 +29,31 @@
         return data;
     }
 
+    // Kadr filmu robiony w przeglądarce (ok. 1 s), wysyłany jako JPEG — miniatura działa potem wszędzie, także dla .mov.
+    function videoPoster(file) {
+        return new Promise(resolve => {
+            if (!/^video\//.test(file.type) && !/\.(mov|mp4|m4v|webm)$/i.test(file.name)) return resolve(null);
+            const url = URL.createObjectURL(file), v = document.createElement('video');
+            let done = false;
+            const finish = blob => { if (done) return; done = true; URL.revokeObjectURL(url); v.removeAttribute('src'); resolve(blob); };
+            v.muted = true; v.playsInline = true; v.preload = 'auto';
+            v.addEventListener('loadedmetadata', () => { v.currentTime = Math.min(1, (v.duration || 2) / 3); });
+            v.addEventListener('seeked', () => {
+                try {
+                    const scale = Math.min(1, 960 / Math.max(v.videoWidth, v.videoHeight));
+                    const c = document.createElement('canvas');
+                    c.width = Math.round(v.videoWidth * scale); c.height = Math.round(v.videoHeight * scale);
+                    if (!c.width || !c.height) return finish(null);
+                    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+                    c.toBlob(b => finish(b), 'image/jpeg', 0.82);
+                } catch (e) { finish(null); }
+            });
+            v.addEventListener('error', () => finish(null));
+            setTimeout(() => finish(null), 15000);
+            v.src = url;
+        });
+    }
+
     async function uploadFile(startUrl, file, onProgress) {
         const start = new FormData();
         start.append('name', file.name); start.append('size', file.size); start.append('mime', file.type || '');
@@ -71,6 +96,15 @@
             try {
                 const res = await uploadFile(root.dataset.start, file, p => item.querySelector('progress').value = p);
                 const hidden = Object.assign(document.createElement('input'), { type: 'hidden', name: 'uploads[]', value: res.usage_id });
+                if (root.dataset.poster && /^video\//.test(res.mime || '')) {
+                    // Kadr dosyłamy w tle; formularz czeka, żeby miniatura była gotowa od razu.
+                    pending++; form.dataset.pending = pending;
+                    try {
+                        const blob = await videoPoster(file);
+                        if (blob) { const fd = new FormData(); fd.append('poster', blob, 'poster.jpg'); await post(root.dataset.poster.replace('__ID__', res.usage_id), fd); }
+                    } catch (e) { /* bez kadru miniatura pokaże klatkę z filmu */ }
+                    pending--; form.dataset.pending = pending;
+                }
                 item.appendChild(hidden);
                 item.classList.add('done');
             } catch (e) {

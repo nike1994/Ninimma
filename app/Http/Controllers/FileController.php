@@ -74,4 +74,51 @@ class FileController extends Controller
         \App\Services\MediaProtection::log($usage, $user, 'blocked');
         abort(403, __('files.download_blocked'));
     }
+
+    /** Kadr filmu: oryginał dla zespołu, ze znakiem wodnym dla klienta w trybie chronionym. */
+    public function poster(Request $request, FileUsage $usage, FileStore $store)
+    {
+        $this->authorize('view', $usage);
+        $user = $request->user();
+        $poster = $usage->file->poster;
+        abort_unless($poster && $poster->location === 'hosting', 404);
+        abort_if(\App\Services\MediaProtection::isLockedFor($user, $usage), 403, __('files.license_locked'));
+        if (\App\Services\MediaProtection::isProtectedFor($user, $usage)) {
+            $path = app(\App\Services\MediaProtection::class)->watermarkedImage($usage, $user, $store->absolutePath($poster), 'p');
+
+            return response()->file($path, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, no-store, max-age=0', 'X-Content-Type-Options' => 'nosniff']);
+        }
+
+        return response()->file($store->absolutePath($poster), ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, max-age=86400', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    /**
+     * Zapis kadru zrobionego w przeglądarce (przy wgrywaniu albo przy pierwszym podglądzie przez zespół).
+     * Obraz jest dekodowany i zapisywany na nowo jako JPEG — nic poza pikselami nie trafia na serwer.
+     */
+    public function storePoster(Request $request, FileUsage $usage, FileStore $store)
+    {
+        $user = $request->user();
+        $file = $usage->file;
+        abort_unless($file->isVideo() && ($user->isAdmin() || $usage->uploaded_by === $user->id), 403);
+        if ($file->poster_id && ! $user->isAdmin()) {
+            return response()->json(['ok' => true]);
+        }
+        $request->validate(['poster' => ['required', 'file', 'max:3072', 'mimetypes:image/jpeg,image/png,image/webp']]);
+        $src = @imagecreatefromstring((string) file_get_contents($request->file('poster')->getRealPath()));
+        abort_unless($src, 422);
+        [$w, $h] = [imagesx($src), imagesy($src)];
+        $scale = min(1, 960 / max($w, $h));
+        $im = imagecreatetruecolor(max(1, (int) ($w * $scale)), max(1, (int) ($h * $scale)));
+        imagecopyresampled($im, $src, 0, 0, 0, 0, imagesx($im), imagesy($im), $w, $h);
+        $tmp = tempnam(sys_get_temp_dir(), 'poster');
+        imagejpeg($im, $tmp, 80);
+        imagedestroy($src);
+        imagedestroy($im);
+        $poster = $store->storeLocalFile($tmp, 'image/jpeg');
+        @unlink($tmp);
+        $file->forceFill(['poster_id' => $poster->id])->save();
+
+        return response()->json(['ok' => true, 'url' => route('files.poster', $usage)]);
+    }
 }

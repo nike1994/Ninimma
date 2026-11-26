@@ -102,6 +102,15 @@ class LicenseDemoSeeder extends Seeder
                 imagepng($im, $tmp);
             }
             $file = $store->storeLocalFile($tmp, $video ? 'video/mp4' : 'image/png');
+            if ($video) {
+                // Kadr jak z przeglądarki przy wgrywaniu.
+                $jpg = $tmp.'.jpg';
+                exec(escapeshellarg($ffmpeg).' -v error -y -ss 1 -i '.escapeshellarg($tmp).' -frames:v 1 '.escapeshellarg($jpg), $o2, $c2);
+                if ($c2 === 0 && is_file($jpg)) {
+                    $file->forceFill(['poster_id' => $store->storeLocalFile($jpg, 'image/jpeg')->id])->save();
+                    @unlink($jpg);
+                }
+            }
             @unlink($tmp);
             $file->forceFill(['mime' => $video ? 'video/mp4' : 'image/png'])->save();
             $name = \Illuminate\Support\Str::slug($m->description).($video ? '.mp4' : '.png');

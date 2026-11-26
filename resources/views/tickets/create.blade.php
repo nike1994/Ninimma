@@ -39,4 +39,4 @@
     <button class="btn btn-send btn-block"><x-icon name="send" :size="18" />{{ __('ui.submit_ticket') }}</button>
 </form>
 @endsection
-@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=2"></script>@endpush
+@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=3"></script>@endpush

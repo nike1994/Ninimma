@@ -31,10 +31,33 @@
         document.body.appendChild(wrap);
     };
 
+    // Kadr dla starszych filmów: robiony z wczytanej miniatury i zapisywany (tylko zespół).
+    const csrf = () => document.querySelector('meta[name=csrf-token]')?.content;
+    const makePoster = v => {
+        const url = v.dataset.makePoster; if (!url) return;
+        delete v.dataset.makePoster;
+        const grab = () => {
+            try {
+                const scale = Math.min(1, 960 / Math.max(v.videoWidth, v.videoHeight));
+                const c = document.createElement('canvas');
+                c.width = Math.round(v.videoWidth * scale); c.height = Math.round(v.videoHeight * scale);
+                if (!c.width) return;
+                c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+                c.toBlob(b => { if (!b) return; const fd = new FormData(); fd.append('poster', b, 'poster.jpg');
+                    fetch(url, { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': csrf(), Accept: 'application/json' }, credentials: 'same-origin' }).catch(() => {}); }, 'image/jpeg', 0.82);
+            } catch (e) { /* nic — zostaje klatka z filmu */ }
+        };
+        v.readyState >= 2 ? grab() : v.addEventListener('loadeddata', grab, { once: true });
+    };
+
     const scan = root => {
         root.querySelectorAll('.mat-thumb-guard[data-mark]').forEach(guard);
         root.querySelectorAll('.mat-thumb video[data-src]').forEach(v => {
-            io ? io.observe(v) : load(v);
+            // Z kadrem film ładuje się dopiero po najechaniu; bez kadru — gdy widoczny (i wtedy zespół zapisuje kadr).
+            if (!v.hasAttribute('data-hover-only')) { io ? io.observe(v) : load(v); }
+            if (v.dataset.makePoster) v.addEventListener('loadeddata', () => makePoster(v), { once: true });
+            v.addEventListener('playing', () => v.closest('.mat-thumb')?.classList.add('is-playing'));
+            v.addEventListener('pause', () => v.closest('.mat-thumb')?.classList.remove('is-playing'));
             const box = v.closest('.mat-thumb');
             if (box.dataset.bound) return; box.dataset.bound = 1;
             box.addEventListener('mouseenter', () => { load(v); v.play().catch(() => {}); });

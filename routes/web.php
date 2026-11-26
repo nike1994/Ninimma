@@ -141,6 +141,8 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::post('/uploads/{upload}/chunk', [UploadController::class, 'chunk'])->name('uploads.chunk');
     Route::post('/uploads/{upload}/finish', [UploadController::class, 'finish'])->name('uploads.finish');
     Route::get('/files', [FileController::class, 'index'])->name('files.index');
+    Route::get('/files/{usage}/poster.jpg', [FileController::class, 'poster'])->name('files.poster');
+    Route::post('/files/{usage}/poster', [FileController::class, 'storePoster'])->middleware('throttle:60,1')->name('files.poster.store');
     Route::get('/files/{usage}/{name?}', [FileController::class, 'show'])->name('files.show');
 
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings');

@@ -122,6 +122,29 @@ class LicenseTest extends TestCase
         $this->get(route('social.contents.create'))->assertOk()->assertSee(__('lic.picker_expired'));
     }
 
+    public function test_blocked_save_keeps_everything_typed_in_publications(): void
+    {
+        $this->setUpWorld();
+        $m = $this->collab->materials()->create(['description' => 'Rolka', 'is_received' => true, 'license_until' => today()->addDays(5)]);
+        $content = Content::create(['client_id' => $this->acc->client_id, 'title' => 'Repost', 'type' => 'reel', 'format' => 'video', 'stage' => 'ready', 'created_by' => auth()->id()]);
+        $content->materials()->attach($m->id);
+        $ok = Publication::create(['content_id' => $content->id, 'social_account_id' => $this->acc->id, 'platform' => $this->acc->platform->value,
+            'scheduled_at' => today()->addDays(2)->setTime(10, 0), 'status' => 'planned']);
+
+        $this->from(route('social.contents.edit', $content))->followingRedirects()->put(route('social.contents.update', $content), [
+            'client_id' => $this->acc->client_id, 'title' => 'Repost', 'type' => 'reel', 'format' => 'video', 'stage' => 'ready', 'material_ids' => [$m->id],
+            'pubs' => [
+                0 => ['id' => $ok->id, 'social_account_id' => $this->acc->id, 'scheduled_at' => today()->addDays(2)->format('Y-m-d').'T10:00', 'caption' => 'Poprawiony opis A'],
+                3 => ['social_account_id' => $this->acc->id, 'scheduled_at' => today()->addDays(12)->format('Y-m-d').'T18:00', 'caption' => 'Nowy opis B'],
+            ],
+        ])->assertOk()
+            ->assertSee('Poprawiony opis A')->assertSee('Nowy opis B')
+            ->assertSee(today()->addDays(12)->format('Y-m-d').'T18:00')
+            ->assertSee('pub-row-error', false)
+            ->assertSee('name="pubs[3][caption]"', false);
+        $this->assertNull($ok->fresh()->caption); // nic nie zapisane
+    }
+
     public function test_extension_updates_license_records_history_and_counts_in_campaign_costs(): void
     {
         $this->setUpWorld();

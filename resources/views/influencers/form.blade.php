@@ -37,4 +37,4 @@
     <button class="btn btn-send"><x-icon name="check" :size="18" />{{ __('ui.save') }}</button>
 </form>
 @endsection
-@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=2"></script>@endpush
+@push('scripts')<script src="{{ asset('js/uploader.js') }}?v=3"></script>@endpush

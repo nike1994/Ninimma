@@ -61,13 +61,17 @@
     <section class="card stack">
         <h2><x-icon name="share" /> {{ __('social.publications') }}</h2>
         <p class="muted small">{{ __('social.publications_hint') }}</p>
-        @if($errors->has('pubs.*'))
-            <div class="lic-issues">@foreach(collect($errors->get('pubs.*'))->flatten()->unique() as $msg)<div class="lic-issue lic-issue-error"><x-icon name="lock" :size="16" /><span>{{ $msg }}</span></div>@endforeach</div>
-        @endif
         <div data-pubs>
             @php($pubs = $content->exists ? $content->publications()->with('measurements')->orderBy('scheduled_at')->get() : collect())
-            @foreach($pubs as $i => $p) @include('social.contents._pub', ['i' => $i, 'p' => $p]) @endforeach
-            @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null])
+            @if(is_array(old('pubs')))
+                {{-- Nieudany zapis (np. blokada licencji): wiersze z wpisanymi danymi, nic nie przepada. --}}
+                @foreach(old('pubs') as $i => $row)
+                    @include('social.contents._pub', ['i' => $i, 'p' => $pubs->firstWhere('id', (int) ($row['id'] ?? 0)), 'o' => $row])
+                @endforeach
+            @else
+                @foreach($pubs as $i => $p) @include('social.contents._pub', ['i' => $i, 'p' => $p]) @endforeach
+                @include('social.contents._pub', ['i' => $pubs->count(), 'p' => null])
+            @endif
         </div>
         <template data-pub-template>@include('social.contents._pub', ['i' => '__I__', 'p' => null])</template>
         <button type="button" class="btn btn-small" data-add-pub><x-icon name="plus" :size="14" /> {{ __('social.add_publication') }}</button>
@@ -76,11 +80,12 @@
 </form>
 @endsection
 @push('scripts')
-<script src="{{ asset('js/uploader.js') }}?v=2"></script>
+<script src="{{ asset('js/uploader.js') }}?v=3"></script>
 <script>
 (function () {
     const wrap = document.querySelector('[data-pubs]'), tpl = document.querySelector('[data-pub-template]');
-    let n = wrap.querySelectorAll('[data-pub-row]').length;
+    // Kolejny wolny indeks (po nieudanym zapisie indeksy mogą mieć luki).
+    let n = Math.max(-1, ...[...wrap.querySelectorAll('[data-pub-row] input[name$="[id]"]')].map(i => parseInt(i.name.match(/pubs\[(\d+)\]/)?.[1] ?? -1, 10))) + 1;
     // Konta tylko wybranego klienta.
     const client = document.querySelector('[data-client-select]');
     const filter = () => document.querySelectorAll('[data-account-select] option[data-client], [data-campaign-select] option[data-client], [data-mat-picker] [data-client]').forEach(o => o.hidden = client.value && o.dataset.client !== client.value && !o.querySelector('input:checked'));

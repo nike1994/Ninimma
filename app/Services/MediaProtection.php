@@ -52,10 +52,10 @@ class MediaProtection
     }
 
     /** Zdjęcie dla klienta: pomniejszone, ze znakiem wodnym z nazwą klienta i datą (kopia w pamięci podręcznej). */
-    public function watermarkedImage(FileUsage $usage, User $user, string $sourcePath): string
+    public function watermarkedImage(FileUsage $usage, User $user, string $sourcePath, string $variant = ''): string
     {
         $label = mb_strtoupper(__('files.preview_mark')).' · '.($user->client?->name ?? $user->name).' · '.today()->format('d.m.Y');
-        $key = 'previews/'.$usage->id.'-'.substr(sha1($label.$usage->file->sha256.self::PREVIEW_MAX), 0, 16).'.jpg';
+        $key = 'previews/'.$usage->id.$variant.'-'.substr(sha1($label.$sourcePath.self::PREVIEW_MAX), 0, 16).'.jpg';
         $disk = Storage::disk('local');
         if ($disk->exists($key)) {
             return $disk->path($key);

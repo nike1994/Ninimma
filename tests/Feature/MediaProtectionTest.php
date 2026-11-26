@@ -107,4 +107,39 @@ class MediaProtectionTest extends TestCase
         $pub->update(['status' => 'published', 'published_at' => now()]);
         $this->get($url.'?download=1')->assertOk()->assertHeader('Content-Type', 'image/png');
     }
+
+    public function test_video_poster_is_stored_as_jpeg_and_watermarked_for_client(): void
+    {
+        [$admin, $client, , $mk] = $this->world();
+        [, $u] = $mk('video/mp4');
+        $png = \Illuminate\Http\UploadedFile::fake()->image('kadr.png', 1920, 1080);
+
+        // Klient nie może ustawić kadru cudzego pliku; zespół może.
+        $this->actingAs($client)->post(route('files.poster.store', $u), ['poster' => $png])->assertForbidden();
+        $this->actingAs($admin)->withSession(['two_factor_passed' => true])->post(route('files.poster.store', $u), ['poster' => $png])->assertOk();
+        $poster = $u->file->fresh()->poster;
+        $this->assertSame('image/jpeg', $poster->mime);
+        $this->assertSame(960, getimagesize(app(FileStore::class)->absolutePath($poster))[0]); // przeskalowany i zapisany na nowo
+        $this->get(route('files.poster', $u))->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+        $this->get(route('licenses.index'))->assertSee('mat-thumb-poster', false)->assertDontSee('data-make-poster', false);
+
+        $res = $this->actingAs($client)->get(route('files.poster', $u))->assertOk();
+        $this->assertStringContainsString('no-store', $res->headers->get('Cache-Control')); // kopia ze znakiem wodnym
+        $this->assertNotSame(app(FileStore::class)->absolutePath($poster), $res->baseResponse->getFile()->getPathname());
+    }
+
+    public function test_upload_by_client_can_set_own_video_poster_once(): void
+    {
+        [, $client] = $this->world();
+        $tmp = tempnam(sys_get_temp_dir(), 'v');
+        file_put_contents($tmp, random_bytes(1024));
+        $f = app(FileStore::class)->storeLocalFile($tmp, 'video/mp4');
+        $f->forceFill(['mime' => 'video/quicktime'])->save();
+        $u = FileUsage::create(['file_id' => $f->id, 'name' => 'IMG_0001.MOV', 'uploaded_by' => $client->id]);
+        $this->actingAs($client)->post(route('files.poster.store', $u), ['poster' => \Illuminate\Http\UploadedFile::fake()->image('p.jpg', 400, 700)])->assertOk();
+        $first = $f->fresh()->poster_id;
+        $this->assertNotNull($first);
+        $this->post(route('files.poster.store', $u), ['poster' => \Illuminate\Http\UploadedFile::fake()->image('q.jpg', 300, 300)])->assertOk();
+        $this->assertSame($first, $f->fresh()->poster_id);
+    }
 }

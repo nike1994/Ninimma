@@ -1,6 +1,7 @@
 {{-- Załączniki: przeciągnij, wklej ze schowka, wybierz plik lub nagraj ekran. --}}
 <div class="uploader" data-uploader
      data-start="{{ route('uploads.start') }}"
+     data-poster="{{ route('files.poster.store', '__ID__') }}"
      data-max-mb="{{ auth()->user()->isAdmin() ? 0 : config('agency.client_max_file_mb') }}"
      data-max-rec="{{ auth()->user()->isAdmin() ? 0 : config('agency.client_max_recording_seconds') }}">
     <div class="uploader-list"></div>

@@ -10,7 +10,13 @@ class StoredFile extends Model
 {
     protected $table = 'files';
 
-    protected $fillable = ['sha256', 'size', 'mime', 'path', 'location', 'offline_package'];
+    protected $fillable = ['sha256', 'size', 'mime', 'path', 'location', 'offline_package', 'poster_id'];
+
+    /** Kadr filmu (JPEG). */
+    public function poster(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(self::class, 'poster_id');
+    }
 
     public function usages(): HasMany
     {

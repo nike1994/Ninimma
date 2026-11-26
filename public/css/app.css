@@ -1159,3 +1159,9 @@ a.kpi { color: var(--text); }
 .access-log { list-style: none; margin: 0; padding: 0; font-size: .8rem; display: flex; flex-direction: column; gap: .2rem; }
 .access-log .blocked { color: var(--red); }
 @media print { .mat-thumb.is-protected, .client-pub-img { visibility: hidden; } }
+.pub-row-error { border-color: #fbd3df !important; box-shadow: 0 0 0 3px rgba(224, 69, 123, .12); }
+.pub-row-msg { margin-bottom: .6rem; }
+.mat-thumb-media .mat-thumb-poster { position: absolute; inset: 0; z-index: 0; }
+.mat-thumb-media video { position: relative; }
+.mat-thumb-poster + video { opacity: 0; transition: opacity .2s; }
+.mat-thumb.is-playing .mat-thumb-poster + video { opacity: 1; }
