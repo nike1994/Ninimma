@@ -7,7 +7,11 @@
         'gdańsk' => [18.65, 54.35], 'gdansk' => [18.65, 54.35], 'łódź' => [19.46, 51.76], 'lodz' => [19.46, 51.76], 'szczecin' => [14.55, 53.43], 'bydgoszcz' => [18.0, 53.12], 'lublin' => [22.57, 51.25],
         'białystok' => [23.16, 53.13], 'bialystok' => [23.16, 53.13], 'katowice' => [19.02, 50.26], 'gdynia' => [18.53, 54.52], 'częstochowa' => [19.12, 50.81], 'radom' => [21.15, 51.4], 'toruń' => [18.6, 53.01],
         'torun' => [18.6, 53.01], 'rzeszów' => [22.0, 50.04], 'rzeszow' => [22.0, 50.04], 'kielce' => [20.63, 50.87], 'olsztyn' => [20.48, 53.78], 'opole' => [17.93, 50.67], 'zielona góra' => [15.5, 51.94],
-        'gorzów wielkopolski' => [15.24, 52.73], 'sopot' => [18.56, 54.44], 'gliwice' => [18.67, 50.29], 'sosnowiec' => [19.13, 50.29], 'koszalin' => [16.18, 54.19], 'słupsk' => [17.03, 54.46], 'tarnów' => [20.99, 50.01], 'płock' => [19.7, 52.55]];
+        'gorzów wielkopolski' => [15.24, 52.73], 'sopot' => [18.56, 54.44], 'gliwice' => [18.67, 50.29], 'sosnowiec' => [19.13, 50.29], 'koszalin' => [16.18, 54.19], 'słupsk' => [17.03, 54.46], 'tarnów' => [20.99, 50.01], 'płock' => [19.7, 52.55],
+        // Województwa (z Meta Ads) — środek regionu.
+        'mazowieckie' => [21.1, 52.35], 'małopolskie' => [20.2, 49.85], 'śląskie' => [19.0, 50.35], 'dolnośląskie' => [16.4, 51.0], 'wielkopolskie' => [17.2, 52.3],
+        'pomorskie' => [18.0, 54.15], 'łódzkie' => [19.4, 51.6], 'zachodniopomorskie' => [15.4, 53.5], 'kujawsko-pomorskie' => [18.4, 53.05], 'lubelskie' => [22.8, 51.2],
+        'podkarpackie' => [22.2, 49.95], 'podlaskie' => [22.9, 53.3], 'warmińsko-mazurskie' => [20.8, 53.85], 'lubuskie' => [15.3, 52.2], 'opolskie' => [17.9, 50.6], 'świętokrzyskie' => [20.75, 50.75]];
     $max = max([1, ...array_values($cities)]);
     $first = array_key_first($cities);
 @endphp
