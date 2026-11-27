@@ -11,12 +11,18 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'company_name', 'tax_id', 'address', 'contact_email', 'contact_phone', 'retention_months', 'is_active', 'arrangements',
+        'name', 'company_name', 'tax_id', 'address', 'contact_email', 'contact_phone', 'retention_months', 'is_active', 'arrangements', 'hourly_rate',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'social_defaults' => 'array'];
+        return ['is_active' => 'boolean', 'social_defaults' => 'array', 'hourly_rate' => 'float'];
+    }
+
+    /** Stawka za godzinę pracy: własna klienta albo domyślna z ustawień. */
+    public function rate(): float
+    {
+        return $this->hourly_rate ?: (float) Setting::get('hourly_rate', 150);
     }
 
     /**

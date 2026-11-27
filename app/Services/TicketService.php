@@ -161,10 +161,10 @@ class TicketService
         });
     }
 
-    public function logTime(Ticket $ticket, User $by, int $minutes, string $date, ?string $note): void
+    public function logTime(Ticket $ticket, User $by, int $minutes, string $date, ?string $note, bool $billable = true, string $source = 'manual'): void
     {
-        DB::transaction(function () use ($ticket, $by, $minutes, $date, $note) {
-            $ticket->timeEntries()->create(['user_id' => $by->id, 'minutes' => $minutes, 'spent_on' => $date, 'note' => $note]);
+        DB::transaction(function () use ($ticket, $by, $minutes, $date, $note, $billable, $source) {
+            $ticket->timeEntries()->create(['user_id' => $by->id, 'minutes' => $minutes, 'spent_on' => $date, 'note' => $note, 'billable' => $billable, 'source' => $source]);
             if ($ticket->started_at === null) {
                 $ticket->started_at = now();
             }

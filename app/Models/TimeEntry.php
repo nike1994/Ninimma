@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TimeEntry extends Model
 {
-    protected $fillable = ['ticket_id', 'user_id', 'spent_on', 'minutes', 'note'];
+    protected $fillable = ['ticket_id', 'user_id', 'spent_on', 'minutes', 'note', 'billable', 'source'];
 
     protected function casts(): array
     {
-        return ['spent_on' => 'date'];
+        return ['spent_on' => 'date', 'billable' => 'boolean'];
     }
 
     public function ticket(): BelongsTo

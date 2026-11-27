@@ -101,6 +101,7 @@ class ClientController extends Controller
             'contact_email' => ['nullable', 'email'],
             'contact_phone' => ['nullable', 'string', 'max:64'],
             'retention_months' => ['nullable', 'integer', 'min:1', 'max:240'],
+            'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:100000'],
         ]);
 
         return $data + ['is_active' => $request->boolean('is_active')];

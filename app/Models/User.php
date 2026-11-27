@@ -39,7 +39,14 @@ class User extends Authenticatable implements HasLocalePreference
             'password' => 'hashed',
             'role' => Role::class,
             'is_active' => 'boolean',
+            'timer_started_at' => 'datetime',
         ];
+    }
+
+    /** Zlecenie, przy którym działa stoper tej osoby. */
+    public function timerTicket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class, 'timer_ticket_id');
     }
 
     public function client(): BelongsTo

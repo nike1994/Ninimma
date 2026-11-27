@@ -21,6 +21,14 @@ Opcjonalna wtyczka WordPress łączy panel ze stronami klientów. Specyfikacja: 
 
 ## Najważniejsze funkcje
 
+**Zadania i czas pracy (menu „Zadania”, „Czas pracy”).** Zadania to zlecenia: lista wg terminów (po terminie, dziś,
+ten tydzień, później, bez terminu) albo tablica wg statusu, filtr osoby, klienta i typu, szybkie dodawanie z terminem,
+osobą, priorytetem i szacunkiem czasu, zmiana osoby i „zrobione” jednym kliknięciem. Stoper: jeden na osobę, zapisany
+w bazie (działa po zamknięciu przeglądarki), widoczny w górnym pasku; zatrzymanie zapisuje wpis czasu (z opisem,
+opcjonalnie jako wewnętrzny), start przy innym zadaniu zapisuje poprzedni, zapomniany stoper ucinany do 10 h.
+Czas pracy: mój tydzień (siatka dni, wpisy z edycją, ręczne dodanie), zespół (kto ile w tygodniu, % rozliczalnych,
+kto teraz nad czym pracuje), klienci w miesiącu (godziny, pakiet opieki stron, stawka klienta, wartość) i eksport CSV.
+
 **Zlecenia (wszystko jest zleceniem).** Rozmowa z notatkami wewnętrznymi, status i strona, po której jest piłka,
 oś czasu tworzona automatycznie, „wynikło z”, potwierdzenia przeczytania, odświeżanie co kilka sekund,
 wklejanie zrzutów, nagrywanie ekranu, pliki w kawałkach (deduplikacja SHA-256, wydawane po sprawdzeniu uprawnień),

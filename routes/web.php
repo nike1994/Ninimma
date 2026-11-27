@@ -203,6 +203,21 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::patch('/accounts/{account}/toggle', [\App\Http\Controllers\Social\AccountController::class, 'toggle'])->name('accounts.toggle');
     });
 
+    // Zadania i czas pracy zespołu (agencja).
+    Route::middleware('admin')->group(function () {
+        Route::get('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'index'])->name('tasks.index');
+        Route::post('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'store'])->name('tasks.store');
+        Route::patch('/tasks/{ticket}', [\App\Http\Controllers\TaskBoardController::class, 'update'])->name('tasks.update');
+        Route::post('/timer/{ticket}/start', [\App\Http\Controllers\TaskBoardController::class, 'timerStart'])->name('timer.start');
+        Route::post('/timer/stop', [\App\Http\Controllers\TaskBoardController::class, 'timerStop'])->name('timer.stop');
+        Route::post('/timer/discard', [\App\Http\Controllers\TaskBoardController::class, 'timerDiscard'])->name('timer.discard');
+        Route::get('/time', [\App\Http\Controllers\TimeController::class, 'index'])->name('time.index');
+        Route::post('/time', [\App\Http\Controllers\TimeController::class, 'store'])->name('time.store');
+        Route::get('/time/export', [\App\Http\Controllers\TimeController::class, 'export'])->name('time.export');
+        Route::patch('/time/{entry}', [\App\Http\Controllers\TimeController::class, 'update'])->name('time.update');
+        Route::delete('/time/{entry}', [\App\Http\Controllers\TimeController::class, 'destroy'])->name('time.destroy');
+    });
+
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/integrations', [Admin\IntegrationController::class, 'edit'])->name('integrations');
         Route::put('/integrations', [Admin\IntegrationController::class, 'update'])->name('integrations.update');

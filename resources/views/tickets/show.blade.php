@@ -202,6 +202,7 @@
             <label class="field"><span>{{ __('ui.assignee') }}</span>
                 <select name="assigned_to"><option value="">—</option>@foreach($admins as $a)<option value="{{ $a->id }}" @selected($ticket->assigned_to === $a->id)>{{ $a->name }}</option>@endforeach</select>
             </label>
+            <label class="field"><span>{{ __('task.estimate') }}</span><input name="estimate" value="{{ $ticket->estimate_minutes ? \App\Models\TimeEntry::format($ticket->estimate_minutes) : '' }}" placeholder="{{ __('task.estimate_ph') }}" pattern="\d{1,3}([:.,]\d{1,2})?"></label>
             <button class="btn btn-small">{{ __('ui.save') }}</button>
         </form>
 
@@ -209,7 +210,16 @@
             @php($total = $timeEntries->sum('minutes'))
             <h3><x-icon name="clock" /> {{ __('ui.work_time') }}</h3>
             @php($limit = $ticket->acceptedQuote()?->acceptedMinutes())
-            <p class="time-total"><strong>{{ \App\Models\TimeEntry::format($total) }}</strong> <span class="muted">@if($limit){{ __('ui.of_limit', ['limit' => \App\Models\TimeEntry::format($limit)]) }}@else h @endif</span></p>
+            <p class="time-total"><strong>{{ \App\Models\TimeEntry::format($total) }}</strong> <span class="muted">@if($limit){{ __('ui.of_limit', ['limit' => \App\Models\TimeEntry::format($limit)]) }}@elseif($ticket->estimate_minutes){{ __('ui.of_limit', ['limit' => \App\Models\TimeEntry::format($ticket->estimate_minutes)]) }} ({{ mb_strtolower(__('task.estimate')) }})@else h @endif</span></p>
+            @if($ticket->status !== \App\Enums\TicketStatus::Done)
+                @if(auth()->user()->timer_ticket_id === $ticket->id)
+                    <form method="post" action="{{ route('timer.stop') }}" class="time-form">@csrf
+                        <input name="note" placeholder="{{ __('task.timer_note_ph') }}" maxlength="250">
+                        <button class="btn btn-small tk-timer on"><span class="rec"></span><span data-timer-since="{{ auth()->user()->timer_started_at->timestamp }}">0:00</span> {{ __('task.stop') }}</button></form>
+                @else
+                    <form method="post" action="{{ route('timer.start', $ticket) }}">@csrf<button class="btn btn-small btn-send"><x-icon name="play" :size="14" /> {{ __('task.start') }} {{ mb_strtolower(__('task.timer_running')) }}</button></form>
+                @endif
+            @endif
             @if($limit)
                 @php($pct = min(100, (int) round($total / $limit * 100)))
                 <div @class(['limit-bar', 'warn' => $pct >= 80])><span style="width: {{ $pct }}%"></span></div>
@@ -223,6 +233,7 @@
                 <input name="hours" placeholder="1:30" required size="5" aria-label="{{ __('ui.hours') }}">
                 <input type="date" name="spent_on" value="{{ today()->toDateString() }}" required>
                 <input name="note" placeholder="{{ __('ui.what_done') }}">
+                <label class="check small"><input type="checkbox" name="internal" value="1"> {{ __('task.internal_short') }}</label>
                 <button class="btn btn-small btn-dark"><x-icon name="plus" :size="14" /> {{ __('ui.add') }}</button>
             </form>
         </section>

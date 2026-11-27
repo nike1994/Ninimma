@@ -18,7 +18,7 @@ class Ticket extends Model
 
     protected $attributes = ['priority' => 'normal', 'archive_state' => 'active', 'reminders_sent' => 0];
 
-    protected $fillable = ['site_id', 'campaign_id', 'client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by', 'priority', 'due_on', 'assigned_to'];
+    protected $fillable = ['site_id', 'campaign_id', 'client_id', 'parent_id', 'template_id', 'title', 'type', 'status', 'blocked_reason', 'created_by', 'priority', 'due_on', 'assigned_to', 'estimate_minutes'];
 
     protected function casts(): array
     {

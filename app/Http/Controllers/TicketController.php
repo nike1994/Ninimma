@@ -151,8 +151,12 @@ class TicketController extends Controller
             'priority' => ['required', Rule::enum(Priority::class)],
             'due_on' => ['nullable', 'date'],
             'assigned_to' => ['nullable', Rule::exists('users', 'id')->where('role', 'admin')],
+            'estimate' => ['nullable', 'regex:/^\d{1,3}([:.,]\d{1,2})?$/'],
         ]);
         $this->tickets->updateDetails($ticket, $request->user(), $data);
+        if ($request->has('estimate')) {
+            $ticket->forceFill(['estimate_minutes' => filled($data['estimate'] ?? null) ? self::parseHours($data['estimate']) : null])->save();
+        }
 
         return back()->with('status', __('ui.saved'));
     }
@@ -166,7 +170,7 @@ class TicketController extends Controller
         ]);
         $minutes = self::parseHours($data['hours']);
         abort_if($minutes < 1 || $minutes > 24 * 60, 422);
-        $this->tickets->logTime($ticket, $request->user(), $minutes, $data['spent_on'], $data['note'] ?? null);
+        $this->tickets->logTime($ticket, $request->user(), $minutes, $data['spent_on'], $data['note'] ?? null, ! $request->boolean('internal'));
         $pct = app(\App\Services\QuoteService::class)->checkLimit($ticket, $request->user());
 
         return back()->with('status', $pct !== null && $pct >= 80 ? __('ui.limit_warning', ['pct' => $pct]) : __('ui.saved'));

@@ -21,6 +21,9 @@
             <a href="{{ route('tickets.index') }}" @class(['active' => request()->routeIs('tickets.*')])><x-icon name="folder" />{{ $me->isAdmin() ? __('ui.tickets') : __('ui.my_tickets') }}
                 @if(! $me->isAdmin() && $unreadCount)<span class="nav-count">{{ $unreadCount }}</span>@endif</a>
             @if($me->isAdmin())
+                <a href="{{ route('tasks.index') }}" @class(['active' => request()->routeIs('tasks.*')])><x-icon name="check-square" />{{ __('task.title') }}
+                    @if($myOverdue = \App\Models\Ticket::open()->where('archive_state', 'active')->where('assigned_to', $me->id)->whereDate('due_on', '<', today())->count())<span class="nav-count" title="{{ __('task.kpi_overdue') }}">{{ $myOverdue }}</span>@endif</a>
+                <a href="{{ route('time.index') }}" @class(['active' => request()->routeIs('time.*')])><x-icon name="clock" />{{ __('task.time_title') }}</a>
                 <div @class(['nav-group', 'open' => request()->routeIs('social.*')])>
                     <a href="{{ route('social.dashboard') }}" @class(['nav-group-head', 'active-soft' => request()->routeIs('social.*')])><x-icon name="megaphone" />{{ __('social.title') }}<x-icon name="chevron-down" :size="16" class="nav-caret" /></a>
                     <div class="nav-sub">
@@ -99,6 +102,20 @@
                 </div>
             @endif
             <div class="topbar-right">
+                @if($me->isAdmin() && $me->timer_ticket_id && $me->timerTicket)
+                    <details class="timer-chip">
+                        <summary title="{{ $me->timerTicket->title }}"><span class="rec"></span><span data-timer-since="{{ $me->timer_started_at->timestamp }}">0:00</span><span class="timer-chip-title hide-sm">{{ \Illuminate\Support\Str::limit($me->timerTicket->title, 26) }}</span></summary>
+                        <div class="timer-pop">
+                            <a href="{{ route('tickets.show', $me->timerTicket) }}"><strong>{{ $me->timerTicket->title }}</strong></a>
+                            <small class="muted">{{ $me->timerTicket->client?->name }} · {{ __('task.timer_since', ['time' => $me->timer_started_at->format('H:i')]) }}</small>
+                            <form method="post" action="{{ route('timer.stop') }}" class="stack">@csrf
+                                <input name="note" placeholder="{{ __('task.timer_note_ph') }}" maxlength="250">
+                                <label class="check small"><input type="checkbox" name="internal" value="1"> {{ __('task.internal') }}</label>
+                                <button class="btn btn-dark btn-small"><x-icon name="pause" :size="14" /> {{ __('task.stop') }}</button></form>
+                            <form method="post" action="{{ route('timer.discard') }}" onsubmit="return confirm('{{ __('task.discard_confirm') }}')">@csrf<button class="btn btn-small btn-link-danger">{{ __('task.discard') }}</button></form>
+                        </div>
+                    </details>
+                @endif
                 <a href="{{ route('tickets.create') }}" class="btn btn-primary"><x-icon name="plus" :size="18" /><span class="hide-sm">{{ __('ui.new_ticket') }}</span></a>
                 @unless($me->isAdmin())
                     <a href="{{ route('tickets.index') }}" class="icon-btn" title="{{ __('ui.new_messages') }}"><x-icon name="bell" />@if($unreadCount)<span class="bell-dot"></span>@endif</a>
@@ -128,6 +145,7 @@
     </main>
 </div>
 <script src="{{ asset('js/media-thumbs.js') }}?v=3" defer></script>
+<script src="{{ asset('js/timer.js') }}?v=1" defer></script>
 @stack('scripts')
 </body>
 </html>

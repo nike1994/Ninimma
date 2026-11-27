@@ -11,6 +11,7 @@
     <x-field name="contact_email" type="email" :label="__('ui.contact_email')" :value="$client->contact_email" />
     <x-field name="contact_phone" :label="__('ui.contact_phone')" :value="$client->contact_phone" />
     <x-field name="retention_months" type="number" :label="__('ui.retention_months')" :value="$client->retention_months" min="1" />
+    <x-field name="hourly_rate" type="number" step="0.01" min="0" :label="__('task.hourly_rate')" :value="$client->hourly_rate" :placeholder="__('task.hourly_rate_hint')" />
     <label class="check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $client->is_active))> {{ __('ui.active') }}</label>
     <button class="btn btn-dark">{{ __('ui.save') }}</button>
 </form>
