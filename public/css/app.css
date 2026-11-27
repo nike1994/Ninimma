@@ -1898,7 +1898,11 @@ a.kpi { color: var(--text); }
 .chat-thread.unread { background: linear-gradient(90deg, rgba(155, 225, 93, .16), transparent 70%); }
 .chat-thread.unread .ct-top strong::before { background: var(--green); box-shadow: 0 0 0 3px rgba(54, 180, 92, .18); }
 .chat-msgs { background: linear-gradient(180deg, #f3fbf6 0%, #f6f9fc 60%); }
-.chat-msgs .msg-agency .bubble { background: linear-gradient(135deg, #1f8a5b 0%, var(--teal) 55%, var(--blue) 100%); }
+.chat-msgs .bubble { box-shadow: none; }
+.chat-msgs .msg-agency .bubble { background: #1a6fb5; color: #fff; }
+.chat-msgs .msg-client .bubble { background: #23934c; color: #fff; }
+.chat-msgs .msg-client .chat-copy { color: rgba(255, 255, 255, .9); }
+.chat-msgs .bubble-meta { opacity: .8; }
 .chat-reply .btn-send { background: linear-gradient(135deg, var(--green), var(--teal)); }
 .chat-copy { color: #1f8a46; }
 .chat-reply .check input { accent-color: var(--green); }
