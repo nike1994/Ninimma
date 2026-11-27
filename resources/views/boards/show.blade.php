@@ -67,5 +67,5 @@
     window.EXCALIDRAW_ASSET_PATH = @json(asset('vendor/excalidraw').'/');
     window.BOARD = {!! json_encode($boardConfig, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!};
 </script>
-<script src="{{ asset('js/board-page.js') }}?v=1" type="module"></script>
+<script src="{{ asset('js/board-page.js') }}?v={{ @filemtime(public_path('js/board-page.js')) }}" type="module"></script>
 @endsection

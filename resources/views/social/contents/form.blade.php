@@ -64,9 +64,9 @@
         @if($content->exists && $content->files->isNotEmpty())
             <div class="content-files">
                 @foreach($content->files as $f)
-                    <a href="{{ route('files.show', [$f, $f->name]) }}" target="_blank" class="content-file">
+                    <span class="content-file-wrap"><a href="{{ route('files.show', [$f, $f->name]) }}" target="_blank" class="content-file">
                         @if($f->file->isImage())<img src="{{ route('files.show', [$f, $f->name]) }}" alt="">@else<x-icon :name="$f->file->isVideo() ? 'video' : 'file'" :size="24" />@endif
-                        <small>{{ $f->name }}</small></a>
+                        <small>{{ $f->name }}</small></a><x-to-board :usage="$f" :compact="true" class="to-board-float" /></span>
                 @endforeach
             </div>
         @endif

@@ -47,7 +47,9 @@ function apply(data) {
     if (!api || !data.elements?.length) return;
     const map = new Map(api.getSceneElementsIncludingDeleted().map(e => [e.id, e]));
     let changed = false;
-    for (const remote of data.elements) {
+    // Elementy dodane po stronie serwera (np. „Na tablicę”) uzupełniamy o brakujące pola Excalidraw.
+    const incoming = lib.restoreElements ? lib.restoreElements(data.elements, null) : data.elements;
+    for (const remote of incoming) {
         const local = map.get(remote.id);
         sent[remote.id] = Math.max(sent[remote.id] ?? -1, remote.version);
         if (!local || local.version < remote.version) { map.set(remote.id, lockForeign(remote)); changed = true; }

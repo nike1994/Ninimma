@@ -147,6 +147,10 @@
 <script src="{{ asset('js/media-thumbs.js') }}?v=3" defer></script>
 <script src="{{ asset('js/timer.js') }}?v=1" defer></script>
 @include('chat._dock')
+@if($me->isAdmin())
+    <span id="to-board-cfg" hidden data-max="{{ \App\Services\BoardSnapshot::MAX_FRAMES }}" data-i18n="{{ json_encode(__('board')) }}"></span>
+    <script src="{{ asset('js/to-board.js') }}?v={{ @filemtime(public_path('js/to-board.js')) }}" defer></script>
+@endif
 <script src="{{ asset('js/chat.js') }}?v={{ @filemtime(public_path('js/chat.js')) }}" defer></script>
 @stack('scripts')
 </body>

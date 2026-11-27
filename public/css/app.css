@@ -1906,3 +1906,24 @@ a.kpi { color: var(--text); }
 .chat-reply .btn-send { background: linear-gradient(135deg, var(--green), var(--teal)); }
 .chat-copy { color: #1f8a46; }
 .chat-reply .check input { accent-color: var(--green); }
+
+/* ---------------- Na tablicę ---------------- */
+.to-board-btn { gap: .3rem; }
+.to-board-btn.compact { padding: .3rem .45rem; }
+.lic-thumb-wrap, .content-file-wrap { position: relative; display: inline-flex; }
+.to-board-float { position: absolute; right: -6px; bottom: -6px; z-index: 2; box-shadow: 0 4px 12px rgba(11, 42, 74, .18); background: #fff; border-radius: 10px; }
+.tb-dialog { width: min(1080px, 96vw); max-height: 92vh; padding: 0; border: 0; border-radius: 20px; box-shadow: 0 30px 80px rgba(11, 42, 74, .35); overflow: hidden; }
+.tb-dialog::backdrop { background: rgba(11, 42, 74, .45); }
+.tb-head { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; color: #fff; background: linear-gradient(100deg, #0c4f6e 0%, #12919a 42%, #2fae66 78%, #6cc84f 100%); margin: 0; }
+.tb-head div { flex: 1; display: grid; } .tb-head .muted { color: rgba(255, 255, 255, .8); }
+.tb-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 1rem; padding: 1rem; max-height: calc(92vh - 60px); overflow: auto; }
+.tb-media { display: grid; gap: .6rem; align-content: start; }
+.tb-media video, .tb-media img { width: 100%; max-height: 52vh; background: #0b2a4a; border-radius: 14px; object-fit: contain; }
+.tb-capture { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.tb-frames { display: flex; gap: .5rem; flex-wrap: wrap; }
+.tb-frame { position: relative; display: grid; gap: .15rem; font-size: .72rem; color: var(--muted); }
+.tb-frame img { width: 120px; height: 68px; object-fit: cover; border-radius: 8px; border: 2px solid var(--green); }
+.tb-frame button { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--red); color: #fff; font-size: .7rem; cursor: pointer; }
+.tb-side { display: grid; gap: .6rem; align-content: start; }
+.tb-error { color: var(--red); font-size: .85rem; margin: 0; }
+@media (max-width: 760px) { .tb-body { grid-template-columns: minmax(0, 1fr); } }

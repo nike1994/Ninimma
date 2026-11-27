@@ -208,6 +208,8 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
 
     // Zadania i czas pracy zespołu (agencja).
     Route::middleware('admin')->group(function () {
+        Route::get('/to-board/{usage}', [\App\Http\Controllers\BoardSnapshotController::class, 'targets'])->name('to-board.targets');
+        Route::post('/to-board/{usage}', [\App\Http\Controllers\BoardSnapshotController::class, 'store'])->middleware('throttle:30,1')->name('to-board.store');
         Route::get('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'index'])->name('tasks.index');
         Route::post('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'store'])->name('tasks.store');
         Route::post('/tasks/parse', [\App\Http\Controllers\TaskBoardController::class, 'parse'])->name('tasks.parse');

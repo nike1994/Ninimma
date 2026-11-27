@@ -56,7 +56,7 @@
         @endphp
         <article class="lic-row lic-{{ $m->lic->state }}" id="m{{ $m->id }}">
             <div class="lic-main">
-                <x-material-thumb :material="$m" :size="64" :player="true" />
+                <span class="lic-thumb-wrap"><x-material-thumb :material="$m" :size="64" :player="true" /><x-to-board :usage="$m->file" :compact="true" class="to-board-float" /></span>
                 <x-license-ring :material="$m" :size="58" />
                 <div class="lic-info">
                     <strong>{{ $m->description }}</strong>

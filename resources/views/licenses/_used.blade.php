@@ -6,6 +6,7 @@
     @elseif($m->file)
         <span class="btn btn-small is-disabled" title="{{ __('lic.cannot_post', ['material' => $m->description]) }}"><x-icon name="lock" :size="14" /> {{ __('lic.create_post') }}</span>
     @endif
+    <x-to-board :usage="$m->file" />
     @if($used->isNotEmpty())
         <small class="muted">{{ __('lic.used_in') }}:</small>
         @foreach($used->take(6) as $p)

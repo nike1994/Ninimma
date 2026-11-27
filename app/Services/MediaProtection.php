@@ -60,10 +60,24 @@ class MediaProtection
         if ($disk->exists($key)) {
             return $disk->path($key);
         }
-        $src = @imagecreatefromstring((string) file_get_contents($sourcePath));
-        abort_unless($src, 415);
+        $disk->makeDirectory('previews');
+        file_put_contents($disk->path($key), self::watermark((string) file_get_contents($sourcePath), $label, self::PREVIEW_MAX) ?? abort(415));
+
+        return $disk->path($key);
+    }
+
+    /**
+     * Kopia do pokazania na zewnątrz: pomniejszona (max $max px), JPEG, ukośne powtarzane napisy na całym kadrze,
+     * opcjonalnie podpis w rogu (np. czas klatki). Zwraca dane JPEG albo null, gdy to nie obraz.
+     */
+    public static function watermark(string $binary, string $label, int $max = self::PREVIEW_MAX, ?string $corner = null): ?string
+    {
+        $src = @imagecreatefromstring($binary);
+        if (! $src) {
+            return null;
+        }
         [$w, $h] = [imagesx($src), imagesy($src)];
-        $scale = min(1, self::PREVIEW_MAX / max($w, $h));
+        $scale = min(1, $max / max($w, $h));
         [$nw, $nh] = [max(1, (int) ($w * $scale)), max(1, (int) ($h * $scale))];
         $im = imagecreatetruecolor($nw, $nh);
         imagefill($im, 0, 0, imagecolorallocate($im, 255, 255, 255));
@@ -87,10 +101,19 @@ class MediaProtection
                 }
             }
         }
-        $disk->makeDirectory('previews');
-        imagejpeg($im, $disk->path($key), 82);
+        if ($corner !== null && $corner !== '') {
+            $cs = max(11, (int) round($size * .9));
+            $pad = (int) round($cs * .6);
+            $boxW = $ttf ? (int) (abs(imagettfbbox($cs, 0, $font, $corner)[2]) + $pad * 2) : strlen($corner) * 9 + $pad * 2;
+            $boxH = $cs + $pad * 2;
+            imagefilledrectangle($im, $pad, $nh - $boxH - $pad, $pad + $boxW, $nh - $pad, imagecolorallocatealpha($im, 11, 42, 74, 30));
+            $ttf ? imagettftext($im, $cs, 0, $pad * 2, $nh - $pad * 2, imagecolorallocate($im, 255, 255, 255), $font, $corner)
+                : imagestring($im, 5, $pad * 2, $nh - $boxH, Str::ascii($corner), imagecolorallocate($im, 255, 255, 255));
+        }
+        ob_start();
+        imagejpeg($im, null, 82);
         imagedestroy($im);
 
-        return $disk->path($key);
+        return (string) ob_get_clean();
     }
 }

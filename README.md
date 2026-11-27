@@ -21,6 +21,12 @@ Opcjonalna wtyczka WordPress łączy panel ze stronami klientów. Specyfikacja: 
 
 ## Najważniejsze funkcje
 
+**„Na tablicę” — kadry do uwag klienta.** Przy materiałach (biblioteka, licencje, współprace) i plikach postów
+przycisk „Na tablicę”: grafika albo stop-klatki z filmu (zatrzymaj film, „Zrób stop-klatkę”, do 6 klatek) trafiają na
+tablicę klienta — istniejącą albo nowe zlecenie „Uwagi do: …” — jako pomniejszona kopia (max 1600 px, JPEG) ze znakiem
+wodnym klienta i czasem klatki; oryginał zostaje chroniony. Kadry są zablokowane dla klienta (nie przesunie ich ani nie
+usunie), a klient rysuje strzałki i pisze komentarze. Opcjonalna wiadomość i „poproś o uwagi” (zlecenie czeka na klienta).
+
 **Okno wiadomości (na każdej stronie).** Przycisk „Wiadomości” w prawym dolnym rogu otwiera panel z boku — strona
 pod spodem zostaje dostępna, więc można przepisywać i wklejać. Lista rozmów (zleceń z wiadomościami) z ostatnią
 wiadomością i nieprzeczytanymi, filtry (nieprzeczytane, czeka na nas), wyszukiwanie, rozmowa odświeżana co kilka
