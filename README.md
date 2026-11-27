@@ -25,7 +25,8 @@ Opcjonalna wtyczka WordPress łączy panel ze stronami klientów. Specyfikacja: 
 ten tydzień, później, bez terminu) albo tablica wg statusu, filtr osoby, klienta i typu, szybkie dodawanie z terminem,
 osobą, priorytetem i szacunkiem czasu jedną linijką („Grafiki #zielony @ola jutro 2h !” — z podglądem, co program
 rozpoznał), wklejanie wielu zadań naraz (linijka = zadanie) i zestawy zadań wstawiane jednym kliknięciem z terminami
-„+N dni” od daty startu (np. nowa kampania, miesięczna obsługa); zmiana osoby i „zrobione” jednym kliknięciem. Stoper: jeden na osobę, zapisany
+„+N dni” od daty startu (np. nowa kampania, miesięczna obsługa) — także przy tworzeniu kampanii (zadania przypięte
+do kampanii, terminy od jej startu) i z zakładki Ustawienia kampanii; zmiana osoby i „zrobione” jednym kliknięciem. Stoper: jeden na osobę, zapisany
 w bazie (działa po zamknięciu przeglądarki), widoczny w górnym pasku; zatrzymanie zapisuje wpis czasu (z opisem,
 opcjonalnie jako wewnętrzny), start przy innym zadaniu zapisuje poprzedni, zapomniany stoper ucinany do 10 h.
 Czas pracy: mój tydzień (siatka dni, wpisy z edycją, ręczne dodanie), zespół (kto ile w tygodniu, % rozliczalnych,

@@ -171,6 +171,7 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
         Route::put('/campaigns/{campaign}/audience', [\App\Http\Controllers\Social\CampaignController::class, 'audience'])->name('campaigns.audience');
         Route::post('/campaigns/{campaign}/audience/import', [\App\Http\Controllers\Social\CampaignController::class, 'audienceImport'])->name('campaigns.audience.import');
         Route::put('/campaigns/{campaign}/retro', [\App\Http\Controllers\Social\CampaignController::class, 'retro'])->name('campaigns.retro');
+        Route::post('/campaigns/{campaign}/task-set', [\App\Http\Controllers\Social\CampaignController::class, 'applyTaskSet'])->name('campaigns.task-set');
         Route::post('/campaigns/{campaign}/sync', [\App\Http\Controllers\Social\CampaignController::class, 'sync'])->name('campaigns.sync');
         $ad = \App\Http\Controllers\Social\AdController::class;
         Route::get('/ads', [$ad, 'index'])->name('ads.index');

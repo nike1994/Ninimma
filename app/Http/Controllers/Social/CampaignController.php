@@ -63,6 +63,7 @@ class CampaignController extends Controller
                 ->sortBy(fn ($b) => $b->client->name)->values(),
             'accountsCount' => $accounts->count(),
             'selected' => $selected, 'sel' => $sel, 'tab' => $tab,
+            'taskSets' => \App\Models\TaskSet::orderByDesc('uses')->orderBy('name')->get(),
             // Wnioski z wcześniejszych kampanii tego klienta — pomoc przy planowaniu kolejnej.
             'lessons' => $selected ? Campaign::where('client_id', $selected->client_id)->where('id', '!=', $selected->id)
                 ->where(fn ($q) => $q->whereNotNull('retro_worked')->orWhereNotNull('retro_failed')->orWhereNotNull('retro_next'))
@@ -116,6 +117,16 @@ class CampaignController extends Controller
     }
 
     /** „Warszawa: 18,4” / „Warszawa 18.4%” w kolejnych liniach → [label => %]. */
+    /** Zestaw zadań dla istniejącej kampanii (z zakładki Ustawienia). */
+    public function applyTaskSet(Request $request, Campaign $campaign, \App\Services\TaskSetService $sets)
+    {
+        $data = $request->validate(['task_set_id' => ['required', 'exists:task_sets,id'], 'start_on' => ['required', 'date']]);
+        $set = \App\Models\TaskSet::findOrFail($data['task_set_id']);
+        $n = $sets->apply($set, $campaign->client_id, \Carbon\Carbon::parse($data['start_on']), $request->user(), $campaign->id);
+
+        return back()->with('status', __('task.set_applied', ['set' => $set->name, 'n' => $n]));
+    }
+
     /** Wnioski po kampanii: co zadziałało, co nie, co następnym razem (opcjonalnie widoczne dla klienta). */
     public function retro(Request $request, Campaign $campaign)
     {
@@ -171,14 +182,23 @@ class CampaignController extends Controller
 
     private function form(Campaign $campaign)
     {
-        return view('social.campaigns.form', ['campaign' => $campaign, 'clients' => Client::where('is_active', true)->orderBy('name')->get()]);
+        return view('social.campaigns.form', ['campaign' => $campaign, 'clients' => Client::where('is_active', true)->orderBy('name')->get(),
+            'sets' => \App\Models\TaskSet::orderByDesc('uses')->orderBy('name')->get()]);
     }
 
     public function store(Request $request)
     {
+        $request->validate(['task_set_id' => ['nullable', 'exists:task_sets,id']]);
         $campaign = Campaign::create($this->validated($request));
+        $msg = __('ui.saved');
+        // Zestaw zadań od razu przy nowej kampanii (terminy od daty startu kampanii).
+        if ($setId = $request->integer('task_set_id')) {
+            $set = \App\Models\TaskSet::findOrFail($setId);
+            $n = app(\App\Services\TaskSetService::class)->apply($set, $campaign->client_id, \Carbon\Carbon::parse($campaign->starts_on ?? today()), $request->user(), $campaign->id);
+            $msg .= ' '.__('task.set_applied', ['set' => $set->name, 'n' => $n]);
+        }
 
-        return redirect()->route('social.campaigns.edit', $campaign)->with('status', __('ui.saved'));
+        return redirect()->route('social.campaigns.edit', $campaign)->with('status', $msg);
     }
 
     public function update(Request $request, Campaign $campaign)

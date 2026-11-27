@@ -105,4 +105,8 @@ return [
     'set_applied' => 'Wstawiono zestaw „:set”: :n zadań.',
     'n_tasks' => ':n zadanie|:n zadania|:n zadań',
     'added_n' => 'Dodano :n zadanie.|Dodano :n zadania.|Dodano :n zadań.',
+    'campaign_set' => 'Zadania do kampanii',
+    'no_set' => '— bez zadań —',
+    'campaign_set_hint' => 'Utworzy zadania z zestawu z terminami od daty startu kampanii i przypnie je do kampanii.',
+    'clear_filter' => 'Pokaż wszystkie',
 ];

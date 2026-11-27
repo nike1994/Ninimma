@@ -105,4 +105,8 @@ return [
     'set_applied' => 'Inserted set “:set”: :n tasks.',
     'n_tasks' => ':n task|:n tasks',
     'added_n' => 'Added :n task.|Added :n tasks.',
+    'campaign_set' => 'Campaign tasks',
+    'no_set' => '— no tasks —',
+    'campaign_set_hint' => 'Creates the set’s tasks with due dates from the campaign start date and links them to the campaign.',
+    'clear_filter' => 'Show all',
 ];

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', __('task.title'))
 @section('content')
-@php($q = fn (array $over = []) => array_filter(array_merge(['who' => $who !== 'me' ? $who : null, 'client' => $clientId, 'view' => $view !== 'list' ? $view : null, 'type' => request('type'), 'q' => request('q')], $over), fn ($v) => $v !== null && $v !== ''))
+@php($q = fn (array $over = []) => array_filter(array_merge(['who' => $who !== 'me' ? $who : null, 'client' => $clientId, 'view' => $view !== 'list' ? $view : null, 'type' => request('type'), 'q' => request('q'), 'campaign' => request('campaign')], $over), fn ($v) => $v !== null && $v !== ''))
 <div class="dash-head">
     <div class="title-with-icon"><span class="title-icon"><x-icon name="check-square" :size="26" /></span>
         <div><h1>{{ __('task.title') }}</h1><p class="muted">{{ __('task.subtitle') }}</p></div></div>
@@ -69,6 +69,7 @@
     @foreach($team->where('id', '!=', $me->id) as $u)
         <a href="{{ route('tasks.index', $q(['who' => $u->id])) }}" @class(['chip', 'chip-dark' => (string) $who === (string) $u->id])><x-avatar :name="$u->name" :size="22" />{{ \Illuminate\Support\Str::before($u->name, ' ') }}</a>
     @endforeach
+    @if($campaign)<a href="{{ route('tasks.index', $q(['campaign' => null])) }}" class="chip chip-dark" title="{{ __('task.clear_filter') }}"><x-icon name="megaphone" :size="14" /> {{ $campaign->name }} ✕</a>@endif
     <form class="task-filter-form" action="{{ route('tasks.index') }}">
         @foreach($q(['client' => null, 'q' => null, 'type' => null]) as $k => $v)<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endforeach
         <select name="client" onchange="this.form.submit()" aria-label="{{ __('ui.client') }}"><option value="">{{ __('task.all_clients') }}</option>@foreach($clients as $c)<option value="{{ $c->id }}" @selected($clientId === $c->id)>{{ $c->name }}</option>@endforeach</select>

@@ -79,6 +79,8 @@
             @if($adsSync && $selected->ads()->whereNotNull('external_id')->exists())<form method="post" action="{{ route('social.campaigns.sync', $selected) }}">@csrf<button class="btn btn-small" title="{{ __('mkt.ads_sync_hint') }}"><x-icon name="repeat" :size="14" /> {{ __('mkt.ads_sync') }}</button></form>@endif
             @if($selected->status !== 'draft')<a href="{{ route('reports.index', ['client' => $selected->client_id, 'c' => $selected->id]) }}" class="btn btn-small" title="{{ __('mkt.preview_client_hint') }}"><x-icon name="eye" :size="14" /> {{ __('mkt.preview_client') }}</a>@endif
             <a href="{{ route('reports.campaign', $selected) }}" class="btn btn-small"><x-icon name="bar-chart" :size="14" /> {{ __('mkt.report') }}</a>
+            @php($openTasks = \App\Models\Ticket::open()->where('campaign_id', $selected->id)->count())
+            <a href="{{ route('tasks.index', ['who' => 'all', 'campaign' => $selected->id]) }}" class="btn btn-small"><x-icon name="check-square" :size="14" /> {{ __('task.title') }}@if($openTasks) <span class="count-badge sm">{{ $openTasks }}</span>@endif</a>
             <a href="{{ route('social.campaigns.edit', $selected) }}" class="btn btn-small"><x-icon name="pencil" :size="14" /> {{ __('mkt.edit') }}</a>
         </div>
         <nav class="mk-tabs">
@@ -192,6 +194,15 @@
                 <dt>{{ __('mkt.utm') }}</dt><dd>{{ $selected->utmLinks()->count() }}</dd>
             </dl>
             <a href="{{ route('social.campaigns.edit', $selected) }}" class="btn btn-dark btn-small"><x-icon name="pencil" :size="14" /> {{ __('mkt.edit') }}</a>
+            @if($taskSets->isNotEmpty() && $selected->status !== 'finished')
+                <form method="post" action="{{ route('social.campaigns.task-set', $selected) }}" class="mk-retro inline-form mk-taskset">
+                    @csrf
+                    <strong><x-icon name="check-square" :size="16" /> {{ __('task.campaign_set') }}</strong>
+                    <select name="task_set_id" required>@foreach($taskSets as $s)<option value="{{ $s->id }}">{{ $s->name }} ({{ trans_choice('task.n_tasks', count($s->lines()), ['n' => count($s->lines())]) }})</option>@endforeach</select>
+                    <input type="date" name="start_on" value="{{ ($selected->starts_on && $selected->starts_on->gte(today()) ? $selected->starts_on : today())->toDateString() }}" required title="{{ __('task.start_on') }}">
+                    <button class="btn btn-small btn-dark">{{ __('task.use_set') }}</button>
+                </form>
+            @endif
 
         @elseif($tab === 'creatives')
             <div class="mk-creatives-all">

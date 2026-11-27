@@ -1832,3 +1832,6 @@ a.kpi { color: var(--text); }
     .time-entry summary { grid-template-columns: minmax(0, 1fr) auto; } .te-date, .te-badges { display: none; }
     .time-grid th:first-child, .time-grid td:first-child { min-width: 150px; }
 }
+.count-badge.sm { min-width: 18px; height: 18px; font-size: .68rem; display: inline-grid; margin-left: .2rem; }
+.mk-taskset { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; } .mk-taskset select, .mk-taskset input { padding: .4rem .55rem; font-size: .85rem; }
+.cmp-taskset { padding: .7rem .8rem; border-radius: 14px; background: #eef9fa; } .cmp-taskset > span { display: inline-flex; align-items: center; gap: .3rem; }

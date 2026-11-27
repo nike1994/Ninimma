@@ -29,6 +29,12 @@
             <x-field name="ends_on" type="date" :label="__('social.ends_on')" :value="$campaign->ends_on?->toDateString()" />
             <div></div>
         </div>
+        @if(! $campaign->exists && $sets->isNotEmpty())
+            @php($suggested = $sets->first(fn ($s) => str_contains(mb_strtolower($s->name), 'kampani')))
+            <label class="field cmp-taskset"><span><x-icon name="check-square" :size="15" /> {{ __('task.campaign_set') }}</span>
+                <select name="task_set_id"><option value="">{{ __('task.no_set') }}</option>@foreach($sets as $s)<option value="{{ $s->id }}" @selected((int) old('task_set_id', $suggested?->id) === $s->id)>{{ $s->name }} ({{ trans_choice('task.n_tasks', count($s->lines()), ['n' => count($s->lines())]) }})</option>@endforeach</select>
+                <small class="muted">{{ __('task.campaign_set_hint') }}</small></label>
+        @endif
         <p class="muted small">{{ __('social.results_hint') }}</p>
         <div class="form-row">
             <x-field name="revenue" type="number" step="0.01" min="0" :label="__('social.revenue')" :value="$campaign->revenue" />

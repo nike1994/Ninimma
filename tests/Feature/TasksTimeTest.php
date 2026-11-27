@@ -184,4 +184,30 @@ class TasksTimeTest extends TestCase
         $other = Client::factory()->create();
         $this->post(route('tasks.sets.apply', $set), ['client_id' => $other->id, 'start_on' => '2026-12-01', 'campaign_id' => $campaign->id])->assertSessionHasErrors('campaign_id');
     }
+
+    public function test_campaign_creation_inserts_task_set(): void
+    {
+        $this->admin();
+        $client = Client::factory()->create(['name' => 'FitLife']);
+        $set = \App\Models\TaskSet::create(['name' => 'Nowa kampania social', 'body' => "Brief +0 1h\nGrafiki +3\nRaport +30"]);
+
+        $this->get(route('social.campaigns.create'))->assertOk()->assertSee(__('task.campaign_set'))->assertSee('Nowa kampania social');
+        $this->post(route('social.campaigns.store'), ['client_id' => $client->id, 'name' => 'Zima', 'budget' => 1000, 'status' => 'draft',
+            'starts_on' => '2026-12-10', 'task_set_id' => $set->id])->assertRedirect()->assertSessionHas('status');
+        $campaign = \App\Models\Campaign::where('name', 'Zima')->first();
+        $made = Ticket::where('campaign_id', $campaign->id)->orderBy('id')->get();
+        $this->assertSame(['2026-12-10', '2026-12-13', '2027-01-09'], $made->map(fn ($t) => $t->due_on->toDateString())->all());
+
+        // Bez zestawu — bez zadań.
+        $this->post(route('social.campaigns.store'), ['client_id' => $client->id, 'name' => 'Lato', 'budget' => 0, 'status' => 'draft', 'task_set_id' => '']);
+        $this->assertSame(0, Ticket::where('campaign_id', \App\Models\Campaign::where('name', 'Lato')->value('id'))->count());
+
+        // Z zakładki Ustawienia i filtr zadań kampanii.
+        $lato = \App\Models\Campaign::where('name', 'Lato')->first();
+        $this->post(route('social.campaigns.task-set', $lato), ['task_set_id' => $set->id, 'start_on' => '2027-06-01'])->assertSessionHas('status');
+        $this->assertSame(3, Ticket::where('campaign_id', $lato->id)->count());
+        $this->get(route('tasks.index', ['who' => 'all', 'campaign' => $lato->id]))->assertOk()
+            ->assertViewHas('groups', fn ($g) => collect($g)->flatten()->count() === 3);
+        $this->get(route('social.campaigns.index', ['c' => $lato->id, 'tab' => 'settings']))->assertOk()->assertSee(__('task.campaign_set'));
+    }
 }
