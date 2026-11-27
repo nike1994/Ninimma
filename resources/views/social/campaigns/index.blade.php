@@ -76,6 +76,7 @@
             <h2>{{ $selected->name }}@if($withClient($selected)) <span class="muted">– {{ $selected->client->name }}</span>@endif</h2>
             <span class="mk-status mk-{{ $selected->status }}">{{ __('mkt.status_'.$selected->status) }}</span>
             <span class="mk-spacer"></span>
+            @if($adsSync && $selected->ads()->whereNotNull('external_id')->exists())<form method="post" action="{{ route('social.campaigns.sync', $selected) }}">@csrf<button class="btn btn-small" title="{{ __('mkt.ads_sync_hint') }}"><x-icon name="repeat" :size="14" /> {{ __('mkt.ads_sync') }}</button></form>@endif
             @if($selected->status !== 'draft')<a href="{{ route('reports.index', ['client' => $selected->client_id, 'c' => $selected->id]) }}" class="btn btn-small" title="{{ __('mkt.preview_client_hint') }}"><x-icon name="eye" :size="14" /> {{ __('mkt.preview_client') }}</a>@endif
             <a href="{{ route('reports.campaign', $selected) }}" class="btn btn-small"><x-icon name="bar-chart" :size="14" /> {{ __('mkt.report') }}</a>
             <a href="{{ route('social.campaigns.edit', $selected) }}" class="btn btn-small"><x-icon name="pencil" :size="14" /> {{ __('mkt.edit') }}</a>
@@ -141,6 +142,44 @@
                     @endif
                 </div>
             </div>
+
+            @php($ended = $selected->status === 'finished' || ($selected->ends_on && $selected->ends_on->lt(today())))
+            @if($ended || $selected->hasRetro())
+                <div class="mk-retro" id="retro">
+                    <div class="mk-retro-head"><h3><x-icon name="check-square" :size="18" /> {{ __('mkt.retro') }}</h3>
+                        @if($selected->hasRetro())<small class="muted">{{ $selected->retroAuthor?->name }} · {{ $selected->retro_at?->format('d.m.Y') }}@if($selected->retro_shared) · <b>{{ __('mkt.retro_shared_on') }}</b>@endif</small>@endif</div>
+                    @if($selected->hasRetro())
+                        <div class="mk-retro-cols">
+                            @foreach(['worked' => 'check-circle', 'failed' => 'x', 'next' => 'arrow-right'] as $k => $ic)
+                                <div class="mk-retro-col mk-retro-{{ $k }}"><strong><x-icon :name="$ic" :size="15" /> {{ __('mkt.retro_'.$k) }}</strong><p>{!! nl2br(e($selected->{'retro_'.$k} ?: '—')) !!}</p></div>
+                            @endforeach
+                        </div>
+                    @else<p class="muted small">{{ __('mkt.retro_prompt') }}</p>@endif
+                    <details @if(! $selected->hasRetro()) open @endif class="mk-retro-edit"><summary>{{ $selected->hasRetro() ? __('mkt.retro_edit') : __('mkt.retro_write') }}</summary>
+                        <form method="post" action="{{ route('social.campaigns.retro', $selected) }}" class="stack">
+                            @csrf @method('put')
+                            <div class="mk-retro-cols">
+                                @foreach(['worked', 'failed', 'next'] as $k)
+                                    <label class="field"><span>{{ __('mkt.retro_'.$k) }}</span><textarea name="retro_{{ $k }}" rows="4" placeholder="{{ __('mkt.retro_ph_'.$k) }}">{{ old('retro_'.$k, $selected->{'retro_'.$k}) }}</textarea></label>
+                                @endforeach
+                            </div>
+                            <label class="check"><input type="checkbox" name="retro_shared" value="1" @checked(old('retro_shared', $selected->retro_shared))> {{ __('mkt.retro_share') }}</label>
+                            <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button>
+                        </form>
+                    </details>
+                </div>
+            @endif
+            @if(! $ended && $lessons->isNotEmpty())
+                <div class="mk-retro mk-lessons">
+                    <h3><x-icon name="history" :size="18" /> {{ __('mkt.lessons') }}</h3>
+                    @foreach($lessons as $ls)
+                        <a href="{{ route('social.campaigns.index', $q(['c' => $ls->id])) }}#retro" class="mk-lesson"><strong>{{ $ls->name }}</strong>
+                            @if($ls->retro_worked)<span><b>✓</b> {{ \Illuminate\Support\Str::limit($ls->retro_worked, 140) }}</span>@endif
+                            @if($ls->retro_failed)<span><b>✕</b> {{ \Illuminate\Support\Str::limit($ls->retro_failed, 140) }}</span>@endif
+                            @if($ls->retro_next)<span><b>→</b> {{ \Illuminate\Support\Str::limit($ls->retro_next, 140) }}</span>@endif</a>
+                    @endforeach
+                </div>
+            @endif
 
         @elseif($tab === 'settings')
             <dl class="mk-settings">

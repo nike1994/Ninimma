@@ -12,8 +12,10 @@
             <span>{{ number_format((float) $c->budget, 2, ',', ' ') }} zł</span></small>
         @php($g = $goals[$c->id])
         @php($pc = $pacing[$c->id])
-        @if($g->pct !== null || ($pc && $pc->state !== 'ok'))<small class="mk-card-flags">@if($g->pct !== null)<span @class(['mk-goal-pct', 'done' => $g->pct >= 100])>{{ __('mkt.goal_short', ['n' => $g->pct]) }}</span>@endif
-            @if($pc && $pc->state !== 'ok')<span class="mk-pace-flag mk-pace-{{ $pc->state }}" title="{{ __('mkt.pace_'.$pc->state) }}">⚠ {{ __('mkt.pace_short_'.$pc->state) }}</span>@endif</small>@endif
+        @php($noRetro = $c->status === 'finished' && ! $c->hasRetro())
+        @if($g->pct !== null || ($pc && $pc->state !== 'ok') || $noRetro)<small class="mk-card-flags">@if($g->pct !== null)<span @class(['mk-goal-pct', 'done' => $g->pct >= 100])>{{ __('mkt.goal_short', ['n' => $g->pct]) }}</span>@endif
+            @if($pc && $pc->state !== 'ok')<span class="mk-pace-flag mk-pace-{{ $pc->state }}" title="{{ __('mkt.pace_'.$pc->state) }}">⚠ {{ __('mkt.pace_short_'.$pc->state) }}</span>@endif
+            @if($noRetro)<span class="mk-retro-flag">✎ {{ __('mkt.retro_missing') }}</span>@endif</small>@endif
         @if($used !== null)<i class="mk-card-bar"><i style="width: {{ $used }}%"></i></i>@endif
     </span>
 </a>

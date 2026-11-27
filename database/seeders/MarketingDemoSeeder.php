@@ -85,6 +85,14 @@ class MarketingDemoSeeder extends Seeder
             }
         }
 
+        // Wnioski po zakończonej kampanii (udostępnione klientowi).
+        Campaign::where('name', 'Jesienne aranżacje – Zielony Dom')->first()?->forceFill([
+            'retro_worked' => "Rolki z aranżacjami wnętrz: CTR 2,4% — dwa razy więcej niż grafiki.\nZapisy do newslettera z formularza na Facebooku tańsze niż ze strony.",
+            'retro_failed' => 'Reklamy w wyszukiwarce na „rośliny doniczkowe” drogie (koszt kliknięcia ponad 1 zł) i mało zakupów.',
+            'retro_next' => 'Start 2 tygodnie wcześniej, 60% budżetu na rolki, wyszukiwarkę tylko na frazy markowe.',
+            'retro_shared' => true, 'retro_by' => \App\Models\User::where('email', 'admin@example.com')->value('id'), 'retro_at' => today()->subDays(25),
+        ])->save();
+
         // Odbiorcy kampanii.
         $cities = ['Warszawa' => 18.4, 'Kraków' => 10.8, 'Wrocław' => 7.9, 'Poznań' => 6.3, 'Gdańsk' => 5.4, 'Łódź' => 4.6, 'Katowice' => 3.9, 'Lublin' => 2.8];
         foreach (Campaign::all() as $c) {

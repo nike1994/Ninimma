@@ -52,7 +52,7 @@ class CampaignController extends Controller
         return view('social.campaigns.index', [
             'list' => $list, 'counts' => $counts, 'status' => $status, 'clientId' => $clientId, 'view' => $request->query('view') === 'grid' ? 'grid' : 'list',
             'totals' => $totals, 'insights' => $insights, 'goals' => $goals, 'pacing' => $pacing,
-            'metaAds' => \App\Services\Social\MetaAdsSync::enabled(),
+            'metaAds' => \App\Services\Social\MetaAdsSync::enabled(), 'adsSync' => \App\Services\Ads\AdsSync::enabled(),
             'kpi' => [
                 'active' => $all->where('status', 'active')->count(),
                 'reach' => $sum('reach'), 'reach_trend' => $pct(0),
@@ -63,6 +63,10 @@ class CampaignController extends Controller
                 ->sortBy(fn ($b) => $b->client->name)->values(),
             'accountsCount' => $accounts->count(),
             'selected' => $selected, 'sel' => $sel, 'tab' => $tab,
+            // Wnioski z wcześniejszych kampanii tego klienta — pomoc przy planowaniu kolejnej.
+            'lessons' => $selected ? Campaign::where('client_id', $selected->client_id)->where('id', '!=', $selected->id)
+                ->where(fn ($q) => $q->whereNotNull('retro_worked')->orWhereNotNull('retro_failed')->orWhereNotNull('retro_next'))
+                ->latest('retro_at')->limit(3)->get() : collect(),
             'selTotals' => $selected ? $totals[$selected->id] : null,
             // Ranking: realizacja celu (%), potem ROAS i konwersje.
             'ranking' => $list->sortByDesc(fn ($c) => [$goals[$c->id]->pct ?? -1, $totals[$c->id]['roas'] ?? 0, $totals[$c->id]['conversions']])->values(),
@@ -112,21 +116,34 @@ class CampaignController extends Controller
     }
 
     /** „Warszawa: 18,4” / „Warszawa 18.4%” w kolejnych liniach → [label => %]. */
-    /** Pobranie wyników reklam i odbiorców z Meta Ads dla jednej kampanii (przycisk). */
-    public function sync(Campaign $campaign, \App\Services\Social\MetaAdsSync $sync)
+    /** Wnioski po kampanii: co zadziałało, co nie, co następnym razem (opcjonalnie widoczne dla klienta). */
+    public function retro(Request $request, Campaign $campaign)
     {
-        if (! \App\Services\Social\MetaAdsSync::enabled()) {
-            return back()->with('error', __('mkt.meta_off'));
+        $data = $request->validate([
+            'retro_worked' => ['nullable', 'string', 'max:3000'], 'retro_failed' => ['nullable', 'string', 'max:3000'],
+            'retro_next' => ['nullable', 'string', 'max:3000'],
+        ]);
+        $campaign->fill($data + ['retro_shared' => $request->boolean('retro_shared')]);
+        $campaign->forceFill(['retro_by' => $request->user()->id, 'retro_at' => now()])->save();
+
+        return redirect()->to(route('social.campaigns.index', ['c' => $campaign->id]).'#retro')->with('status', __('ui.saved'));
+    }
+
+    /** Pobranie wyników reklam i odbiorców z Meta Ads dla jednej kampanii (przycisk). */
+    public function sync(Campaign $campaign, \App\Services\Ads\AdsSync $sync)
+    {
+        if (! \App\Services\Ads\AdsSync::enabled()) {
+            return back()->with('error', __('mkt.ads_sync_off'));
         }
         $r = $sync->syncCampaign($campaign);
         if ($r['ads'] === 0) {
-            return back()->with('error', __('mkt.meta_no_ids'));
+            return back()->with('error', __('mkt.ads_no_ids'));
         }
         if ($r['ok'] === 0) {
-            return back()->with('error', __('mkt.meta_failed', ['msg' => $r['errors'][0] ?? '—']));
+            return back()->with('error', __('mkt.ads_failed', ['msg' => $r['errors'][0] ?? '—']));
         }
 
-        return back()->with('status', __('mkt.meta_done', ['n' => $r['ok']]).($r['audience'] ? ' '.__('mkt.meta_audience_done') : ''));
+        return back()->with('status', __('mkt.ads_done', ['n' => $r['ok']]).($r['audience'] ? ' '.__('mkt.meta_audience_done') : ''));
     }
 
     public static function parseShares(string $text): array

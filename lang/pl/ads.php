@@ -92,8 +92,11 @@ return [
     'copy' => 'Kopiuj',
     'landing_views' => 'Wejścia na stronę',
     'add_to_cart' => 'Dodania do koszyka',
-    'external_id' => 'ID kampanii w menedżerze reklam Meta',
-    'external_id_hint' => 'np. 120210000000000000 — wyniki i odbiorcy pobiorą się automatycznie',
+    'external_id' => 'ID kampanii w menedżerze reklam',
+    'external_id_hint' => 'Meta: ID kampanii · Google: ID klienta:ID kampanii · TikTok: ID konta:ID kampanii',
     'sync_error' => 'Błąd pobierania z Meta',
     'synced_at' => 'Ostatnie pobranie z Meta: :at',
+    'source_api' => 'API :p',
+    'bad_id_google' => 'Zły format ID dla Google Ads — wpisz „ID klienta:ID kampanii”, np. 123-456-7890:2233445566.',
+    'bad_id_tiktok' => 'Zły format ID dla TikTok Ads — wpisz „ID konta reklamowego:ID kampanii”.',
 ];

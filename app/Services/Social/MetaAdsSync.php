@@ -3,12 +3,11 @@
 namespace App\Services\Social;
 
 use App\Models\AdCampaign;
-use App\Models\AdResult;
 use App\Models\Campaign;
 
 /**
- * Pobieranie wyników reklam i struktury odbiorców z menedżera reklam Meta (Marketing API).
- * Reklama w panelu wskazuje ID kampanii (albo zestawu/reklamy) z Meta; wynik zapisujemy jako pomiar narastający z dziś.
+ * Menedżer reklam Meta (Marketing API): wyniki reklamy i struktura odbiorców kampanii.
+ * Reklama w panelu wskazuje ID kampanii (albo zestawu/reklamy) z Meta. Zapis i harmonogram: App\\Services\\Ads\\AdsSync.
  */
 class MetaAdsSync
 {
@@ -36,57 +35,22 @@ class MetaAdsSync
         return Integrations::metaAdsEnabled();
     }
 
-    /** Cron: reklamy Meta z ID, które trwają lub skończyły się niedawno. Zwraca liczbę zsynchronizowanych. */
-    public function run(): int
+    /** Wyniki reklamy z menedżera reklam Meta (za cały okres) albo null, gdy brak danych. */
+    public function adTotals(AdCampaign $ad): ?array
     {
-        if (! self::enabled()) {
-            return 0;
+        $row = $this->meta->adInsights($ad->external_id, Integrations::metaAdsToken())[0] ?? null;
+        if (! $row) {
+            return null;
         }
-        $ads = AdCampaign::where('platform', 'meta')->whereNotNull('external_id')
-            ->where(fn ($q) => $q->whereIn('status', ['planned', 'active'])->orWhereNull('synced_at')
-                ->orWhereDate('ends_on', '>=', today()->subDays(3)))->get();
-        $ok = $ads->filter(fn ($a) => $this->syncAd($a))->count();
-        Campaign::whereIn('id', $ads->pluck('campaign_id')->filter()->unique())->get()->each(fn ($c) => $this->syncAudience($c));
+        $actions = $this->actions($row['actions'] ?? []);
+        $values = $this->actions($row['action_values'] ?? []);
 
-        return $ok;
-    }
-
-    /** Synchronizacja jednej kampanii z panelu (przycisk): wszystkie jej reklamy Meta + odbiorcy. */
-    public function syncCampaign(Campaign $campaign): array
-    {
-        $ads = $campaign->ads()->where('platform', 'meta')->whereNotNull('external_id')->get();
-        $ok = $ads->filter(fn ($a) => $this->syncAd($a))->count();
-        $audience = $ok > 0 && $this->syncAudience($campaign);
-
-        return ['ads' => $ads->count(), 'ok' => $ok, 'audience' => $audience, 'errors' => $ads->pluck('sync_error')->filter()->unique()->values()->all()];
-    }
-
-    public function syncAd(AdCampaign $ad): bool
-    {
-        try {
-            $row = $this->meta->adInsights($ad->external_id, Integrations::metaAdsToken())[0] ?? null;
-            if ($row) {
-                $actions = $this->actions($row['actions'] ?? []);
-                $values = $this->actions($row['action_values'] ?? []);
-                $vals = [
-                    'spend' => (float) ($row['spend'] ?? 0), 'impressions' => (int) ($row['impressions'] ?? 0), 'reach' => (int) ($row['reach'] ?? 0),
-                    'clicks' => (int) ($row['inline_link_clicks'] ?? $row['clicks'] ?? 0),
-                    'landing_views' => (int) $actions['landing_views'], 'add_to_cart' => (int) $actions['add_to_cart'],
-                    'conversions' => (int) $actions['conversions'], 'leads' => (int) $actions['leads'], 'revenue' => round($values['conversions'], 2),
-                ];
-                // Jeden pomiar narastający dziennie — kolejne pobranie tego samego dnia go nadpisuje.
-                $existing = AdResult::where('ad_campaign_id', $ad->id)->where('source', 'meta')->whereDate('measured_on', today())->first();
-                $existing ? $existing->update($vals) : AdResult::create($vals + ['ad_campaign_id' => $ad->id, 'measured_on' => today(), 'source' => 'meta']);
-            }
-            $ad->forceFill(['synced_at' => now(), 'sync_error' => null])->save();
-
-            return true;
-        } catch (\Throwable $e) {
-            $ad->forceFill(['sync_error' => mb_substr($e->getMessage(), 0, 300)])->save();
-            report($e);
-
-            return false;
-        }
+        return [
+            'spend' => (float) ($row['spend'] ?? 0), 'impressions' => (int) ($row['impressions'] ?? 0), 'reach' => (int) ($row['reach'] ?? 0),
+            'clicks' => (int) ($row['inline_link_clicks'] ?? $row['clicks'] ?? 0),
+            'landing_views' => (int) $actions['landing_views'], 'add_to_cart' => (int) $actions['add_to_cart'],
+            'conversions' => (int) $actions['conversions'], 'leads' => (int) $actions['leads'], 'revenue' => round($values['conversions'], 2),
+        ];
     }
 
     /** Odbiorcy kampanii z podziałów Meta (wiek+płeć, region, kraj), zsumowane po wszystkich reklamach. */

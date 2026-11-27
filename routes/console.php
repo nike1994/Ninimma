@@ -71,13 +71,13 @@ Schedule::call(function () {
     }
 })->dailyAt('07:40')->name('license-alerts');
 
-// Meta Ads: wyniki reklam i odbiorcy kampanii (gdy integracja włączona) — przed alertami budżetu.
+// Menedżery reklam (Meta, Google Ads, TikTok Ads): wyniki reklam i odbiorcy (Meta) — przed alertami budżetu.
 Schedule::call(function () {
-    $n = app(\App\Services\Social\MetaAdsSync::class)->run();
+    $n = app(\App\Services\Ads\AdsSync::class)->run();
     if ($n) {
-        SystemLog::record('meta-ads', "Meta Ads synced {$n} ads");
+        SystemLog::record('ads-sync', "Ads synced from ad managers: {$n}");
     }
-})->dailyAt('05:40')->name('meta-ads-sync')->withoutOverlapping(30)->when(fn () => \App\Services\Social\MetaAdsSync::enabled());
+})->dailyAt('05:40')->name('ads-sync')->withoutOverlapping(30)->when(fn () => \App\Services\Ads\AdsSync::enabled());
 
 // Tempo budżetu aktywnych kampanii: e-mail, gdy reklamy wydają za szybko albo za wolno.
 Schedule::call(function () {

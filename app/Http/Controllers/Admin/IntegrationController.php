@@ -29,6 +29,11 @@ class IntegrationController extends Controller
                 'has_token' => filled(Integrations::metaAdsToken()),
                 'ads' => \App\Models\AdCampaign::where('platform', 'meta')->whereNotNull('external_id')->count(),
             ],
+            'googleAds' => Integrations::googleAds() + ['ready' => Integrations::googleAdsEnabled(),
+                'ads' => \App\Models\AdCampaign::where('platform', 'google')->whereNotNull('external_id')->count()],
+            'tiktokAds' => ['enabled' => (bool) Setting::get('int_ttads_enabled', false), 'ready' => Integrations::tiktokAdsEnabled(),
+                'has_token' => filled(Integrations::encrypted('int_ttads_token')),
+                'ads' => \App\Models\AdCampaign::where('platform', 'tiktok')->whereNotNull('external_id')->count()],
             'autoStats' => Integrations::autoStats(),
             'tiktokPrivacy' => Integrations::tiktokPrivacy(),
             'recent' => Publication::with(['content', 'account'])->whereNotNull('api_status')->latest('updated_at')->limit(12)->get(),
@@ -55,6 +60,34 @@ class IntegrationController extends Controller
     {
         $data = $request->validate(['token' => ['nullable', 'string', 'max:1000']]);
         Integrations::saveMetaAds($request->boolean('enabled'), $data['token'] ?? null);
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function googleAds(Request $request)
+    {
+        $data = $request->validate([
+            'developer_token' => ['nullable', 'string', 'max:255'], 'client_id' => ['nullable', 'string', 'max:255'],
+            'client_secret' => ['nullable', 'string', 'max:255'], 'refresh_token' => ['nullable', 'string', 'max:1000'],
+            'login_customer_id' => ['nullable', 'regex:/^[\d-]{10,12}$/'], 'version' => ['nullable', 'regex:/^v\d{2}$/'],
+        ]);
+        Setting::put('int_gads_enabled', $request->boolean('enabled') ? '1' : '0');
+        Setting::put('int_gads_client_id', trim((string) ($data['client_id'] ?? '')) ?: null);
+        Setting::put('int_gads_login_customer', $data['login_customer_id'] ?? null);
+        Setting::put('int_gads_version', $data['version'] ?? null);
+        Integrations::putEncrypted('int_gads_dev_token', $data['developer_token'] ?? null);
+        Integrations::putEncrypted('int_gads_client_secret', $data['client_secret'] ?? null);
+        Integrations::putEncrypted('int_gads_refresh_token', $data['refresh_token'] ?? null);
+        \Illuminate\Support\Facades\Cache::forget('gads_access_token');
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function tiktokAds(Request $request)
+    {
+        $data = $request->validate(['token' => ['nullable', 'string', 'max:1000']]);
+        Setting::put('int_ttads_enabled', $request->boolean('enabled') ? '1' : '0');
+        Integrations::putEncrypted('int_ttads_token', $data['token'] ?? null);
 
         return back()->with('status', __('ui.saved'));
     }

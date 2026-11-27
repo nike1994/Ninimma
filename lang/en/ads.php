@@ -92,8 +92,11 @@ return [
     'copy' => 'Copy',
     'landing_views' => 'Landing page views',
     'add_to_cart' => 'Adds to cart',
-    'external_id' => 'Campaign ID in Meta Ads Manager',
-    'external_id_hint' => 'e.g. 120210000000000000 — results and audience are fetched automatically',
+    'external_id' => 'Campaign ID in the ad manager',
+    'external_id_hint' => 'Meta: campaign ID · Google: customer ID:campaign ID · TikTok: advertiser ID:campaign ID',
     'sync_error' => 'Meta fetch error',
     'synced_at' => 'Last fetched from Meta: :at',
+    'source_api' => ':p API',
+    'bad_id_google' => 'Wrong Google Ads ID format — enter “customer ID:campaign ID”, e.g. 123-456-7890:2233445566.',
+    'bad_id_tiktok' => 'Wrong TikTok Ads ID format — enter “advertiser ID:campaign ID”.',
 ];

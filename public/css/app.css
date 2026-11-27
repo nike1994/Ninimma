@@ -1725,3 +1725,15 @@ a.kpi { color: var(--text); }
 .mk-row2-1 .mk-loc .mk-loc-body { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
 .mk-row2-1 .mk-loc .mk-map { max-width: 380px; justify-self: center; }
 @media (max-width: 760px) { .mk-row2-1 .mk-loc .mk-loc-body { grid-template-columns: minmax(0, 1fr); } }
+.mk-retro { margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: #fbfdfe; }
+.mk-retro h3 { margin: 0 0 .5rem; display: flex; align-items: center; gap: .4rem; }
+.mk-retro-head { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.mk-retro-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+.mk-retro-col { padding: .7rem .8rem; border-radius: 12px; background: #fff; border: 1px solid var(--line); font-size: .86rem; }
+.mk-retro-col strong { display: flex; align-items: center; gap: .3rem; margin-bottom: .3rem; } .mk-retro-col p { margin: 0; }
+.mk-retro-worked strong { color: #1d8a45; } .mk-retro-failed strong { color: var(--red); } .mk-retro-next strong { color: var(--blue); }
+.mk-retro-edit { margin-top: .7rem; } .mk-retro-edit summary { cursor: pointer; font-weight: 600; color: var(--blue); font-size: .86rem; margin-bottom: .6rem; }
+.mk-lesson { display: grid; gap: .2rem; padding: .6rem .8rem; border-radius: 12px; background: #fff; border: 1px solid var(--line); margin-bottom: .5rem; color: var(--text); font-size: .84rem; }
+.mk-lesson b { color: var(--muted); }
+.mk-retro-flag { color: #a26a00; font-weight: 700; }
+@media (max-width: 760px) { .mk-retro-cols { grid-template-columns: minmax(0, 1fr); } }

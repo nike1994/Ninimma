@@ -13,13 +13,23 @@ class Campaign extends Model
     /** Rodzaj celu kampanii — od niego zależą wskaźniki, lejek i wartość docelowa. */
     public const OBJECTIVES = ['sales', 'leads', 'traffic', 'awareness', 'engagement'];
 
-    protected $fillable = ['client_id', 'name', 'goal', 'objective', 'target_value', 'budget', 'starts_on', 'ends_on', 'status', 'revenue', 'leads'];
+    protected $fillable = ['client_id', 'name', 'goal', 'objective', 'target_value', 'budget', 'retro_worked', 'retro_failed', 'retro_next', 'retro_shared', 'starts_on', 'ends_on', 'status', 'revenue', 'leads'];
 
     protected $attributes = ['status' => 'draft', 'budget' => 0];
 
     protected function casts(): array
     {
-        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2', 'revenue' => 'decimal:2', 'target_value' => 'float'];
+        return ['starts_on' => 'date', 'ends_on' => 'date', 'budget' => 'decimal:2', 'revenue' => 'decimal:2', 'target_value' => 'float', 'retro_shared' => 'boolean', 'retro_at' => 'datetime'];
+    }
+
+    public function hasRetro(): bool
+    {
+        return filled($this->retro_worked) || filled($this->retro_failed) || filled($this->retro_next);
+    }
+
+    public function retroAuthor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'retro_by');
     }
 
     public function client(): BelongsTo

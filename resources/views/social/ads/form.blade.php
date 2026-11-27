@@ -37,7 +37,7 @@
                 <thead><tr><th>{{ __('ui.date') }}</th><th>{{ __('ads.spend') }}</th><th>{{ __('ads.impressions') }}</th><th>{{ __('ads.clicks') }}</th><th>{{ __('ads.conversions') }}</th><th>{{ __('ads.leads') }}</th><th>{{ __('ads.revenue') }}</th><th></th></tr></thead>
                 <tbody>@forelse($ad->results->sortByDesc('measured_on') as $r)<tr>
                     <td>{{ $r->measured_on->format('d.m.Y') }}</td><td>{{ $zl($r->spend) }}</td><td>{{ number_format($r->impressions, 0, ',', ' ') }}</td><td>{{ $r->clicks }}</td><td>{{ $r->conversions }}</td><td>{{ $r->leads }}</td><td>{{ $zl($r->revenue) }}</td>
-                    <td class="small muted">{{ $r->source === 'import' ? 'CSV' : ($r->user?->name) }}</td></tr>
+                    <td class="small muted">{{ match ($r->source) { 'import' => 'CSV', 'manual' => $r->user?->name, default => __('ads.source_api', ['p' => __('ads.platform_'.$r->source)]) } }}</td></tr>
                 @empty<tr><td colspan="8" class="muted">{{ __('ads.no_results') }}</td></tr>@endforelse</tbody>
             </table></div>
             <form method="post" action="{{ route('social.ads.import.one', $ad) }}" enctype="multipart/form-data" class="inline-form small">

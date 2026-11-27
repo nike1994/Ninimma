@@ -59,6 +59,11 @@ wejścia na stronę, koszyk, zakupy z przychodem, leady oraz odbiorcy (wiek, pł
 wskaźniki wg celu, wykres w czasie, lejek, demografię, najlepsze kreacje, lokalizacje i pełny raport do druku — bez
 tempa budżetu, stawek influencerów i godzin pracy. Agencja otwiera ten sam widok przyciskiem „Widok klienta”.
 Pulpit social media pokazuje przy kampaniach główny wynik wg celu i realizację celu.
+**Wnioski po kampanii.** Po zakończeniu kampanii zapisujesz: co zadziałało, co nie i co następnym razem (karta
+pokazuje „brak wniosków”, dopóki ich nie ma). Wnioski pojawiają się przy planowaniu kolejnej kampanii tego klienta;
+opcjonalnie są widoczne dla klienta. **Google Ads i TikTok Ads** (Administracja → Integracje): wyniki kampanii
+pobierane razem z Meta (cron 05:40 i przycisk „Pobierz wyniki”); ID przy reklamie: Google „ID klienta:ID kampanii”,
+TikTok „ID konta reklamowego:ID kampanii”. Odbiorcy (wiek, płeć, regiony) pobierają się z Meta.
 
 **Marketing płatny (reklamy i promocje).** Promowane posty (budżet i okres przy publikacji tworzą wpis reklamy)
 oraz samodzielne kampanie reklamowe (Meta, Google, TikTok, LinkedIn, Pinterest, YouTube) z celem, budżetem planowanym

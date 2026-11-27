@@ -79,6 +79,16 @@
                 @include('social.campaigns._chart', ['s' => $sel->series()])
             </div>
         </div>
+        @if($selected->retro_shared && $selected->hasRetro())
+            <div class="mk-retro">
+                <h3><x-icon name="check-square" :size="18" /> {{ __('mkt.retro') }}</h3>
+                <div class="mk-retro-cols">
+                    @foreach(['worked' => 'check-circle', 'failed' => 'x', 'next' => 'arrow-right'] as $k => $ic)
+                        @if($selected->{'retro_'.$k})<div class="mk-retro-col mk-retro-{{ $k }}"><strong><x-icon :name="$ic" :size="15" /> {{ __('mkt.retro_'.$k) }}</strong><p>{!! nl2br(e($selected->{'retro_'.$k})) !!}</p></div>@endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </section>
 </div>
 

@@ -118,7 +118,7 @@ class MarketingTest extends TestCase
             return \Illuminate\Support\Facades\Http::response(['data' => $data]);
         });
 
-        $this->assertSame(1, app(\App\Services\Social\MetaAdsSync::class)->run());
+        $this->assertSame(1, app(\App\Services\Ads\AdsSync::class)->run());
         $r = $ad->fresh()->latestResult;
         $this->assertSame('meta', $r->source);
         $this->assertSame([812.4, 30500, 1400, 1100, 90, 31, 4030.5], [(float) $r->spend, $r->reach, $r->clicks, $r->landing_views, $r->add_to_cart, $r->conversions, (float) $r->revenue]);
@@ -131,7 +131,7 @@ class MarketingTest extends TestCase
         $this->assertSame(90.0, $aud['country']['Polska']);
 
         // Drugie pobranie tego samego dnia nadpisuje pomiar zamiast dodawać nowy.
-        app(\App\Services\Social\MetaAdsSync::class)->run();
+        app(\App\Services\Ads\AdsSync::class)->run();
         $this->assertSame(1, $ad->results()->where('source', 'meta')->count());
     }
 
@@ -139,9 +139,9 @@ class MarketingTest extends TestCase
     {
         $this->admin();
         $campaign = $this->campaignWithAd();
-        $this->post(route('social.campaigns.sync', $campaign))->assertSessionHas('error', __('mkt.meta_off'));
+        $this->post(route('social.campaigns.sync', $campaign))->assertSessionHas('error', __('mkt.ads_sync_off'));
         \App\Services\Social\Integrations::saveMetaAds(true, 'tok');
-        $this->post(route('social.campaigns.sync', $campaign))->assertSessionHas('error', __('mkt.meta_no_ids'));
+        $this->post(route('social.campaigns.sync', $campaign))->assertSessionHas('error', __('mkt.ads_no_ids'));
         $campaign->ads()->first()->update(['external_id' => '999']);
         \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['error' => ['message' => 'Unsupported get request', 'code' => 100]], 400)]);
         $this->post(route('social.campaigns.sync', $campaign))->assertSessionHas('error');
@@ -225,5 +225,81 @@ class MarketingTest extends TestCase
         $this->get(route('reports.index', ['client' => $campaign->client_id, 'c' => $campaign->id]))->assertOk()
             ->assertSee(__('mkt.preview_as', ['client' => $campaign->client->name]))->assertSee('Wiosna');
         $this->get(route('social.campaigns.index', ['c' => $campaign->id]))->assertSee(__('mkt.preview_client'));
+    }
+
+    public function test_retro_saved_shown_to_next_campaign_and_optionally_to_client(): void
+    {
+        $admin = $this->admin();
+        $old = $this->campaignWithAd();
+        $old->update(['status' => 'finished']);
+        $this->get(route('social.campaigns.index', ['c' => $old->id]))->assertSee(__('mkt.retro_prompt'));
+        $this->put(route('social.campaigns.retro', $old), ['retro_worked' => 'Rolki działały świetnie', 'retro_failed' => 'Drogie kliknięcia', 'retro_next' => 'Więcej rolek'])
+            ->assertRedirect();
+        $old->refresh();
+        $this->assertTrue($old->hasRetro());
+        $this->assertFalse($old->retro_shared);
+        $this->assertSame($admin->id, $old->retro_by);
+
+        // Nowa kampania tego klienta pokazuje wnioski z poprzedniej.
+        $next = Campaign::create(['client_id' => $old->client_id, 'name' => 'Lato', 'status' => 'review', 'starts_on' => today()->addDays(5), 'ends_on' => today()->addDays(30)]);
+        $this->get(route('social.campaigns.index', ['c' => $next->id]))->assertSee(__('mkt.lessons'))->assertSee('Rolki działały świetnie');
+
+        // Klient widzi wnioski dopiero po udostępnieniu.
+        $client = User::factory()->create(['client_id' => $old->client_id]);
+        $this->actingAs($client)->get(route('reports.index', ['c' => $old->id]))->assertOk()->assertDontSee('Rolki działały świetnie');
+        $old->update(['retro_shared' => true]);
+        $this->actingAs($client)->get(route('reports.index', ['c' => $old->id]))->assertSee('Rolki działały świetnie');
+        $this->actingAs($client)->put(route('social.campaigns.retro', $old), ['retro_worked' => 'x'])->assertForbidden();
+    }
+
+    public function test_google_and_tiktok_ads_sync(): void
+    {
+        \App\Models\Setting::put('int_gads_enabled', '1');
+        \App\Models\Setting::put('int_gads_client_id', 'cid.apps.googleusercontent.com');
+        \App\Models\Setting::put('int_gads_login_customer', '111-222-3333');
+        \App\Services\Social\Integrations::putEncrypted('int_gads_dev_token', 'DEV');
+        \App\Services\Social\Integrations::putEncrypted('int_gads_client_secret', 'SECRET');
+        \App\Services\Social\Integrations::putEncrypted('int_gads_refresh_token', 'REFRESH');
+        \App\Models\Setting::put('int_ttads_enabled', '1');
+        \App\Services\Social\Integrations::putEncrypted('int_ttads_token', 'TT-TOKEN');
+        $this->assertSame(['google', 'tiktok'], \App\Services\Ads\AdsSync::platforms());
+
+        $campaign = $this->campaignWithAd();
+        $g = AdCampaign::create(['client_id' => $campaign->client_id, 'campaign_id' => $campaign->id, 'platform' => 'google', 'name' => 'Search',
+            'external_id' => '123-456-7890:2233445566', 'status' => 'active', 'starts_on' => today()->subDays(5)]);
+        $t = AdCampaign::create(['client_id' => $campaign->client_id, 'campaign_id' => $campaign->id, 'platform' => 'tiktok', 'name' => 'TT',
+            'external_id' => '7012345678901234567:1789012345678901', 'status' => 'active']);
+        $bad = AdCampaign::create(['client_id' => $campaign->client_id, 'campaign_id' => $campaign->id, 'platform' => 'google', 'name' => 'Zły ID',
+            'external_id' => '42', 'status' => 'active']);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'oauth2.googleapis.com/*' => \Illuminate\Support\Facades\Http::response(['access_token' => 'ya29.x', 'expires_in' => 3599]),
+            'googleads.googleapis.com/*' => function ($request) {
+                $this->assertSame('DEV', $request->header('developer-token')[0]);
+                $this->assertSame('1112223333', $request->header('login-customer-id')[0]);
+                $this->assertStringContainsString('/customers/1234567890/googleAds:searchStream', $request->url());
+                $this->assertStringContainsString('campaign.id = 2233445566', $request['query']);
+
+                return \Illuminate\Support\Facades\Http::response([['results' => [
+                    ['metrics' => ['costMicros' => '312450000', 'impressions' => '20000', 'clicks' => '900', 'conversions' => 18.0, 'conversionsValue' => 2340.5]],
+                    ['metrics' => ['costMicros' => '100000000', 'impressions' => '5000', 'clicks' => '100', 'conversions' => 2.0, 'conversionsValue' => 260]],
+                ]]]);
+            },
+            'business-api.tiktok.com/*' => function ($request) {
+                $this->assertSame('TT-TOKEN', $request->header('Access-Token')[0]);
+                $this->assertSame('7012345678901234567', $request['advertiser_id']);
+                $this->assertStringContainsString('1789012345678901', $request['filtering']);
+
+                return \Illuminate\Support\Facades\Http::response(['code' => 0, 'message' => 'OK', 'data' => ['list' => [['dimensions' => ['campaign_id' => '1789012345678901'],
+                    'metrics' => ['spend' => '450.20', 'impressions' => '90000', 'reach' => '61000', 'clicks' => '1200', 'conversion' => '40', 'complete_payment' => '25', 'value_per_complete_payment' => '120.00']]]]]);
+            },
+        ]);
+
+        $this->assertSame(2, app(\App\Services\Ads\AdsSync::class)->run());
+        $gr = $g->fresh()->latestResult;
+        $this->assertSame(['google', 412.45, 25000, 1000, 20, 2600.5], [$gr->source, (float) $gr->spend, $gr->impressions, $gr->clicks, $gr->conversions, (float) $gr->revenue]);
+        $tr = $t->fresh()->latestResult;
+        $this->assertSame(['tiktok', 450.2, 61000, 1200, 25, 3000.0], [$tr->source, (float) $tr->spend, $tr->reach, $tr->clicks, $tr->conversions, (float) $tr->revenue]);
+        $this->assertStringContainsString('123-456-7890:2233445566', $bad->fresh()->sync_error);
     }
 }

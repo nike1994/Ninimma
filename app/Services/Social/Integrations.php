@@ -88,6 +88,48 @@ class Integrations
         }
     }
 
+    /** Zaszyfrowane ustawienie (tokeny i klucze API reklam). */
+    public static function encrypted(string $key): ?string
+    {
+        $v = Setting::get($key);
+        try {
+            return $v ? Crypt::decryptString($v) : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    public static function putEncrypted(string $key, ?string $value): void
+    {
+        if (filled($value)) {
+            Setting::put($key, Crypt::encryptString(trim($value)));
+        }
+    }
+
+    /** Google Ads API: token dewelopera, klient OAuth, token odświeżania, opcjonalnie konto menedżera (MCC). */
+    public static function googleAds(): array
+    {
+        return [
+            'enabled' => (bool) Setting::get('int_gads_enabled', false),
+            'developer_token' => self::encrypted('int_gads_dev_token'), 'client_id' => Setting::get('int_gads_client_id'),
+            'client_secret' => self::encrypted('int_gads_client_secret'), 'refresh_token' => self::encrypted('int_gads_refresh_token'),
+            'login_customer_id' => Setting::get('int_gads_login_customer'), 'version' => Setting::get('int_gads_version') ?: 'v21',
+        ];
+    }
+
+    public static function googleAdsEnabled(): bool
+    {
+        $c = self::googleAds();
+
+        return $c['enabled'] && filled($c['developer_token']) && filled($c['client_id']) && filled($c['client_secret']) && filled($c['refresh_token']);
+    }
+
+    /** TikTok Ads (Marketing API): długoterminowy token dostępu do kont reklamowych. */
+    public static function tiktokAdsEnabled(): bool
+    {
+        return (bool) Setting::get('int_ttads_enabled', false) && filled(self::encrypted('int_ttads_token'));
+    }
+
     /** Automatyczne pobieranie statystyk opublikowanych postów (osobny włącznik). */
     public static function autoStats(): bool
     {

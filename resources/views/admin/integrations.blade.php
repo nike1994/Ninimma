@@ -45,6 +45,43 @@
         <div class="int-foot"><span class="muted small">{{ __('api.meta_ads_linked', ['n' => $metaAds['ads']]) }}</span>
             <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button></div>
     </form>
+    <form method="post" action="{{ route('admin.integrations.google-ads') }}" class="card stack int-card">
+        @csrf @method('put')
+        <div class="int-head">
+            <span class="int-logos"><span class="ad-platform ap-google">G</span></span>
+            <h2>{{ __('api.google_ads') }}</h2>
+            <span @class(['pill', 'pill-done' => $googleAds['ready'], 'pill-needs_decision' => $googleAds['enabled'] && ! $googleAds['ready']])>
+                {{ $googleAds['ready'] ? __('api.ready') : ($googleAds['enabled'] ? __('api.not_ready') : __('api.disabled')) }}</span>
+        </div>
+        <label class="switch"><input type="checkbox" name="enabled" value="1" @checked($googleAds['enabled'])><span></span> {{ __('api.enabled') }}</label>
+        <label class="field"><span>{{ __('api.gads_dev_token') }}</span><input type="password" name="developer_token" autocomplete="new-password" placeholder="{{ $googleAds['developer_token'] ? '•••••••• '.__('api.secret_saved') : '' }}"></label>
+        <div class="form-row form-row-2">
+            <x-field name="client_id" :label="__('api.gads_client_id')" :value="$googleAds['client_id']" autocomplete="off" />
+            <label class="field"><span>{{ __('api.gads_client_secret') }}</span><input type="password" name="client_secret" autocomplete="new-password" placeholder="{{ $googleAds['client_secret'] ? '•••••••• '.__('api.secret_saved') : '' }}"></label>
+        </div>
+        <label class="field"><span>{{ __('api.gads_refresh_token') }}</span><input type="password" name="refresh_token" autocomplete="new-password" placeholder="{{ $googleAds['refresh_token'] ? '•••••••• '.__('api.secret_saved') : '' }}"></label>
+        <div class="form-row form-row-2">
+            <x-field name="login_customer_id" :label="__('api.gads_login_customer')" :value="$googleAds['login_customer_id']" placeholder="123-456-7890" />
+            <x-field name="version" :label="__('api.gads_version')" :value="$googleAds['version']" placeholder="v21" />
+        </div>
+        <p class="muted small">{{ __('api.howto_google_ads') }}</p>
+        <div class="int-foot"><span class="muted small">{{ __('api.ads_linked', ['n' => $googleAds['ads']]) }}</span>
+            <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button></div>
+    </form>
+    <form method="post" action="{{ route('admin.integrations.tiktok-ads') }}" class="card stack int-card">
+        @csrf @method('put')
+        <div class="int-head">
+            <span class="int-logos"><x-platform platform="tiktok" :size="30" /></span>
+            <h2>{{ __('api.tiktok_ads') }}</h2>
+            <span @class(['pill', 'pill-done' => $tiktokAds['ready'], 'pill-needs_decision' => $tiktokAds['enabled'] && ! $tiktokAds['ready']])>
+                {{ $tiktokAds['ready'] ? __('api.ready') : ($tiktokAds['enabled'] ? __('api.not_ready') : __('api.disabled')) }}</span>
+        </div>
+        <label class="switch"><input type="checkbox" name="enabled" value="1" @checked($tiktokAds['enabled'])><span></span> {{ __('api.enabled') }}</label>
+        <label class="field"><span>{{ __('api.ttads_token') }}</span><input type="password" name="token" autocomplete="new-password" placeholder="{{ $tiktokAds['has_token'] ? '•••••••• '.__('api.secret_saved') : '' }}"></label>
+        <p class="muted small">{{ __('api.howto_tiktok_ads') }}</p>
+        <div class="int-foot"><span class="muted small">{{ __('api.ads_linked', ['n' => $tiktokAds['ads']]) }}</span>
+            <button class="btn btn-dark btn-small">{{ __('ui.save') }}</button></div>
+    </form>
 </div>
 <form method="post" action="{{ route('admin.integrations.stats') }}" class="card inline-form" style="margin: 1rem 0">
     @csrf @method('put')
