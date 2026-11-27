@@ -215,7 +215,7 @@ class SocialApiTest extends TestCase
             'graph.facebook.com/v23.0/oauth/access_token*' => Http::sequence()->push(['access_token' => 'SHORT'])->push(['access_token' => 'LONG']),
             'graph.facebook.com/v23.0/me/accounts*' => Http::response(['data' => [
                 ['id' => '11', 'name' => 'Strona bez IG', 'access_token' => 'T11'],
-                ['id' => '22', 'name' => 'Zielony Dom', 'access_token' => 'T22', 'instagram_business_account' => ['id' => '9922', 'username' => 'zielonydom']],
+                ['id' => '22', 'name' => 'Zielony Dom', 'access_token' => 'PAGE-TOKEN-22', 'instagram_business_account' => ['id' => '9922', 'username' => 'zielonydom']],
             ]]),
             'graph.facebook.com/v23.0/9922*' => Http::response(['profile_picture_url' => 'https://cdn.example.com/avatar.jpg']),
             'cdn.example.com/*' => Http::response($this->pngBytes(), 200, ['Content-Type' => 'image/png']),
@@ -224,14 +224,14 @@ class SocialApiTest extends TestCase
         // Stan sesji zużyty przy błędnej próbie — zaczynamy od nowa.
         $this->get(route('social.connect', $acc));
         $this->get(route('social.connect.callback', ['provider' => 'meta', 'state' => session('social_connect')['state'], 'code' => 'CODE']))->assertRedirect(route('social.connect.choose'));
-        $this->get(route('social.connect.choose'))->assertOk()->assertSee('Zielony Dom')->assertSee('@zielonydom')->assertDontSee('T22');
+        $this->get(route('social.connect.choose'))->assertOk()->assertSee('Zielony Dom')->assertSee('@zielonydom')->assertDontSee('PAGE-TOKEN-22');
         $this->post(route('social.connect.attach'), ['page' => '22'])->assertRedirect(route('social.accounts'));
         $acc->refresh();
-        $this->assertSame(['9922', 'T22', 'zielonydom'], [$acc->external_id, $acc->access_token, $acc->api_meta['username']]);
+        $this->assertSame(['9922', 'PAGE-TOKEN-22', 'zielonydom'], [$acc->external_id, $acc->access_token, $acc->api_meta['username']]);
         $this->assertTrue($acc->isConnected());
         $this->assertNotNull($acc->avatar_usage_id); // zdjęcie profilu pobrane z Instagrama
         $this->get($acc->avatarUrl())->assertOk()->assertHeader('Content-Type', 'image/jpeg');
-        $this->assertStringNotContainsString('T22', json_encode($acc->toArray()));
+        $this->assertStringNotContainsString('PAGE-TOKEN-22', json_encode($acc->toArray()));
         $this->get(route('social.accounts'))->assertOk()->assertSee(__('api.connected_as', ['name' => 'zielonydom']));
     }
 

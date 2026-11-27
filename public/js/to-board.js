@@ -14,7 +14,11 @@
         e.preventDefault(); e.stopPropagation();
         btn.disabled = true;
         let d;
-        try { d = await (await fetch(btn.dataset.toBoard, { headers: { Accept: 'application/json' } })).json(); } catch (err) { btn.disabled = false; return; }
+        try {
+            const r = await fetch(btn.dataset.toBoard, { headers: { Accept: 'application/json' } });
+            d = await r.json();
+            if (!r.ok) throw new Error(d.message || t.snap_no_client);
+        } catch (err) { btn.disabled = false; alert(err.message || t.snap_no_client); return; }
         btn.disabled = false;
         open(btn.dataset.toBoard, d);
     });

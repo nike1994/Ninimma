@@ -15,7 +15,9 @@ class BoardSnapshotController extends Controller
     public function targets(FileUsage $usage)
     {
         $client = BoardSnapshot::clientFor($usage);
-        abort_unless($client && $usage->file && ($usage->file->isImage() || $usage->file->isVideo()), 422);
+        if (! $client || ! $usage->file || ! ($usage->file->isImage() || $usage->file->isVideo())) {
+            return response()->json(['message' => __('board.snap_no_client')], 422);
+        }
         $boards = Board::with('ticket')->whereHas('ticket', fn ($q) => $q->where('client_id', $client->id)->open()->where('archive_state', 'active'))
             ->latest('updated_at')->limit(30)->get();
 

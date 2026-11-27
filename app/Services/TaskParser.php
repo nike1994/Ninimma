@@ -44,6 +44,14 @@ class TaskParser
             $w = $words[$i];
             $n = $this->norm($w);
             $next = $this->norm($words[$i + 1] ?? '');
+            $prev = $this->norm($words[$i - 1] ?? '');
+            // „o 15:30”, „wersja 1.5” — to część tytułu, nie szacunek ani termin.
+            if (in_array($prev, ['o', 'od', 'do', 'godz', 'godzina', 'na', 'at', 'wersja', 'wersji', 'v', 'ver', 'version'], true)
+                && preg_match('/^\d{1,2}[:.]\d{1,2}$/', $n)) {
+                $keep[] = $w;
+
+                continue;
+            }
 
             if ($w === '!' || $w === '!!' || $w === '!!!') {
                 $r['priority'] = strlen($w) > 1 ? 'urgent' : 'high';
@@ -58,7 +66,7 @@ class TaskParser
                 $r['estimate'] = (int) round((float) str_replace(',', '.', $m[1]) * 60);
             } elseif (preg_match('/^(\d{1,4})(m|min)$/u', $n, $m)) {
                 $r['estimate'] = (int) $m[1];
-            } elseif (preg_match('/^(\d{1,2}):(\d{2})$/', $n, $m)) {
+            } elseif (preg_match('/^(\d{1,2}):(\d{2})$/', $n, $m) && (int) $m[1] <= 12) { // 13:00 i później to godzina, nie szacunek
                 $r['estimate'] = (int) $m[1] * 60 + (int) $m[2];
             } elseif (in_array($n, ['dzis', 'dzisiaj', 'today'], true)) {
                 $r['due_on'] = $today->copy();

@@ -141,6 +141,13 @@ class TasksTimeTest extends TestCase
         $this->assertSame('2026-11-27', $p->parse('Telefon do klienta dziś #studio')['due_on']->toDateString());
         $this->assertSame(3, $p->parse('Telefon do klienta dziś #studio')['client_id']);
         $this->assertSame('Wersja 2.0 strony', $p->parse('Wersja 2.0 strony #blu')['title']);
+        // Godzina spotkania i numer wersji zostają w tytule.
+        $r = $p->parse('Spotkanie o 15:30 #blu jutro 1h');
+        $this->assertSame(['Spotkanie o 15:30', 60, '2026-11-28'], [$r['title'], $r['estimate'], $r['due_on']->toDateString()]);
+        $r = $p->parse('Wdrożenie wersja 1.5 #blu');
+        $this->assertSame(['Wdrożenie wersja 1.5', null], [$r['title'], $r['due_on']]);
+        $this->assertNull($p->parse('Telefon 14:00 #blu')['estimate']);
+        $this->assertSame(90, $p->parse('Montaż #blu 1:30')['estimate']);
 
         $bad = $p->parse('Coś #nieznany @ktos');
         $this->assertCount(3, $bad['errors']); // klient, osoba, brak klienta

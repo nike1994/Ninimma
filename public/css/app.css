@@ -1927,3 +1927,4 @@ a.kpi { color: var(--text); }
 .tb-side { display: grid; gap: .6rem; align-content: start; }
 .tb-error { color: var(--red); font-size: .85rem; margin: 0; }
 @media (max-width: 760px) { .tb-body { grid-template-columns: minmax(0, 1fr); } }
+.main { padding-bottom: 84px; } /* miejsce na przycisk „Wiadomości”, żeby nie zasłaniał przycisków na dole strony */

@@ -137,7 +137,11 @@
         if (open) {
             if (!current) loadThreads();
             listTimer = setInterval(() => { if (!document.hidden && !current) loadThreads(); }, 20000);
-        } else { clearInterval(pollTimer); current = null; listView.hidden = false; conv.hidden = true; }
+        } else {
+            clearInterval(pollTimer); current = null; listView.hidden = false; conv.hidden = true;
+            $('[data-chat-back]').hidden = true; $('[data-chat-open-ticket]').hidden = true;
+            $('[data-chat-title]').textContent = t.title; $('[data-chat-sub]').textContent = '';
+        }
     }
     if (full) {
         markFilter(); loadThreads();
