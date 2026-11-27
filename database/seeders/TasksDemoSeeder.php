@@ -55,6 +55,20 @@ class TasksDemoSeeder extends Seeder
             }
         }
 
+        // Zestawy zadań wstawiane jednym kliknięciem.
+        \App\Models\TaskSet::create(['name' => 'Nowa kampania social', 'body' => implode("\n", [
+            'Brief i cele kampanii z klientem +0 1h', 'Plan treści i harmonogram publikacji +2 2h', 'Grafiki — 3 formaty +4 @ola 4h',
+            'Copy, hashtagi i linki UTM +4 2h', 'Akceptacja klienta +6', 'Ustawienie reklam i budżetu +7 @piotr 1h',
+            'Kontrola wyników po tygodniu +14 30m', 'Raport i wnioski po kampanii +30 1h30m',
+        ])]);
+        \App\Models\TaskSet::create(['name' => 'Miesięczna obsługa social media', 'body' => implode("\n", [
+            'Plan postów na kolejny miesiąc +0 2h', 'Sesja zdjęciowa / zebranie materiałów +3 @kamil 3h', 'Grafiki i rolki +7 @ola 6h',
+            'Akceptacja planu przez klienta +9', 'Raport miesięczny +28 1h',
+        ])]);
+        \App\Models\TaskSet::create(['name' => 'Współpraca z influencerem', 'body' => implode("\n", [
+            'Brief dla influencera +0 1h', 'Wysyłka produktów +2 30m', 'Akceptacja materiałów +10 !', 'Publikacja i oznaczenia +14', 'Zebranie statystyk +21 30m',
+        ])]);
+
         // Działający stoper administratora (widać go w górnym pasku).
         $running = Ticket::where('title', 'Scenariusz rolki z instruktorką')->first();
         $admin->forceFill(['timer_ticket_id' => $running?->id, 'timer_started_at' => now()->subMinutes(47)])->save();

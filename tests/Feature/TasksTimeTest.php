@@ -29,11 +29,12 @@ class TasksTimeTest extends TestCase
         $other = User::factory()->admin()->create(['name' => 'Kamil Grafik']);
         $client = Client::factory()->create(['name' => 'Zielony Dom']);
 
-        $this->post(route('tasks.store'), ['title' => 'Grafiki na Black Friday', 'client_id' => $client->id, 'due_on' => today()->subDay()->toDateString(), 'estimate' => '2:30'])->assertRedirect();
+        $this->post(route('tasks.store'), ['lines' => 'Grafiki na Black Friday #zielony 2:30', 'client_id' => ''])->assertRedirect();
+        Ticket::where('title', 'Grafiki na Black Friday')->update(['due_on' => today()->subDay()]);
         $t = Ticket::where('title', 'Grafiki na Black Friday')->first();
         $this->assertSame([$me->id, 150, 'task'], [$t->assigned_to, $t->estimate_minutes, $t->type->value]);
 
-        $this->post(route('tasks.store'), ['title' => 'Raport miesięczny', 'client_id' => $client->id, 'assigned_to' => $other->id])->assertSessionHasNoErrors();
+        $this->post(route('tasks.store'), ['lines' => 'Raport miesięczny @kamil', 'client_id' => $client->id])->assertSessionHasNoErrors();
         $this->assertSame($other->id, Ticket::where('title', 'Raport miesięczny')->value('assigned_to'));
         // Tytuły zadań pokazuje też boczna lista zleceń — sprawdzamy więc dane widoku.
         $titles = fn ($groups) => collect($groups)->flatten()->pluck('title')->all();
@@ -118,5 +119,69 @@ class TasksTimeTest extends TestCase
         $this->get(route('time.index'))->assertForbidden();
         $this->post(route('timer.start', $t))->assertForbidden();
         $this->get(route('time.export'))->assertForbidden();
+    }
+
+    public function test_parser_understands_one_line(): void
+    {
+        $this->travelTo(\Carbon\Carbon::parse('2026-11-27 10:00')); // piątek
+        $clients = collect([(object) ['id' => 1, 'name' => 'Zielony Dom'], (object) ['id' => 2, 'name' => 'FitLife'], (object) ['id' => 3, 'name' => 'Studio Blu']]);
+        $team = collect([(object) ['id' => 10, 'name' => 'Wiktoria Admin'], (object) ['id' => 11, 'name' => 'Ola Mazur'], (object) ['id' => 12, 'name' => 'Ołeksandr Nowak']]);
+        $p = new \App\Services\TaskParser($clients, $team, 10);
+
+        $r = $p->parse('Grafiki na BF #zielony @ola jutro 2h !');
+        $this->assertSame(['Grafiki na BF', 1, 11, '2026-11-28', 120, 'high', []], [$r['title'], $r['client_id'], $r['assigned_to'], $r['due_on']->toDateString(), $r['estimate'], $r['priority'], $r['errors']]);
+
+        $r = $p->parse('Raport miesięczny #fit pn 30m !!');
+        $this->assertSame(['Raport miesięczny', 2, 10, '2026-11-30', 30, 'urgent'], [$r['title'], $r['client_id'], $r['assigned_to'], $r['due_on']->toDateString(), $r['estimate'], $r['priority']]);
+
+        $this->assertSame('2026-12-15', $p->parse('Opisy #blu 15.12')['due_on']->toDateString());
+        $this->assertSame('2027-01-05', $p->parse('Plan #blu 5.01')['due_on']->toDateString());
+        $this->assertSame('2026-11-30', $p->parse('Spotkanie #blu za 3 dni 1,5h')['due_on']->toDateString());
+        $this->assertSame(90, $p->parse('Spotkanie #blu za 3 dni 1,5h')['estimate']);
+        $this->assertSame('2026-11-27', $p->parse('Telefon do klienta dziś #studio')['due_on']->toDateString());
+        $this->assertSame(3, $p->parse('Telefon do klienta dziś #studio')['client_id']);
+        $this->assertSame('Wersja 2.0 strony', $p->parse('Wersja 2.0 strony #blu')['title']);
+
+        $bad = $p->parse('Coś #nieznany @ktos');
+        $this->assertCount(3, $bad['errors']); // klient, osoba, brak klienta
+
+        // Lista: wypunktowania i puste linijki, klient domyślny dla linijek bez #.
+        $many = $p->parseMany("- Brief\n\n• Grafiki #fit\n3) Raport", 3);
+        $this->assertSame([['Brief', 3], ['Grafiki', 2], ['Raport', 3]], array_map(fn ($i) => [$i['title'], $i['client_id']], $many));
+
+        // Zestaw: „+N” od daty startu.
+        $set = new \App\Services\TaskParser($clients, $team, 10, \Carbon\Carbon::parse('2026-12-01'));
+        $this->assertSame('2026-12-08', $set->parse('Publikacja +7', 1)['due_on']->toDateString());
+    }
+
+    public function test_paste_many_lines_preview_and_sets(): void
+    {
+        $me = $this->admin();
+        User::factory()->admin()->create(['name' => 'Ola Mazur']);
+        $client = Client::factory()->create(['name' => 'FitLife']);
+        $campaign = \App\Models\Campaign::create(['client_id' => $client->id, 'name' => 'Zima', 'status' => 'active']);
+
+        $this->postJson(route('tasks.parse'), ['lines' => "Grafiki @ola jutro 2h\nRaport", 'client_id' => $client->id])->assertOk()
+            ->assertJsonCount(2)->assertJsonPath('0.client', 'FitLife')->assertJsonPath('0.person', 'Ola Mazur')->assertJsonPath('0.estimate', '2:00');
+
+        // Linijka z błędem: nic się nie zapisuje, tekst zostaje w polu.
+        $this->post(route('tasks.store'), ['lines' => "Dobre\nZłe #nieznany", 'client_id' => $client->id])->assertSessionHasErrors('lines')->assertSessionHasInput('lines');
+        $this->assertSame(0, Ticket::count());
+
+        $this->post(route('tasks.store'), ['lines' => "Grafiki @ola jutro 2h\nRaport !\n\n- Telefon", 'client_id' => $client->id])
+            ->assertSessionHas('status', trans_choice('task.added_n', 3, ['n' => 3]));
+        $this->assertSame(3, Ticket::where('client_id', $client->id)->count());
+
+        $this->post(route('tasks.sets.store'), ['name' => 'Kampania', 'body' => "Brief +0 1h\nGrafiki +3 @ola\nRaport +30"])->assertRedirect();
+        $set = \App\Models\TaskSet::first();
+        $this->post(route('tasks.sets.apply', $set), ['client_id' => $client->id, 'start_on' => '2026-12-01', 'campaign_id' => $campaign->id])->assertRedirect();
+        $made = Ticket::where('campaign_id', $campaign->id)->orderBy('id')->get();
+        $this->assertSame(['Brief', 'Grafiki', 'Raport'], $made->pluck('title')->all());
+        $this->assertSame(['2026-12-01', '2026-12-04', '2026-12-31'], $made->map(fn ($t) => $t->due_on->toDateString())->all());
+        $this->assertSame(1, $set->fresh()->uses);
+
+        // Kampania innego klienta jest odrzucana.
+        $other = Client::factory()->create();
+        $this->post(route('tasks.sets.apply', $set), ['client_id' => $other->id, 'start_on' => '2026-12-01', 'campaign_id' => $campaign->id])->assertSessionHasErrors('campaign_id');
     }
 }

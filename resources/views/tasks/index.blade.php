@@ -16,17 +16,51 @@
     <a href="{{ route('time.index') }}" class="kpi"><div class="kpi-row"><span class="kpi-icon"><x-icon name="clock" :size="24" /></span><div><span class="kpi-label">{{ __('task.kpi_week') }}</span><div class="kpi-value"><strong>{{ \App\Models\TimeEntry::hours($kpi['week_minutes']) }}</strong></div></div></div><x-waves variant="kpi" /></a>
 </div>
 
-<form method="post" action="{{ route('tasks.store') }}" class="card task-add">
-    @csrf
-    <x-icon name="plus" :size="18" />
-    <input name="title" placeholder="{{ __('task.title_ph') }}" required maxlength="200" aria-label="{{ __('task.quick_add') }}">
-    <select name="client_id" required aria-label="{{ __('ui.client') }}">@foreach($clients as $c)<option value="{{ $c->id }}" @selected($clientId === $c->id)>{{ $c->name }}</option>@endforeach</select>
-    <input type="date" name="due_on" aria-label="{{ __('ui.due_on') }}" title="{{ __('ui.due_on') }}">
-    <select name="assigned_to" aria-label="{{ __('ui.assignee') }}">@foreach($team as $u)<option value="{{ $u->id }}" @selected($u->id === $me->id)>{{ $u->name }}</option>@endforeach</select>
-    <select name="priority" aria-label="{{ __('ui.priority') }}">@foreach(\App\Enums\Priority::cases() as $p)<option value="{{ $p->value }}">{{ $p->label() }}</option>@endforeach</select>
-    <input name="estimate" placeholder="{{ __('task.estimate_ph') }}" size="6" pattern="\d{1,3}([:.,]\d{1,2})?" title="{{ __('task.estimate') }}" aria-label="{{ __('task.estimate') }}">
-    <button class="btn btn-send btn-small">{{ __('ui.add') }}</button>
-</form>
+<section class="card task-add" data-task-add data-parse-url="{{ route('tasks.parse') }}">
+    <form method="post" action="{{ route('tasks.store') }}" class="task-add-form">
+        @csrf
+        <x-icon name="plus" :size="18" />
+        <textarea name="lines" rows="1" required maxlength="20000" placeholder="{{ __('task.line_ph') }}" aria-label="{{ __('task.quick_add') }}" data-lines>{{ old('lines') }}</textarea>
+        <select name="client_id" aria-label="{{ __('task.default_client') }}" title="{{ __('task.default_client') }}" data-default-client>
+            <option value="">{{ __('task.client_from_line') }}</option>
+            @foreach($clients as $c)<option value="{{ $c->id }}" @selected((int) old('client_id', $defaultClient) === $c->id)>{{ $c->name }}</option>@endforeach</select>
+        <button class="btn btn-send btn-small" data-add-btn>{{ __('ui.add') }}</button>
+    </form>
+    <ul class="task-preview" data-preview hidden></ul>
+    <p class="task-legend muted small">{!! __('task.legend') !!}</p>
+    <details class="task-sets">
+        <summary><x-icon name="layers" :size="15" /> {{ __('task.sets') }} <span class="muted">({{ $sets->count() }})</span></summary>
+        <p class="muted small">{{ __('task.sets_hint') }}</p>
+        <div class="task-sets-list">
+            @foreach($sets as $set)
+                <div class="task-set">
+                    <div class="task-set-head"><strong>{{ $set->name }}</strong><small class="muted">{{ trans_choice('task.n_tasks', count($set->lines()), ['n' => count($set->lines())]) }}</small></div>
+                    <form method="post" action="{{ route('tasks.sets.apply', $set) }}" class="task-set-apply">
+                        @csrf
+                        <select name="client_id" required aria-label="{{ __('ui.client') }}" data-set-client>@foreach($clients as $c)<option value="{{ $c->id }}" @selected($defaultClient == $c->id)>{{ $c->name }}</option>@endforeach</select>
+                        <input type="date" name="start_on" value="{{ today()->toDateString() }}" required aria-label="{{ __('task.start_on') }}" title="{{ __('task.start_on') }}">
+                        <select name="campaign_id" aria-label="{{ __('task.campaign_opt') }}" data-set-campaign><option value="">{{ __('task.campaign_opt') }}</option>@foreach($campaigns as $cp)<option value="{{ $cp->id }}" data-client="{{ $cp->client_id }}">{{ $cp->name }}</option>@endforeach</select>
+                        <button class="btn btn-dark btn-small">{{ __('task.use_set') }}</button>
+                    </form>
+                    <details class="task-set-edit"><summary class="small">{{ __('task.edit_set') }}</summary>
+                        <form method="post" action="{{ route('tasks.sets.update', $set) }}" class="stack">@csrf @method('put')
+                            <input name="name" value="{{ $set->name }}" required maxlength="120">
+                            <textarea name="body" rows="8" required>{{ $set->body }}</textarea>
+                            <div class="head-actions"><button class="btn btn-small btn-dark">{{ __('ui.save') }}</button></div>
+                        </form>
+                        <form method="post" action="{{ route('tasks.sets.destroy', $set) }}" onsubmit="return confirm('{{ __('task.delete_set_confirm') }}')">@csrf @method('delete')<button class="btn btn-small btn-link-danger">{{ __('task.delete') }}</button></form>
+                    </details>
+                </div>
+            @endforeach
+            <details class="task-set task-set-new"><summary><x-icon name="plus" :size="14" /> {{ __('task.new_set') }}</summary>
+                <form method="post" action="{{ route('tasks.sets.store') }}" class="stack">@csrf
+                    <input name="name" required maxlength="120" placeholder="{{ __('task.set_name_ph') }}">
+                    <textarea name="body" rows="7" required placeholder="{{ __('task.set_body_ph') }}"></textarea>
+                    <div class="head-actions"><button class="btn btn-small btn-dark">{{ __('ui.save') }}</button></div>
+                </form></details>
+        </div>
+    </details>
+</section>
 
 <div class="social-filters task-filters">
     @foreach(['me' => __('task.who_me'), 'all' => __('task.who_all'), 'none' => __('task.who_none')] as $k => $label)
@@ -70,3 +104,6 @@
     </div>
 @endif
 @endsection
+@push('scripts')
+<script src="{{ asset('js/task-add.js') }}?v=1" defer></script>
+@endpush

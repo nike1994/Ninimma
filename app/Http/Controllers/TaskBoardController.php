@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\Priority;
 use App\Enums\TicketStatus;
-use App\Enums\TicketType;
 use App\Models\Client;
 use App\Models\Ticket;
 use App\Models\TimeEntry;
@@ -68,27 +67,109 @@ class TaskBoardController extends Controller
                 'week_minutes' => (int) TimeEntry::where('user_id', $me->id)->where('spent_on', '>=', $monday->toDateString())->sum('minutes'),
             ],
             'me' => $me,
+            'sets' => \App\Models\TaskSet::orderByDesc('uses')->orderBy('name')->get(),
+            'campaigns' => \App\Models\Campaign::whereIn('status', ['draft', 'review', 'active'])->orderBy('name')->get(['id', 'name', 'client_id']),
+            'defaultClient' => $clientId ?? $request->session()->get('task_client'),
         ]);
     }
 
-    /** Szybkie dodanie zadania (zlecenie typu „zadanie” bez opisu — rozmowa zaczyna się w zleceniu). */
+    /** Szybkie dodawanie: jedna linijka albo wklejona lista (każda linijka = zadanie), zapis jak w TaskParser. */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'client_id' => ['required', 'exists:clients,id'],
-            'due_on' => ['nullable', 'date'],
-            'assigned_to' => ['nullable', Rule::exists('users', 'id')->where('role', 'admin')],
-            'priority' => ['nullable', Rule::enum(Priority::class)],
-            'estimate' => ['nullable', 'regex:/^\d{1,3}([:.,]\d{1,2})?$/'],
-            'type' => ['nullable', Rule::enum(TicketType::class)],
+            'lines' => ['required', 'string', 'max:20000'],
+            'client_id' => ['nullable', 'exists:clients,id'],
         ]);
-        $ticket = $this->tickets->create($request->user(), $data + ['type' => $data['type'] ?? 'task', 'assigned_to' => $data['assigned_to'] ?? $request->user()->id], null);
-        if (filled($data['estimate'] ?? null)) {
-            $ticket->forceFill(['estimate_minutes' => TicketController::parseHours($data['estimate'])])->save();
+        $request->session()->put('task_client', $data['client_id'] ?? null);
+        $items = $this->parser($request->user())->parseMany($data['lines'], $data['client_id'] ?? null);
+        $bad = collect($items)->filter(fn ($i) => $i['errors']);
+        if ($bad->isNotEmpty()) {
+            return back()->withInput()->withErrors(['lines' => $bad->first()['title'].': '.$bad->first()['errors'][0]]);
         }
+        $n = $this->createMany($request->user(), $items);
 
-        return back()->with('status', __('task.added'));
+        return back()->with('status', trans_choice('task.added_n', $n, ['n' => $n]));
+    }
+
+    /** Podgląd rozpoznania (JSON) — pokazujemy, co program zrozumiał, zanim zapiszesz. */
+    public function parse(Request $request)
+    {
+        $data = $request->validate(['lines' => ['nullable', 'string', 'max:20000'], 'client_id' => ['nullable', 'integer'], 'start_on' => ['nullable', 'date']]);
+        $base = filled($data['start_on'] ?? null) ? \Carbon\Carbon::parse($data['start_on'])->startOfDay() : null;
+        $clients = Client::where('is_active', true)->get(['id', 'name'])->keyBy('id');
+        $team = User::where('role', 'admin')->where('is_active', true)->get(['id', 'name'])->keyBy('id');
+
+        return response()->json(collect($this->parser($request->user(), $base)->parseMany((string) ($data['lines'] ?? ''), $data['client_id'] ?? null))
+            ->map(fn ($i) => [
+                'title' => $i['title'], 'client' => $clients[$i['client_id']]->name ?? null, 'person' => $team[$i['assigned_to']]->name ?? null,
+                'due' => $i['due_on']?->translatedFormat('D j M'), 'estimate' => $i['estimate'] ? TimeEntry::format($i['estimate']) : null,
+                'priority' => $i['priority'] !== 'normal' ? Priority::from($i['priority'])->label() : null, 'errors' => $i['errors'],
+            ]));
+    }
+
+    private function parser(User $me, ?\Carbon\Carbon $base = null): \App\Services\TaskParser
+    {
+        return new \App\Services\TaskParser(Client::where('is_active', true)->get(['id', 'name']),
+            User::where('role', 'admin')->where('is_active', true)->get(['id', 'name']), $me->id, $base);
+    }
+
+    private function createMany(User $by, array $items, array $extra = []): int
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($by, $items, $extra) {
+            foreach ($items as $i) {
+                $t = $this->tickets->create($by, $extra + ['title' => mb_substr($i['title'], 0, 200), 'client_id' => $i['client_id'], 'type' => 'task',
+                    'due_on' => $i['due_on']?->toDateString(), 'assigned_to' => $i['assigned_to'], 'priority' => $i['priority']], null);
+                if ($i['estimate']) {
+                    $t->forceFill(['estimate_minutes' => $i['estimate']])->save();
+                }
+            }
+
+            return count($items);
+        });
+    }
+
+    // ---------------------------------------------------------------- zestawy zadań
+
+    public function storeSet(Request $request)
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'body' => ['required', 'string', 'max:10000']]);
+        \App\Models\TaskSet::create($data);
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function updateSet(Request $request, \App\Models\TaskSet $set)
+    {
+        $set->update($request->validate(['name' => ['required', 'string', 'max:120'], 'body' => ['required', 'string', 'max:10000']]));
+
+        return back()->with('status', __('ui.saved'));
+    }
+
+    public function destroySet(\App\Models\TaskSet $set)
+    {
+        $set->delete();
+
+        return back()->with('status', __('ui.deleted'));
+    }
+
+    /** Wstawienie zestawu dla klienta: terminy „+N” liczone od daty startu, opcjonalnie przypięte do kampanii. */
+    public function applySet(Request $request, \App\Models\TaskSet $set)
+    {
+        $data = $request->validate([
+            'client_id' => ['required', 'exists:clients,id'],
+            'start_on' => ['required', 'date'],
+            'campaign_id' => ['nullable', Rule::exists('campaigns', 'id')->where('client_id', $request->input('client_id'))],
+        ]);
+        $items = $this->parser($request->user(), \Carbon\Carbon::parse($data['start_on'])->startOfDay())->parseMany($set->body, (int) $data['client_id']);
+        $items = array_values(array_filter($items, fn ($i) => $i['title'] !== ''));
+        foreach ($items as &$i) {
+            $i['client_id'] = (int) $data['client_id']; // zestaw zawsze dla wybranego klienta
+        }
+        $n = $this->createMany($request->user(), $items, array_filter(['campaign_id' => $data['campaign_id'] ?? null]));
+        $set->increment('uses');
+
+        return redirect()->route('tasks.index', ['who' => 'all', 'client' => $data['client_id']])
+            ->with('status', __('task.set_applied', ['set' => $set->name, 'n' => $n]));
     }
 
     /** Zmiana z listy: osoba, termin, priorytet, szacunek; „zrobione” zamyka zlecenie. */

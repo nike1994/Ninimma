@@ -207,6 +207,11 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::middleware('admin')->group(function () {
         Route::get('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'index'])->name('tasks.index');
         Route::post('/tasks', [\App\Http\Controllers\TaskBoardController::class, 'store'])->name('tasks.store');
+        Route::post('/tasks/parse', [\App\Http\Controllers\TaskBoardController::class, 'parse'])->name('tasks.parse');
+        Route::post('/tasks/sets', [\App\Http\Controllers\TaskBoardController::class, 'storeSet'])->name('tasks.sets.store');
+        Route::put('/tasks/sets/{set}', [\App\Http\Controllers\TaskBoardController::class, 'updateSet'])->name('tasks.sets.update');
+        Route::delete('/tasks/sets/{set}', [\App\Http\Controllers\TaskBoardController::class, 'destroySet'])->name('tasks.sets.destroy');
+        Route::post('/tasks/sets/{set}/apply', [\App\Http\Controllers\TaskBoardController::class, 'applySet'])->name('tasks.sets.apply');
         Route::patch('/tasks/{ticket}', [\App\Http\Controllers\TaskBoardController::class, 'update'])->name('tasks.update');
         Route::post('/timer/{ticket}/start', [\App\Http\Controllers\TaskBoardController::class, 'timerStart'])->name('timer.start');
         Route::post('/timer/stop', [\App\Http\Controllers\TaskBoardController::class, 'timerStop'])->name('timer.stop');
