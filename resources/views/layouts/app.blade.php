@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('ui.dashboard')) · {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('img/logo.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ @filemtime(public_path('css/app.css')) }}">
 </head>
 <body>
 @php($me = auth()->user())
@@ -146,6 +146,8 @@
 </div>
 <script src="{{ asset('js/media-thumbs.js') }}?v=3" defer></script>
 <script src="{{ asset('js/timer.js') }}?v=1" defer></script>
+@include('chat._dock')
+<script src="{{ asset('js/chat.js') }}?v={{ @filemtime(public_path('js/chat.js')) }}" defer></script>
 @stack('scripts')
 </body>
 </html>

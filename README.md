@@ -21,6 +21,13 @@ Opcjonalna wtyczka WordPress łączy panel ze stronami klientów. Specyfikacja: 
 
 ## Najważniejsze funkcje
 
+**Okno wiadomości (na każdej stronie).** Przycisk „Wiadomości” w prawym dolnym rogu otwiera panel z boku — strona
+pod spodem zostaje dostępna, więc można przepisywać i wklejać. Lista rozmów (zleceń z wiadomościami) z ostatnią
+wiadomością i nieprzeczytanymi, filtry (nieprzeczytane, czeka na nas), wyszukiwanie, rozmowa odświeżana co kilka
+sekund, odpowiedź lub notatka wewnętrzna (Ctrl+Enter), „Kopiuj” przy wiadomości. Otwarta rozmowa i szkic odpowiedzi
+zostają po przejściu na inną stronę; przycisk „osobne okno” otwiera czat w oddzielnym oknie do postawienia obok.
+Działa dla agencji i klientów (klient widzi tylko swoje rozmowy, bez notatek wewnętrznych).
+
 **Zadania i czas pracy (menu „Zadania”, „Czas pracy”).** Zadania to zlecenia: lista wg terminów (po terminie, dziś,
 ten tydzień, później, bez terminu) albo tablica wg statusu, filtr osoby, klienta i typu, szybkie dodawanie z terminem,
 osobą, priorytetem i szacunkiem czasu jedną linijką („Grafiki #zielony @ola jutro 2h !” — z podglądem, co program

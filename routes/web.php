@@ -60,6 +60,8 @@ Route::middleware(['auth', '2fa', 'terms'])->group(function () {
     Route::post('/tickets', [TicketController::class, 'store'])->name('tickets.store');
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::get('/tickets/{ticket}/poll', [TicketController::class, 'poll'])->name('tickets.poll');
+    Route::get('/chat/threads', [\App\Http\Controllers\ChatController::class, 'threads'])->name('chat.threads');
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'window'])->name('chat.window');
     Route::post('/tickets/{ticket}/messages', [MessageController::class, 'store'])->name('tickets.messages.store');
 
     // Wyceny i odbiór.
