@@ -155,6 +155,6 @@ class BoardController extends Controller
         $headers = $bf->mime === 'image/svg+xml' ? ['Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"] : [];
 
         return response()->file($store->absolutePath($bf->usage->file), $headers + ['Content-Type' => $bf->mime,
-            'Cache-Control' => 'private, max-age=604800', 'X-Content-Type-Options' => 'nosniff']);
+            'Cache-Control' => 'private, max-age=604800', 'X-Content-Type-Options' => 'nosniff'])->setPrivate();
     }
 }

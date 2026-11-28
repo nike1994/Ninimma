@@ -47,6 +47,9 @@ class RegressionTest extends TestCase
         $response = $this->get(route('boards.files.show', [$board, 'svg1']))->assertOk();
         $this->assertStringContainsString('sandbox', (string) $response->headers->get('Content-Security-Policy'));
         $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
+        // Pliki za logowaniem nie mogą trafić do współdzielonej pamięci podręcznej (pośrednik, CDN).
+        $this->assertStringContainsString('private', (string) $response->headers->get('Cache-Control'));
+        $this->assertStringNotContainsString('public', (string) $response->headers->get('Cache-Control'));
     }
 
     public function test_accepting_one_invitation_invalidates_the_others(): void

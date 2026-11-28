@@ -65,10 +65,12 @@ class BoardService
     /** Elementy zmienione po podanym numerze zmiany. */
     public function since(Board $board, int $since): array
     {
+        // Rzutowanie „array” dekoduje cały JSON przy każdym odczycie — pobieramy raz, poza pętlą.
+        $elements = $board->elements ?? [];
         $out = [];
         foreach ($board->revisions ?? [] as $id => $rev) {
-            if ($rev > $since && isset($board->elements[$id])) {
-                $out[] = $board->elements[$id];
+            if ($rev > $since && isset($elements[$id])) {
+                $out[] = $elements[$id];
             }
         }
 

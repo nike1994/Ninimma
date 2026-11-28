@@ -44,7 +44,7 @@ class FileController extends Controller
             'Content-Disposition' => ($inline ? 'inline' : 'attachment').'; filename*=UTF-8\'\''.rawurlencode($usage->name),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, max-age=86400',
-        ]);
+        ])->setPrivate();
     }
 
     /**
@@ -66,10 +66,10 @@ class FileController extends Controller
         if ($file->isImage() && $file->mime !== 'image/svg+xml') {
             $path = app(\App\Services\MediaProtection::class)->watermarkedImage($usage, $user, $store->absolutePath($file));
 
-            return response()->file($path, $noStore + ['Content-Type' => 'image/jpeg']);
+            return response()->file($path, $noStore + ['Content-Type' => 'image/jpeg'])->setPrivate();
         }
         if ($file->isVideo() && $dest === 'video') {
-            return response()->file($store->absolutePath($file), $noStore + ['Content-Type' => $file->mime]);
+            return response()->file($store->absolutePath($file), $noStore + ['Content-Type' => $file->mime])->setPrivate();
         }
         \App\Services\MediaProtection::log($usage, $user, 'blocked');
         abort(403, __('files.download_blocked'));
@@ -86,10 +86,10 @@ class FileController extends Controller
         if (\App\Services\MediaProtection::isProtectedFor($user, $usage)) {
             $path = app(\App\Services\MediaProtection::class)->watermarkedImage($usage, $user, $store->absolutePath($poster), 'p');
 
-            return response()->file($path, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, no-store, max-age=0', 'X-Content-Type-Options' => 'nosniff']);
+            return response()->file($path, ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, no-store, max-age=0', 'X-Content-Type-Options' => 'nosniff'])->setPrivate();
         }
 
-        return response()->file($store->absolutePath($poster), ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, max-age=86400', 'X-Content-Type-Options' => 'nosniff']);
+        return response()->file($store->absolutePath($poster), ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, max-age=86400', 'X-Content-Type-Options' => 'nosniff'])->setPrivate();
     }
 
     /**
