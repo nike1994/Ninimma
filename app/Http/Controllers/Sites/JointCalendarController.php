@@ -19,7 +19,7 @@ class JointCalendarController extends Controller
 
     public function __invoke(Request $request)
     {
-        $month = CarbonImmutable::parse($request->query('month', 'now'))->startOfMonth();
+        $month = \App\Support\DateParam::from($request, 'month')->startOfMonth();
         $from = $month->startOfWeek();
         $to = $month->endOfMonth()->endOfWeek();
         $client = $request->integer('client') ?: null;

@@ -116,6 +116,13 @@ class TicketService
         }
     }
 
+    /** Zlecenie nadal czeka na klienta, ale z nowym powodem: zegar i przypomnienia od zera, ponowne powiadomienie. */
+    public function renewWaiting(Ticket $ticket): void
+    {
+        $ticket->forceFill(['waiting_since' => now(), 'reminders_sent' => 0, 'stalled_at' => null, 'last_activity_at' => now()])->save();
+        $this->notifyClient($ticket, new TicketNeedsClient($ticket, 0));
+    }
+
     private function applyStatus(Ticket $ticket, User $by, TicketStatus $status, ?string $reason): void
     {
         $from = $ticket->status;

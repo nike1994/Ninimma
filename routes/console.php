@@ -17,7 +17,7 @@ Schedule::call(fn () => Cache::forever('agency:last_cron', now()->toIso8601Strin
 
 // Kolejka w bazie danych obsługiwana przez cron (bez stałych procesów).
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
-    ->everyMinute()->withoutOverlapping()->name('queue');
+    ->everyMinute()->withoutOverlapping(5)->name('queue');
 
 // Zgłoszenia i odpowiedzi przez e-mail (skrzynka IMAP), gdy skonfigurowane.
 Schedule::command('agency:mail-in --imap')->everyMinute()->withoutOverlapping(5)

@@ -48,6 +48,8 @@ class InvitationController extends Controller
             }
             $user->save();
             $invitation->forceFill(['accepted_at' => now()])->save();
+            // Pozostałe (np. wysłane ponownie) tracą ważność — inaczej stary link przywracałby dezaktywowane konto.
+            \App\Models\Invitation::where('email', $invitation->email)->whereNull('accepted_at')->update(['expires_at' => now()]);
 
             return $user;
         });

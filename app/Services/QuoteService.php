@@ -37,7 +37,12 @@ class QuoteService
             return $quote;
         });
         // Zmiana zakresu: zlecenie czeka na decyzję klienta (powiadomienie + przypomnienia).
-        $this->tickets->changeStatus($ticket, $by, TicketStatus::NeedsDecision);
+        if ($ticket->status === TicketStatus::NeedsDecision) {
+            // Kolejna wersja wyceny: status się nie zmienia, ale klient musi się o niej dowiedzieć.
+            $this->tickets->renewWaiting($ticket);
+        } else {
+            $this->tickets->changeStatus($ticket, $by, TicketStatus::NeedsDecision);
+        }
 
         return $quote;
     }

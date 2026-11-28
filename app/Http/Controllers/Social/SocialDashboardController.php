@@ -21,7 +21,7 @@ class SocialDashboardController extends Controller
         $accounts = SocialAccount::with('client')->where('is_active', true)->orderBy('name')->get();
         $brands = $accounts->groupBy('client_id')->map(fn ($accs) => (object) ['client' => $accs->first()->client, 'accounts' => $accs])
             ->sortBy(fn ($b) => $b->client->name)->values();
-        $weekStart = CarbonImmutable::parse($request->query('week', 'now'))->startOfWeek();
+        $weekStart = \App\Support\DateParam::from($request, 'week')->startOfWeek();
         $rows = $stats->byBrand($clientId ? $accounts->where('client_id', $clientId) : $accounts);
 
         $guard = app(\App\Services\LicenseGuard::class);

@@ -60,7 +60,7 @@ class SiteController extends Controller
 
     public function show(Request $request, Site $site)
     {
-        $month = Carbon::parse($request->query('month', 'now'))->startOfMonth();
+        $month = Carbon::instance(\App\Support\DateParam::from($request, 'month'))->startOfMonth();
 
         return view('sites.show', [
             'site' => $site->load(['client', 'checklist', 'deadlines']),

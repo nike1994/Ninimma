@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class SystemLog extends Model
 {
@@ -17,6 +18,9 @@ class SystemLog extends Model
 
     public static function record(string $type, string $message, array $details = [], string $level = 'info'): self
     {
+        // Kolumna ma 255 znaków; MySQL w trybie ścisłym odrzuciłby dłuższy komunikat (np. błąd z API).
+        $message = Str::limit($message, 250);
+
         return static::create(compact('type', 'message', 'details', 'level'));
     }
 }

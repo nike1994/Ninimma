@@ -151,6 +151,10 @@ class BoardController extends Controller
         $this->authorize('view', $board);
         $bf = $board->files()->where('excalidraw_id', $fileId)->firstOrFail();
 
-        return response()->file($store->absolutePath($bf->usage->file), ['Content-Type' => $bf->mime, 'Cache-Control' => 'private, max-age=604800']);
+        // SVG może zawierać skrypt — podajemy w piaskownicy, tak jak w FileController.
+        $headers = $bf->mime === 'image/svg+xml' ? ['Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"] : [];
+
+        return response()->file($store->absolutePath($bf->usage->file), $headers + ['Content-Type' => $bf->mime,
+            'Cache-Control' => 'private, max-age=604800', 'X-Content-Type-Options' => 'nosniff']);
     }
 }

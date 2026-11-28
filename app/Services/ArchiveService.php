@@ -286,7 +286,9 @@ class ArchiveService
     public function deleteOrphanFiles(): int
     {
         $n = 0;
-        StoredFile::doesntHave('usages')->get()->each(function (StoredFile $f) use (&$n) {
+        StoredFile::doesntHave('usages')
+            ->whereNotIn('id', StoredFile::query()->whereNotNull('poster_id')->select('poster_id'))
+            ->get()->each(function (StoredFile $f) use (&$n) {
             if ($f->location === 'hosting') {
                 $this->disk()->delete($f->path);
             }

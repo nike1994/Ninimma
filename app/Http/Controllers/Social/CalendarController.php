@@ -14,7 +14,7 @@ class CalendarController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
-        $month = CarbonImmutable::parse($request->query('month', 'now'))->startOfMonth();
+        $month = \App\Support\DateParam::from($request, 'month')->startOfMonth();
         $gridStart = $month->startOfWeek();
         $gridEnd = $month->endOfMonth()->endOfWeek();
         $accountId = $request->integer('account') ?: null;

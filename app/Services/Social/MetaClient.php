@@ -86,7 +86,13 @@ class MetaClient
         } else {
             $id = $this->post("{$page}/feed", ['message' => $caption], $token)['id'];
         }
-        $link = $this->get($id, ['fields' => 'permalink_url'], $token)['permalink_url'] ?? null;
+        // Post już istnieje — błąd pobrania linku nie może oznaczyć publikacji jako nieudanej (ponowienie = duplikat).
+        try {
+            $link = $this->get($id, ['fields' => 'permalink_url'], $token)['permalink_url'] ?? null;
+        } catch (\Throwable $e) {
+            report($e);
+            $link = null;
+        }
 
         return [$id, $link];
     }

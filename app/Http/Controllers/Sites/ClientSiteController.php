@@ -16,7 +16,7 @@ class ClientSiteController extends Controller
         $user = $request->user();
         $all = Site::where('client_id', $user->client_id)->where('is_active', true)->orderBy('domain')->get();
         $site = $request->integer('site') ? $all->firstWhere('id', $request->integer('site')) : $all->first();
-        $month = Carbon::parse($request->query('month', 'now'))->startOfMonth();
+        $month = Carbon::instance(\App\Support\DateParam::from($request, 'month'))->startOfMonth();
 
         return view('sites.client', [
             'sites' => $all, 'site' => $site, 'month' => $month,

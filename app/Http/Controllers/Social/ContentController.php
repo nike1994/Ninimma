@@ -191,7 +191,7 @@ class ContentController extends Controller
             'pubs.*.social_account_id' => ['required_with:pubs.*.scheduled_at', 'nullable', Rule::exists('social_accounts', 'id')->where('client_id', $content->client_id)],
             'pubs.*.scheduled_at' => ['nullable', 'date'],
             'pubs.*.status' => ['nullable', Rule::in(['planned', 'published', 'cancelled'])],
-            'pubs.*.url' => ['nullable', 'url', 'max:500'],
+            'pubs.*.url' => ['nullable', 'url', 'max:255'],
             'pubs.*.caption' => ['nullable', 'string', 'max:5000'],
             'pubs.*.promoted' => ['nullable', 'boolean'],
             'pubs.*.promo_budget' => ['nullable', 'numeric', 'min:0'],

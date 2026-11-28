@@ -89,6 +89,14 @@ class FileStore
     {
         $sha = hash_file('sha256', $path);
         if ($existing = StoredFile::where('sha256', $sha)->first()) {
+            if ($existing->location === 'offline') {
+                // Plik był przeniesiony do paczki offline — mamy znów jego treść, więc wraca na hosting.
+                $stream = fopen($path, 'rb');
+                $this->disk()->writeStream($existing->path, $stream);
+                is_resource($stream) && fclose($stream);
+                $existing->update(['location' => 'hosting', 'offline_package' => null]);
+            }
+
             return $existing;
         }
         $detected = (new \finfo(FILEINFO_MIME_TYPE))->file($path) ?: 'application/octet-stream';
